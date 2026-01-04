@@ -169,6 +169,13 @@ function setupCallHandlers(call, peerId) {
             return;
         }
         
+        // If host is sharing their own screen, don't overwrite it with remote streams
+        // Host should always see their own screen share
+        if (state.isHosting && state.stream && state.mode === 'screen') {
+            console.log(`Host is sharing their own screen, ignoring remote stream from peer ${peerId}`);
+            return;
+        }
+        
         // Display the remote stream in the video element
         const videoElem = document.getElementById('screen-video');
         const videoPlaceholder = document.getElementById('screen-placeholder');
