@@ -792,16 +792,30 @@
         }
 
         function sendToPeer(message) {
-            if (state.dataConnection && state.dataConnection.open) {
-                try {
-                    state.dataConnection.send(JSON.stringify(message));
-                    return true;
-                } catch (err) {
-                    console.error('Error sending to peer:', err);
-                    return false;
-                }
+            if (!state.isCollaborating) {
+                console.warn('sendToPeer: Not collaborating, message not sent:', message.type);
+                return false;
             }
-            return false;
+            if (!state.dataConnection) {
+                console.warn('sendToPeer: No data connection, message not sent:', message.type);
+                return false;
+            }
+            if (!state.dataConnection.open) {
+                console.warn('sendToPeer: Data connection not open, message not sent:', message.type, 'connection state:', {
+                    open: state.dataConnection.open,
+                    readyState: state.dataConnection.readyState
+                });
+                return false;
+            }
+            try {
+                const messageStr = JSON.stringify(message);
+                state.dataConnection.send(messageStr);
+                console.log('sendToPeer: Successfully sent:', message.type, 'to peer:', state.dataConnection.peer);
+                return true;
+            } catch (err) {
+                console.error('sendToPeer: Error sending message:', message.type, err);
+                return false;
+            }
         }
 
         async function startCollaboration() {
@@ -834,7 +848,8 @@
 
                 state.peer.on('open', (id) => {
                     console.log('Host peer opened:', id);
-                    state.isCollaborating = true;
+                    // Don't set isCollaborating here - wait for data connection to open
+                    // This ensures we only mark as collaborating when actually connected
                 });
 
                 state.peer.on('connection', (dataConnection) => {
@@ -901,71 +916,177 @@
         }
 
         function setupDataConnection(dataConnection) {
-            if (!dataConnection) return;
+            if (!dataConnection) {
+                console.warn('setupDataConnection: No data connection provided');
+                return;
+            }
 
-            dataConnection.on('open', () => {
-                console.log('Data connection opened');
+            console.log('setupDataConnection: Setting up data connection, isHosting:', state.isHosting, 'peer:', dataConnection.peer, 'already open:', dataConnection.open, 'readyState:', dataConnection.readyState);
+
+            // If connection is already open (e.g., peer initiated connection), set state immediately
+            // Check both 'open' property and readyState for reliability
+            const isAlreadyOpen = dataConnection.open || dataConnection.readyState === 'open';
+            if (isAlreadyOpen) {
+                console.log('Data connection already open, setting up immediately, isHosting:', state.isHosting);
                 state.isCollaborating = true;
                 updateConnectionStatus(true, state.shareCode);
                 
-                // Send current canvas state to peer
-                sendToPeer({
-                    type: 'ANNOTATION_SYNC',
-                    elements: state.elements,
-                    historyStep: state.historyStep
+                console.log('Connection state after setup (already open):', {
+                    isCollaborating: state.isCollaborating,
+                    isHosting: state.isHosting,
+                    dataConnectionOpen: dataConnection.open,
+                    peerId: dataConnection.peer
                 });
-            });
+                
+                // Send current canvas state to peer (only if we're the host)
+                if (state.isHosting) {
+                    const syncSent = sendToPeer({
+                        type: 'ANNOTATION_SYNC',
+                        elements: state.elements,
+                        historyStep: state.historyStep
+                    });
+                    console.log('ANNOTATION_SYNC sent (already open):', syncSent);
+                }
+            } else {
+                // Connection not open yet, wait for open event
+                dataConnection.on('open', () => {
+                    console.log('Data connection opened successfully, isHosting:', state.isHosting, 'peer:', dataConnection.peer);
+                    state.isCollaborating = true;
+                    updateConnectionStatus(true, state.shareCode);
+                    
+                    console.log('Connection state after open:', {
+                        isCollaborating: state.isCollaborating,
+                        isHosting: state.isHosting,
+                        dataConnectionOpen: dataConnection.open,
+                        peerId: dataConnection.peer
+                    });
+                    
+                    // Send current canvas state to peer (only if we're the host)
+                    if (state.isHosting) {
+                        const syncSent = sendToPeer({
+                            type: 'ANNOTATION_SYNC',
+                            elements: state.elements,
+                            historyStep: state.historyStep
+                        });
+                        console.log('ANNOTATION_SYNC sent:', syncSent);
+                    }
+                });
+            }
 
+            // Always set up data handlers (regardless of connection state)
             dataConnection.on('data', (data) => {
+                console.log('Data received on connection, isHosting:', state.isHosting, 'data type:', typeof data, 'data length:', data?.length);
                 try {
                     const message = JSON.parse(data);
+                    console.log('Parsed message successfully, type:', message.type, 'isHosting:', state.isHosting);
                     handlePeerMessage(message);
                 } catch (err) {
-                    console.error('Error parsing peer message:', err);
+                    console.error('Error parsing peer message:', err, 'raw data:', data);
                 }
             });
 
             dataConnection.on('close', () => {
-                console.log('Data connection closed');
+                console.log('Data connection closed, isHosting:', state.isHosting);
                 state.dataConnection = null;
                 state.isCollaborating = false;
                 updateConnectionStatus(false);
             });
 
             dataConnection.on('error', (err) => {
-                console.error('Data connection error:', err);
+                console.error('Data connection error, isHosting:', state.isHosting, err);
             });
         }
 
         function handlePeerMessage(message) {
+            console.log('Received peer message:', message.type, message);
             switch (message.type) {
                 case 'ANNOTATION_START':
                     // Peer started drawing
-                    state.peerElements.push({
+                    const newPeerElement = {
+                        id: message.id || `peer-${Date.now()}-${Math.random()}`,
                         type: message.tool,
                         color: message.color,
                         width: message.width,
                         points: [{ x: message.x, y: message.y }],
                         start: { x: message.x, y: message.y },
                         end: { x: message.x, y: message.y },
-                        isPeer: true
-                    });
+                        isPeer: true,
+                        isActive: true // Mark as active drawing
+                    };
+                    state.peerElements.push(newPeerElement);
+                    console.log('Added peer element:', newPeerElement.id, newPeerElement.type);
                     redrawCanvas();
                     break;
                 case 'ANNOTATION_MOVE':
-                    // Peer moved while drawing
-                    const lastPeerEl = state.peerElements[state.peerElements.length - 1];
-                    if (lastPeerEl && lastPeerEl.isPeer) {
-                        if (message.tool === 'pencil' || message.tool === 'eraser') {
-                            lastPeerEl.points.push({ x: message.x, y: message.y });
-                        } else {
-                            lastPeerEl.end = { x: message.x, y: message.y };
+                    // Peer moved while drawing - find the active element by ID or last active element
+                    let activePeerEl = null;
+                    if (message.id) {
+                        // Try to find by ID first
+                        activePeerEl = state.peerElements.find(el => el.id === message.id && el.isPeer);
+                    }
+                    // Fallback to last active element if ID not found
+                    if (!activePeerEl) {
+                        // Find last element that matches the tool type and is active
+                        for (let i = state.peerElements.length - 1; i >= 0; i--) {
+                            const el = state.peerElements[i];
+                            if (el.isPeer && el.isActive && el.type === message.tool) {
+                                activePeerEl = el;
+                                break;
+                            }
                         }
+                    }
+                    // Last resort: use the last peer element
+                    if (!activePeerEl) {
+                        const lastEl = state.peerElements[state.peerElements.length - 1];
+                        if (lastEl && lastEl.isPeer) {
+                            activePeerEl = lastEl;
+                        }
+                    }
+                    
+                    if (activePeerEl) {
+                        if (message.tool === 'pencil' || message.tool === 'eraser') {
+                            activePeerEl.points.push({ x: message.x, y: message.y });
+                        } else {
+                            activePeerEl.end = { x: message.x, y: message.y };
+                        }
+                        console.log('Updated peer element:', activePeerEl.id, 'points:', activePeerEl.points.length);
+                        redrawCanvas();
+                    } else {
+                        console.warn('ANNOTATION_MOVE: No active peer element found, creating new one');
+                        // Create new element as fallback
+                        state.peerElements.push({
+                            id: message.id || `peer-${Date.now()}-${Math.random()}`,
+                            type: message.tool,
+                            color: state.color, // Use default color if not provided
+                            width: state.strokeWidth, // Use default width if not provided
+                            points: [{ x: message.x, y: message.y }],
+                            start: { x: message.x, y: message.y },
+                            end: { x: message.x, y: message.y },
+                            isPeer: true,
+                            isActive: true
+                        });
                         redrawCanvas();
                     }
                     break;
                 case 'ANNOTATION_END':
-                    // Peer finished drawing
+                    // Peer finished drawing - mark active element as inactive
+                    if (message.id) {
+                        const element = state.peerElements.find(el => el.id === message.id && el.isPeer);
+                        if (element) {
+                            element.isActive = false;
+                            console.log('Marked peer element as inactive:', element.id);
+                        }
+                    } else {
+                        // Mark last active element as inactive
+                        for (let i = state.peerElements.length - 1; i >= 0; i--) {
+                            const el = state.peerElements[i];
+                            if (el.isPeer && el.isActive) {
+                                el.isActive = false;
+                                console.log('Marked last peer element as inactive:', el.id);
+                                break;
+                            }
+                        }
+                    }
                     redrawCanvas();
                     break;
                 case 'ANNOTATION_ELEMENT':
@@ -983,7 +1104,18 @@
                     break;
                 case 'ANNOTATION_SYNC':
                     // Full state sync
-                    state.peerElements = message.elements || [];
+                    console.log('ANNOTATION_SYNC received:', {
+                        elementsCount: message.elements?.length || 0,
+                        historyStep: message.historyStep
+                    });
+                    // Mark all synced elements as not active (they're complete)
+                    const syncedElements = (message.elements || []).map(el => ({
+                        ...el,
+                        isPeer: true,
+                        isActive: false
+                    }));
+                    state.peerElements = syncedElements;
+                    console.log('Synced peer elements:', state.peerElements.length);
                     redrawCanvas();
                     break;
             }
@@ -1100,7 +1232,9 @@
 
                 state.dataConnection.on('open', () => {
                     clearTimeout(connectionTimeout);
-                    console.log('Data connection opened successfully');
+                    console.log('Data connection opened successfully (peer side)');
+                    // Store share code for status display
+                    state.shareCode = code;
                     setupDataConnection(state.dataConnection);
                     
                     // Call for video stream after data connection is established
@@ -1485,13 +1619,17 @@
 
             state.isDrawing = true;
 
+            // Generate unique ID for this element
+            const elementId = `local-${Date.now()}-${Math.random()}`;
             const newElement = {
+                id: elementId,
                 type: state.tool,
                 color: state.tool === 'eraser' ? '#000000' : state.color,
                 width: state.strokeWidth,
                 points: [{ x, y }],
                 start: { x, y },
-                end: { x, y }
+                end: { x, y },
+                isActive: true
             };
 
             // Slice history for redo path
@@ -1501,14 +1639,16 @@
 
             // Send to peer
             if (state.isCollaborating) {
-                sendToPeer({
+                const sent = sendToPeer({
                     type: 'ANNOTATION_START',
+                    id: elementId,
                     tool: state.tool,
                     color: newElement.color,
                     width: newElement.width,
                     x: x,
                     y: y
                 });
+                console.log('Sent ANNOTATION_START:', elementId, 'success:', sent);
             }
 
             updateUI(); // For undo button state
@@ -1528,12 +1668,17 @@
 
             // Send to peer
             if (state.isCollaborating) {
-                sendToPeer({
+                const currentElement = state.elements[state.historyStep];
+                const sent = sendToPeer({
                     type: 'ANNOTATION_MOVE',
+                    id: currentElement ? currentElement.id : null,
                     tool: state.tool,
                     x: x,
                     y: y
                 });
+                if (!sent) {
+                    console.warn('Failed to send ANNOTATION_MOVE');
+                }
             }
 
             redrawCanvas();
@@ -1541,7 +1686,17 @@
 
         function handleEnd(e) {
             if (state.isDrawing && state.isCollaborating) {
-                sendToPeer({ type: 'ANNOTATION_END' });
+                const currentElement = state.elements[state.historyStep];
+                if (currentElement) {
+                    currentElement.isActive = false;
+                    sendToPeer({ 
+                        type: 'ANNOTATION_END',
+                        id: currentElement.id
+                    });
+                    console.log('Sent ANNOTATION_END:', currentElement.id);
+                } else {
+                    sendToPeer({ type: 'ANNOTATION_END' });
+                }
             }
             state.isDrawing = false;
         }
@@ -1664,10 +1819,15 @@
                 
                 // Send to peer
                 if (state.isCollaborating) {
-                    sendToPeer({
+                    // Generate ID for text element if not present
+                    if (!newElement.id) {
+                        newElement.id = `local-${Date.now()}-${Math.random()}`;
+                    }
+                    const sent = sendToPeer({
                         type: 'ANNOTATION_ELEMENT',
                         element: newElement
                     });
+                    console.log('Sent ANNOTATION_ELEMENT:', newElement.id, 'success:', sent);
                 }
                 
                 redrawCanvas();
