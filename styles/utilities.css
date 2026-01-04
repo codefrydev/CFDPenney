@@ -1,0 +1,136 @@
+/* ============================================
+   UTILITY CLASSES - Reusable styling patterns
+   ============================================ */
+
+/* Background Colors */
+.bg-primary {
+    background-color: var(--bg-primary);
+}
+
+.bg-secondary {
+    background-color: var(--bg-secondary);
+}
+
+.bg-tertiary {
+    background-color: var(--bg-tertiary);
+}
+
+/* Text Colors */
+.text-primary {
+    color: var(--text-primary);
+}
+
+.text-secondary {
+    color: var(--text-secondary);
+}
+
+.text-tertiary {
+    color: var(--text-tertiary);
+}
+
+.text-accent {
+    color: var(--accent-primary);
+}
+
+.text-error {
+    color: var(--status-error);
+}
+
+/* Border Colors */
+.border-primary {
+    border-color: var(--border-primary);
+}
+
+.border-secondary {
+    border-color: var(--border-secondary);
+}
+
+/* Divider/Line */
+.divider {
+    background-color: var(--border-primary);
+}
+
+.divider-vertical {
+    width: 1px;
+    background-color: var(--border-primary);
+}
+
+.divider-horizontal {
+    height: 1px;
+    background-color: var(--border-primary);
+}
+
+/* Button Styles */
+.btn-secondary {
+    background-color: var(--button-secondary-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--button-secondary-border);
+}
+
+.btn-secondary:hover {
+    background-color: var(--button-secondary-hover);
+}
+
+.btn-action {
+    color: var(--text-primary);
+    background-color: var(--bg-tertiary);
+}
+
+.btn-action:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.btn-clear {
+    color: var(--status-error);
+}
+
+.btn-clear:hover {
+    background-color: var(--bg-tertiary);
+}
+
+/* Input Styles */
+.input-theme {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-primary);
+    color: var(--text-primary);
+}
+
+.input-theme:focus {
+    outline: none;
+    border-color: var(--input-border-focus);
+}
+
+/* Status Badge */
+.status-badge {
+    background-color: var(--bg-tertiary);
+}
+
+.status-dot {
+    background-color: var(--text-secondary);
+}
+
+/* Modal Styles */
+.modal-bg {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-primary);
+}
+
+.modal-header-border {
+    border-color: var(--border-primary);
+}
+
+/* Gradient Backgrounds */
+.gradient-primary {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+}
+
+.gradient-button {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+}
+
+/* Stroke Indicator */
+.stroke-indicator {
+    height: 4px;
+    background-color: var(--text-primary);
+}
+
