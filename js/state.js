@@ -13,11 +13,13 @@ export const state = {
     textInput: null, // {x, y, text}
     // Peer collaboration state
     peer: null,
-    dataConnection: null,
-    call: null,
+    dataConnections: new Map(), // Map<peerId, DataConnection>
+    calls: new Map(), // Map<peerId, MediaConnection>
+    connectedPeers: new Map(), // Map<peerId, {id, connectedAt}>
     isCollaborating: false,
     isHosting: false,
     shareCode: null,
-    peerElements: [] // Elements from peer
+    peerElements: [], // Elements from peers (each element has peerId)
+    myPeerId: null // Our own peer ID for identification
 };
 

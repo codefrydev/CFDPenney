@@ -2,7 +2,7 @@
 import { state } from './state.js';
 import { getMousePos, getCanvas, redrawCanvas } from './canvas.js';
 import { setTool, confirmText, startText } from './tools.js';
-import { sendToPeer } from './collaboration.js';
+import { sendToAllPeers } from './collaboration.js';
 
 let canvas = null;
 
@@ -34,7 +34,7 @@ export function handleStart(e) {
             if (!newElement.id) {
                 newElement.id = `local-${Date.now()}-${Math.random()}`;
             }
-            sendToPeer({
+            sendToAllPeers({
                 type: 'ANNOTATION_ELEMENT',
                 element: newElement
             });
@@ -62,9 +62,9 @@ export function handleStart(e) {
     state.elements.push(newElement);
     state.historyStep++;
 
-    // Send to peer
+    // Send to all peers
     if (state.isCollaborating) {
-        sendToPeer({
+        sendToAllPeers({
             type: 'ANNOTATION_START',
             id: elementId,
             tool: state.tool,
@@ -89,10 +89,10 @@ export function handleMove(e) {
         currentElement.end = { x, y };
     }
 
-    // Send to peer
+    // Send to all peers
     if (state.isCollaborating) {
         const currentElement = state.elements[state.historyStep];
-        sendToPeer({
+        sendToAllPeers({
             type: 'ANNOTATION_MOVE',
             id: currentElement ? currentElement.id : null,
             tool: state.tool,
@@ -109,12 +109,12 @@ export function handleEnd(e) {
         const currentElement = state.elements[state.historyStep];
         if (currentElement) {
             currentElement.isActive = false;
-            sendToPeer({ 
+            sendToAllPeers({ 
                 type: 'ANNOTATION_END',
                 id: currentElement.id
             });
         } else {
-            sendToPeer({ type: 'ANNOTATION_END' });
+            sendToAllPeers({ type: 'ANNOTATION_END' });
         }
     }
     state.isDrawing = false;

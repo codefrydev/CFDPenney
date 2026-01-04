@@ -7,7 +7,7 @@ import { undo, redo, clearCanvas } from './history.js';
 import { startScreenShare, stopScreenShare, toggleVideoPause, setMode, initScreenShare } from './screenShare.js';
 import { handleImageUpload, initImageUpload } from './imageUpload.js';
 import { downloadSnapshot, initExport } from './export.js';
-import { stopCollaboration, sendToPeer } from './collaboration.js';
+import { stopCollaboration, sendToAllPeers } from './collaboration.js';
 import { showCollaborationModal } from './modal.js';
 
 let canvas = null;
@@ -240,7 +240,7 @@ function setupEventListeners() {
                     if (!newElement.id) {
                         newElement.id = `local-${Date.now()}-${Math.random()}`;
                     }
-                    sendToPeer({
+                    sendToAllPeers({
                         type: 'ANNOTATION_ELEMENT',
                         element: newElement
                     });

@@ -11,10 +11,33 @@ export function updateConnectionStatus(isConnected, shareCode = null, statusText
     
     if (!statusEl || !dotEl || !textEl || !btnEl) return;
     
+    // Get peer count
+    const peerCount = state.connectedPeers.size;
+    const peerList = Array.from(state.connectedPeers.keys());
+    
     if (isConnected) {
         statusEl.classList.remove('hidden');
         dotEl.style.backgroundColor = '#10b981'; // green
-        textEl.textContent = statusText || 'Connected';
+        
+        // Build status text with peer count
+        let displayText = statusText || 'Connected';
+        if (peerCount > 0) {
+            if (state.isHosting) {
+                displayText = `Connected (${peerCount} ${peerCount === 1 ? 'user' : 'users'})`;
+            } else {
+                displayText = 'Connected to host';
+            }
+        }
+        textEl.textContent = displayText;
+        
+        // Add tooltip with peer list if there are peers
+        if (peerCount > 0 && state.isHosting) {
+            const peerListText = peerList.map(id => id.substring(0, 8)).join(', ');
+            textEl.title = `Connected peers: ${peerListText}`;
+        } else {
+            textEl.title = '';
+        }
+        
         if (shareCode) {
             codeEl.textContent = shareCode;
             codeEl.classList.remove('hidden');
@@ -25,7 +48,8 @@ export function updateConnectionStatus(isConnected, shareCode = null, statusText
     } else if (shareCode) {
         statusEl.classList.remove('hidden');
         dotEl.style.backgroundColor = '#f59e0b'; // yellow
-        textEl.textContent = statusText || 'Waiting for peer...';
+        textEl.textContent = statusText || (state.isHosting ? 'Waiting for peers...' : 'Waiting for peer...');
+        textEl.title = '';
         codeEl.textContent = shareCode;
         codeEl.classList.remove('hidden');
         btnEl.innerHTML = '<i data-lucide="users" class="w-4 h-4 inline mr-1"></i><span class="hidden sm:inline">Stop</span>';
@@ -34,6 +58,7 @@ export function updateConnectionStatus(isConnected, shareCode = null, statusText
         statusEl.classList.remove('hidden');
         dotEl.style.backgroundColor = '#3b82f6'; // blue for connecting
         textEl.textContent = statusText;
+        textEl.title = '';
         codeEl.classList.add('hidden');
         btnEl.innerHTML = '<i data-lucide="users" class="w-4 h-4 inline mr-1"></i><span class="hidden sm:inline">Stop</span>';
     } else {
@@ -46,27 +71,64 @@ export function updateConnectionStatus(isConnected, shareCode = null, statusText
     if (window.lucide) lucide.createIcons();
 }
 
-export function sendToPeer(message) {
+// Send message to all connected peers
+export function sendToAllPeers(message) {
+    if (!state.isCollaborating) {
+        return 0;
+    }
+    
+    // Add our peer ID to the message for identification
+    if (state.myPeerId && !message.peerId) {
+        message.peerId = state.myPeerId;
+    }
+    
+    let sentCount = 0;
+    state.dataConnections.forEach((conn, peerId) => {
+        if (conn && conn.open) {
+            try {
+                const messageStr = JSON.stringify(message);
+                conn.send(messageStr);
+                sentCount++;
+            } catch (err) {
+                console.error(`Error sending to peer ${peerId}:`, err);
+            }
+        }
+    });
+    return sentCount;
+}
+
+// Send message to a specific peer (or all if peerId not provided)
+export function sendToPeer(message, peerId = null) {
     if (!state.isCollaborating) {
         return false;
     }
-    if (!state.dataConnection) {
-        return false;
+    
+    // Add our peer ID to the message for identification
+    if (state.myPeerId && !message.peerId) {
+        message.peerId = state.myPeerId;
     }
-    if (!state.dataConnection.open) {
+    
+    if (peerId) {
+        // Send to specific peer
+        const conn = state.dataConnections.get(peerId);
+        if (conn && conn.open) {
+            try {
+                const messageStr = JSON.stringify(message);
+                conn.send(messageStr);
+                return true;
+            } catch (err) {
+                console.error(`sendToPeer: Error sending to peer ${peerId}:`, err);
+                return false;
+            }
+        }
         return false;
-    }
-    try {
-        const messageStr = JSON.stringify(message);
-        state.dataConnection.send(messageStr);
-        return true;
-    } catch (err) {
-        console.error('sendToPeer: Error sending message:', message.type, err);
-        return false;
+    } else {
+        // If no peerId specified, broadcast to all (for backward compatibility)
+        return sendToAllPeers(message) > 0;
     }
 }
 
-function setupCallHandlers(call) {
+function setupCallHandlers(call, peerId) {
     if (!call) return;
 
     call.on('stream', (remoteStream) => {
@@ -75,17 +137,19 @@ function setupCallHandlers(call) {
     });
 
     call.on('close', () => {
-        if (state.call === call) {
-            state.call = null;
+        if (peerId && state.calls.has(peerId)) {
+            state.calls.delete(peerId);
         }
     });
 
     call.on('error', (err) => {
-        console.error('Call error:', err);
+        console.error(`Call error for peer ${peerId}:`, err);
     });
 }
 
-function handlePeerMessage(message) {
+function handlePeerMessage(message, peerId) {
+    const senderPeerId = message.peerId || peerId || 'unknown';
+    
     switch (message.type) {
         case 'ANNOTATION_START':
             // Peer started drawing
@@ -98,7 +162,8 @@ function handlePeerMessage(message) {
                 start: { x: message.x, y: message.y },
                 end: { x: message.x, y: message.y },
                 isPeer: true,
-                isActive: true // Mark as active drawing
+                isActive: true, // Mark as active drawing
+                peerId: senderPeerId // Track which peer created this
             };
             state.peerElements.push(newPeerElement);
             redrawCanvas();
@@ -147,7 +212,8 @@ function handlePeerMessage(message) {
                     start: { x: message.x, y: message.y },
                     end: { x: message.x, y: message.y },
                     isPeer: true,
-                    isActive: true
+                    isActive: true,
+                    peerId: senderPeerId
                 });
                 redrawCanvas();
             }
@@ -175,7 +241,8 @@ function handlePeerMessage(message) {
             // Peer added a complete element (e.g., text)
             state.peerElements.push({
                 ...message.element,
-                isPeer: true
+                isPeer: true,
+                peerId: senderPeerId
             });
             redrawCanvas();
             break;
@@ -190,7 +257,8 @@ function handlePeerMessage(message) {
             const syncedElements = (message.elements || []).map(el => ({
                 ...el,
                 isPeer: true,
-                isActive: false
+                isActive: false,
+                peerId: senderPeerId // Elements from sync are from the host
             }));
             state.peerElements = syncedElements;
             redrawCanvas();
@@ -198,10 +266,12 @@ function handlePeerMessage(message) {
     }
 }
 
-function setupDataConnection(dataConnection) {
+function setupDataConnection(dataConnection, peerId) {
     if (!dataConnection) {
         return;
     }
+
+    const connectionPeerId = peerId || dataConnection.peer;
 
     // If connection is already open (e.g., peer initiated connection), set state immediately
     // Check both 'open' property and readyState for reliability
@@ -210,13 +280,14 @@ function setupDataConnection(dataConnection) {
         state.isCollaborating = true;
         updateConnectionStatus(true, state.shareCode);
         
-        // Send current canvas state to peer (only if we're the host)
+        // Send current canvas state to new peer (only if we're the host)
+        // Use sendToPeer for targeted message to this specific peer
         if (state.isHosting) {
             sendToPeer({
                 type: 'ANNOTATION_SYNC',
                 elements: state.elements,
                 historyStep: state.historyStep
-            });
+            }, connectionPeerId);
         }
     } else {
         // Connection not open yet, wait for open event
@@ -224,13 +295,14 @@ function setupDataConnection(dataConnection) {
             state.isCollaborating = true;
             updateConnectionStatus(true, state.shareCode);
             
-            // Send current canvas state to peer (only if we're the host)
+            // Send current canvas state to new peer (only if we're the host)
+            // Use sendToPeer for targeted message to this specific peer
             if (state.isHosting) {
                 sendToPeer({
                     type: 'ANNOTATION_SYNC',
                     elements: state.elements,
                     historyStep: state.historyStep
-                });
+                }, connectionPeerId);
             }
         });
     }
@@ -239,20 +311,32 @@ function setupDataConnection(dataConnection) {
     dataConnection.on('data', (data) => {
         try {
             const message = JSON.parse(data);
-            handlePeerMessage(message);
+            handlePeerMessage(message, connectionPeerId);
         } catch (err) {
             console.error('Error parsing peer message:', err, 'raw data:', data);
         }
     });
 
     dataConnection.on('close', () => {
-        state.dataConnection = null;
-        state.isCollaborating = false;
-        updateConnectionStatus(false);
+        // Remove peer from all Maps
+        if (connectionPeerId) {
+            state.dataConnections.delete(connectionPeerId);
+            state.calls.delete(connectionPeerId);
+            state.connectedPeers.delete(connectionPeerId);
+        }
+        
+        // Update collaboration status - check if any connections remain
+        if (state.dataConnections.size === 0) {
+            state.isCollaborating = false;
+            updateConnectionStatus(false);
+        } else {
+            // Still have other connections, just update status
+            updateConnectionStatus(true, state.shareCode);
+        }
     });
 
     dataConnection.on('error', (err) => {
-        console.error('Data connection error, isHosting:', state.isHosting, err);
+        console.error(`Data connection error for peer ${connectionPeerId}, isHosting:`, state.isHosting, err);
     });
 }
 
@@ -270,10 +354,11 @@ function initiateVideoCall(code) {
         }
         
         if (streamToShare && state.peer) {
-            state.call = state.peer.call(code, streamToShare);
+            const call = state.peer.call(code, streamToShare);
             
-            if (state.call) {
-                setupCallHandlers(state.call);
+            if (call) {
+                state.calls.set(code, call);
+                setupCallHandlers(call, code);
             }
         }
     } catch (err) {
@@ -287,16 +372,24 @@ function attemptConnection(code, retryCount = 0) {
 
     try {
         // Connect data channel
-        state.dataConnection = state.peer.connect(code, {
+        const dataConnection = state.peer.connect(code, {
             reliable: true
+        });
+        
+        // Store connection in Map (for joiners, there's only one connection)
+        state.dataConnections.set(code, dataConnection);
+        state.connectedPeers.set(code, {
+            id: code,
+            connectedAt: Date.now()
         });
 
         // Set connection timeout
         const connectionTimeout = setTimeout(() => {
-            if (!state.isCollaborating && state.dataConnection) {
-                if (state.dataConnection) {
-                    state.dataConnection.close();
-                    state.dataConnection = null;
+            if (!state.isCollaborating && dataConnection) {
+                if (dataConnection) {
+                    dataConnection.close();
+                    state.dataConnections.delete(code);
+                    state.connectedPeers.delete(code);
                 }
                 
                 if (retryCount < maxRetries) {
@@ -308,11 +401,11 @@ function attemptConnection(code, retryCount = 0) {
             }
         }, 10000); // 10 second timeout
 
-        state.dataConnection.on('open', () => {
+        dataConnection.on('open', () => {
             clearTimeout(connectionTimeout);
             // Store share code for status display
             state.shareCode = code;
-            setupDataConnection(state.dataConnection);
+            setupDataConnection(dataConnection, code);
             
             // Call for video stream after data connection is established
             setTimeout(() => {
@@ -320,9 +413,12 @@ function attemptConnection(code, retryCount = 0) {
             }, 500);
         });
 
-        state.dataConnection.on('error', (err) => {
+        dataConnection.on('error', (err) => {
             clearTimeout(connectionTimeout);
             console.error('Data connection error:', err);
+            
+            state.dataConnections.delete(code);
+            state.connectedPeers.delete(code);
             
             if (retryCount < maxRetries) {
                 setTimeout(() => attemptConnection(code, retryCount + 1), retryDelay);
@@ -332,8 +428,11 @@ function attemptConnection(code, retryCount = 0) {
             }
         });
 
-        state.dataConnection.on('close', () => {
+        dataConnection.on('close', () => {
             clearTimeout(connectionTimeout);
+            state.dataConnections.delete(code);
+            state.connectedPeers.delete(code);
+            
             if (!state.isCollaborating) {
                 if (retryCount < maxRetries) {
                     setTimeout(() => attemptConnection(code, retryCount + 1), retryDelay);
@@ -381,22 +480,38 @@ export async function startCollaboration() {
         updateConnectionStatus(false, shareCode);
 
         state.peer.on('open', (id) => {
+            // Store our peer ID
+            state.myPeerId = id;
             // Don't set isCollaborating here - wait for data connection to open
             // This ensures we only mark as collaborating when actually connected
         });
 
         state.peer.on('connection', (dataConnection) => {
-            if (state.dataConnection) {
+            const peerId = dataConnection.peer;
+            
+            // Check if we already have a connection from this peer
+            if (state.dataConnections.has(peerId)) {
+                console.log(`Connection from peer ${peerId} already exists, closing duplicate`);
                 dataConnection.close();
                 return;
             }
-            state.dataConnection = dataConnection;
-            setupDataConnection(dataConnection);
+            
+            // Store the connection
+            state.dataConnections.set(peerId, dataConnection);
+            state.connectedPeers.set(peerId, {
+                id: peerId,
+                connectedAt: Date.now()
+            });
+            
+            setupDataConnection(dataConnection, peerId);
         });
 
         state.peer.on('call', (incomingCall) => {
-            if (state.call) {
-                // If we already have a call, close the new one
+            const peerId = incomingCall.peer;
+            
+            // Check if we already have a call from this peer
+            if (state.calls.has(peerId)) {
+                console.log(`Call from peer ${peerId} already exists, closing duplicate`);
                 incomingCall.close();
                 return;
             }
@@ -415,8 +530,8 @@ export async function startCollaboration() {
             
             if (streamToShare) {
                 incomingCall.answer(streamToShare);
-                state.call = incomingCall;
-                setupCallHandlers(incomingCall);
+                state.calls.set(peerId, incomingCall);
+                setupCallHandlers(incomingCall, peerId);
             } else {
                 incomingCall.close();
             }
@@ -472,6 +587,8 @@ export async function joinCollaborationWithCode(code) {
         let connectionAttempted = false;
 
         state.peer.on('open', (id) => {
+            // Store our peer ID
+            state.myPeerId = id;
             // Wait a bit to ensure peer is fully ready
             setTimeout(() => {
                 if (connectionAttempted) return;
@@ -517,14 +634,25 @@ export async function joinCollaborationWithCode(code) {
 }
 
 export function stopCollaboration() {
-    if (state.dataConnection) {
-        state.dataConnection.close();
-        state.dataConnection = null;
-    }
-    if (state.call) {
-        state.call.close();
-        state.call = null;
-    }
+    // Close all data connections
+    state.dataConnections.forEach((conn, peerId) => {
+        if (conn) {
+            conn.close();
+        }
+    });
+    state.dataConnections.clear();
+    
+    // Close all calls
+    state.calls.forEach((call, peerId) => {
+        if (call) {
+            call.close();
+        }
+    });
+    state.calls.clear();
+    
+    // Clear peer tracking
+    state.connectedPeers.clear();
+    
     if (state.peer) {
         state.peer.destroy();
         state.peer = null;
@@ -533,6 +661,7 @@ export function stopCollaboration() {
     state.isHosting = false;
     state.shareCode = null;
     state.peerElements = [];
+    state.myPeerId = null;
     updateConnectionStatus(false);
     redrawCanvas();
 }
@@ -541,47 +670,55 @@ export function stopCollaboration() {
 export function shareScreenWithPeers(stream) {
     if (!state.isCollaborating || !stream) return;
 
-    // If we're the host and have an active call, replace the track
-    if (state.isHosting && state.call && state.call.peerConnection) {
-        const videoTrack = stream.getVideoTracks()[0];
-        if (videoTrack) {
-            const senders = state.call.peerConnection.getSenders();
-            const videoSender = senders.find(s => 
-                s.track && s.track.kind === 'video'
-            );
-            
-            if (videoSender) {
-                videoSender.replaceTrack(videoTrack).then(() => {
-                }).catch(err => {
-                    console.error('Error replacing track:', err);
-                    // If replace fails, close and recreate the call
-                    recreateCallWithStream(stream);
-                });
-            } else {
-                // No video sender found, recreate call
-                recreateCallWithStream(stream);
+    const videoTrack = stream.getVideoTracks()[0];
+    if (!videoTrack) return;
+
+    // If we're the host, broadcast to all connected peers
+    if (state.isHosting) {
+        state.dataConnections.forEach((conn, peerId) => {
+            if (conn && conn.open) {
+                const existingCall = state.calls.get(peerId);
+                
+                if (existingCall && existingCall.peerConnection) {
+                    // Update existing call
+                    const senders = existingCall.peerConnection.getSenders();
+                    const videoSender = senders.find(s => 
+                        s.track && s.track.kind === 'video'
+                    );
+                    
+                    if (videoSender) {
+                        videoSender.replaceTrack(videoTrack).catch(err => {
+                            console.error(`Error replacing track for peer ${peerId}:`, err);
+                            // If replace fails, recreate the call
+                            recreateCallWithStream(stream, peerId);
+                        });
+                    } else {
+                        // No video sender found, recreate call
+                        recreateCallWithStream(stream, peerId);
+                    }
+                } else {
+                    // No call exists, create new one
+                    if (state.peer) {
+                        const call = state.peer.call(peerId, stream);
+                        if (call) {
+                            state.calls.set(peerId, call);
+                            setupCallHandlers(call, peerId);
+                        }
+                    }
+                }
             }
-        }
+        });
     } 
-    // If we're the host and have data connection but no call, initiate call
-    else if (state.isHosting && state.dataConnection && !state.call && state.dataConnection.open) {
-        const peerId = state.dataConnection.peer;
-        if (peerId && state.peer) {
-            state.call = state.peer.call(peerId, stream);
-            setupCallHandlers(state.call);
-        }
-    }
-    // If we're a joiner, we should send our stream to the host
-    else if (!state.isHosting && state.dataConnection && state.dataConnection.open) {
-        const peerId = state.dataConnection.peer;
-        if (peerId && state.peer && !state.call) {
-            state.call = state.peer.call(peerId, stream);
-            setupCallHandlers(state.call);
-        } else if (state.call && state.call.peerConnection) {
-            // Update existing call
-            const videoTrack = stream.getVideoTracks()[0];
-            if (videoTrack) {
-                const senders = state.call.peerConnection.getSenders();
+    // If we're a joiner, send our stream to the host
+    else {
+        // Joiners only have one connection (to the host)
+        const hostPeerId = Array.from(state.dataConnections.keys())[0];
+        if (hostPeerId && state.dataConnections.get(hostPeerId)?.open) {
+            const existingCall = state.calls.get(hostPeerId);
+            
+            if (existingCall && existingCall.peerConnection) {
+                // Update existing call
+                const senders = existingCall.peerConnection.getSenders();
                 const videoSender = senders.find(s => 
                     s.track && s.track.kind === 'video'
                 );
@@ -590,26 +727,34 @@ export function shareScreenWithPeers(stream) {
                         console.error('Error replacing track as joiner:', err);
                     });
                 }
+            } else if (state.peer && !existingCall) {
+                // Create new call to host
+                const call = state.peer.call(hostPeerId, stream);
+                if (call) {
+                    state.calls.set(hostPeerId, call);
+                    setupCallHandlers(call, hostPeerId);
+                }
             }
         }
     }
 }
 
-function recreateCallWithStream(stream) {
-    if (!state.isHosting || !state.dataConnection || !state.dataConnection.open) return;
+function recreateCallWithStream(stream, peerId) {
+    if (!state.isHosting || !peerId || !state.peer) return;
     
-    const peerId = state.dataConnection.peer;
-    if (!peerId || !state.peer) return;
-
-    // Close existing call
-    if (state.call) {
-        state.call.close();
-        state.call = null;
+    // Close existing call for this peer
+    const existingCall = state.calls.get(peerId);
+    if (existingCall) {
+        existingCall.close();
+        state.calls.delete(peerId);
     }
 
     // Create new call with screen stream
-    state.call = state.peer.call(peerId, stream);
-    setupCallHandlers(state.call);
+    const call = state.peer.call(peerId, stream);
+    if (call) {
+        state.calls.set(peerId, call);
+        setupCallHandlers(call, peerId);
+    }
 }
 
 // Make shareScreenWithPeers available globally for screenShare module

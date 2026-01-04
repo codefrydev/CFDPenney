@@ -1,7 +1,7 @@
 // History Management
 import { state } from './state.js';
 import { redrawCanvas } from './canvas.js';
-import { sendToPeer } from './collaboration.js';
+import { sendToAllPeers } from './collaboration.js';
 
 export function undo() {
     if (state.historyStep >= 0) {
@@ -21,9 +21,9 @@ export function clearCanvas() {
     state.elements = [];
     state.historyStep = -1;
     
-    // Send to peer
+    // Send to all peers
     if (state.isCollaborating) {
-        sendToPeer({ type: 'ANNOTATION_CLEAR' });
+        sendToAllPeers({ type: 'ANNOTATION_CLEAR' });
     }
     
     redrawCanvas();
