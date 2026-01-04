@@ -793,24 +793,17 @@
 
         function sendToPeer(message) {
             if (!state.isCollaborating) {
-                console.warn('sendToPeer: Not collaborating, message not sent:', message.type);
                 return false;
             }
             if (!state.dataConnection) {
-                console.warn('sendToPeer: No data connection, message not sent:', message.type);
                 return false;
             }
             if (!state.dataConnection.open) {
-                console.warn('sendToPeer: Data connection not open, message not sent:', message.type, 'connection state:', {
-                    open: state.dataConnection.open,
-                    readyState: state.dataConnection.readyState
-                });
                 return false;
             }
             try {
                 const messageStr = JSON.stringify(message);
                 state.dataConnection.send(messageStr);
-                console.log('sendToPeer: Successfully sent:', message.type, 'to peer:', state.dataConnection.peer);
                 return true;
             } catch (err) {
                 console.error('sendToPeer: Error sending message:', message.type, err);
@@ -847,13 +840,11 @@
                 updateConnectionStatus(false, shareCode);
 
                 state.peer.on('open', (id) => {
-                    console.log('Host peer opened:', id);
                     // Don't set isCollaborating here - wait for data connection to open
                     // This ensures we only mark as collaborating when actually connected
                 });
 
                 state.peer.on('connection', (dataConnection) => {
-                    console.log('Incoming data connection');
                     if (state.dataConnection) {
                         dataConnection.close();
                         return;
@@ -863,7 +854,6 @@
                 });
 
                 state.peer.on('call', (incomingCall) => {
-                    console.log('Incoming call from peer');
                     if (state.call) {
                         // If we already have a call, close the new one
                         incomingCall.close();
@@ -874,14 +864,12 @@
                     let streamToShare = null;
                     if (state.mode === 'screen' && state.stream) {
                         streamToShare = state.stream;
-                        console.log('Answering call with screen share');
                     } else {
                         // Create dummy stream for non-screen modes
                         const canvas = document.createElement('canvas');
                         canvas.width = 1;
                         canvas.height = 1;
                         streamToShare = canvas.captureStream ? canvas.captureStream(1) : null;
-                        console.log('Answering call with dummy stream');
                     }
                     
                     if (streamToShare) {
@@ -889,7 +877,6 @@
                         state.call = incomingCall;
                         setupCallHandlers(incomingCall);
                     } else {
-                        console.warn('No stream available to answer call');
                         incomingCall.close();
                     }
                 });
@@ -900,12 +887,8 @@
                     // Handle specific errors
                     if (err.type === 'peer-unavailable') {
                         // This is expected if someone tries to connect before we're ready
-                        console.log('Peer unavailable (expected during startup)');
                     } else if (err.type === 'network') {
                         alert('Network error. Please check your internet connection.');
-                    } else {
-                        // Log but don't alert for minor errors
-                        console.warn('Peer error (non-critical):', err.type || err.message);
                     }
                 });
 
@@ -917,68 +900,45 @@
 
         function setupDataConnection(dataConnection) {
             if (!dataConnection) {
-                console.warn('setupDataConnection: No data connection provided');
                 return;
             }
-
-            console.log('setupDataConnection: Setting up data connection, isHosting:', state.isHosting, 'peer:', dataConnection.peer, 'already open:', dataConnection.open, 'readyState:', dataConnection.readyState);
 
             // If connection is already open (e.g., peer initiated connection), set state immediately
             // Check both 'open' property and readyState for reliability
             const isAlreadyOpen = dataConnection.open || dataConnection.readyState === 'open';
             if (isAlreadyOpen) {
-                console.log('Data connection already open, setting up immediately, isHosting:', state.isHosting);
                 state.isCollaborating = true;
                 updateConnectionStatus(true, state.shareCode);
                 
-                console.log('Connection state after setup (already open):', {
-                    isCollaborating: state.isCollaborating,
-                    isHosting: state.isHosting,
-                    dataConnectionOpen: dataConnection.open,
-                    peerId: dataConnection.peer
-                });
-                
                 // Send current canvas state to peer (only if we're the host)
                 if (state.isHosting) {
-                    const syncSent = sendToPeer({
+                    sendToPeer({
                         type: 'ANNOTATION_SYNC',
                         elements: state.elements,
                         historyStep: state.historyStep
                     });
-                    console.log('ANNOTATION_SYNC sent (already open):', syncSent);
                 }
             } else {
                 // Connection not open yet, wait for open event
                 dataConnection.on('open', () => {
-                    console.log('Data connection opened successfully, isHosting:', state.isHosting, 'peer:', dataConnection.peer);
                     state.isCollaborating = true;
                     updateConnectionStatus(true, state.shareCode);
                     
-                    console.log('Connection state after open:', {
-                        isCollaborating: state.isCollaborating,
-                        isHosting: state.isHosting,
-                        dataConnectionOpen: dataConnection.open,
-                        peerId: dataConnection.peer
-                    });
-                    
                     // Send current canvas state to peer (only if we're the host)
                     if (state.isHosting) {
-                        const syncSent = sendToPeer({
+                        sendToPeer({
                             type: 'ANNOTATION_SYNC',
                             elements: state.elements,
                             historyStep: state.historyStep
                         });
-                        console.log('ANNOTATION_SYNC sent:', syncSent);
                     }
                 });
             }
 
             // Always set up data handlers (regardless of connection state)
             dataConnection.on('data', (data) => {
-                console.log('Data received on connection, isHosting:', state.isHosting, 'data type:', typeof data, 'data length:', data?.length);
                 try {
                     const message = JSON.parse(data);
-                    console.log('Parsed message successfully, type:', message.type, 'isHosting:', state.isHosting);
                     handlePeerMessage(message);
                 } catch (err) {
                     console.error('Error parsing peer message:', err, 'raw data:', data);
@@ -986,7 +946,6 @@
             });
 
             dataConnection.on('close', () => {
-                console.log('Data connection closed, isHosting:', state.isHosting);
                 state.dataConnection = null;
                 state.isCollaborating = false;
                 updateConnectionStatus(false);
@@ -998,7 +957,6 @@
         }
 
         function handlePeerMessage(message) {
-            console.log('Received peer message:', message.type, message);
             switch (message.type) {
                 case 'ANNOTATION_START':
                     // Peer started drawing
@@ -1014,7 +972,6 @@
                         isActive: true // Mark as active drawing
                     };
                     state.peerElements.push(newPeerElement);
-                    console.log('Added peer element:', newPeerElement.id, newPeerElement.type);
                     redrawCanvas();
                     break;
                 case 'ANNOTATION_MOVE':
@@ -1049,10 +1006,8 @@
                         } else {
                             activePeerEl.end = { x: message.x, y: message.y };
                         }
-                        console.log('Updated peer element:', activePeerEl.id, 'points:', activePeerEl.points.length);
                         redrawCanvas();
                     } else {
-                        console.warn('ANNOTATION_MOVE: No active peer element found, creating new one');
                         // Create new element as fallback
                         state.peerElements.push({
                             id: message.id || `peer-${Date.now()}-${Math.random()}`,
@@ -1074,7 +1029,6 @@
                         const element = state.peerElements.find(el => el.id === message.id && el.isPeer);
                         if (element) {
                             element.isActive = false;
-                            console.log('Marked peer element as inactive:', element.id);
                         }
                     } else {
                         // Mark last active element as inactive
@@ -1082,7 +1036,6 @@
                             const el = state.peerElements[i];
                             if (el.isPeer && el.isActive) {
                                 el.isActive = false;
-                                console.log('Marked last peer element as inactive:', el.id);
                                 break;
                             }
                         }
@@ -1104,10 +1057,6 @@
                     break;
                 case 'ANNOTATION_SYNC':
                     // Full state sync
-                    console.log('ANNOTATION_SYNC received:', {
-                        elementsCount: message.elements?.length || 0,
-                        historyStep: message.historyStep
-                    });
                     // Mark all synced elements as not active (they're complete)
                     const syncedElements = (message.elements || []).map(el => ({
                         ...el,
@@ -1115,7 +1064,6 @@
                         isActive: false
                     }));
                     state.peerElements = syncedElements;
-                    console.log('Synced peer elements:', state.peerElements.length);
                     redrawCanvas();
                     break;
             }
@@ -1154,8 +1102,6 @@
                 let connectionAttempted = false;
 
                 state.peer.on('open', (id) => {
-                    console.log('Joiner peer opened:', id);
-                    
                     // Wait a bit to ensure peer is fully ready
                     setTimeout(() => {
                         if (connectionAttempted) return;
@@ -1206,7 +1152,6 @@
 
             try {
                 // Connect data channel
-                console.log('Attempting to connect to peer:', code);
                 state.dataConnection = state.peer.connect(code, {
                     reliable: true
                 });
@@ -1214,14 +1159,12 @@
                 // Set connection timeout
                 const connectionTimeout = setTimeout(() => {
                     if (!state.isCollaborating && state.dataConnection) {
-                        console.warn('Connection timeout, retrying...');
                         if (state.dataConnection) {
                             state.dataConnection.close();
                             state.dataConnection = null;
                         }
                         
                         if (retryCount < maxRetries) {
-                            console.log(`Retrying connection (${retryCount + 1}/${maxRetries})...`);
                             setTimeout(() => attemptConnection(code, retryCount + 1), retryDelay);
                         } else {
                             alert('Could not connect to host after multiple attempts. Please check the share code and try again.');
@@ -1232,7 +1175,6 @@
 
                 state.dataConnection.on('open', () => {
                     clearTimeout(connectionTimeout);
-                    console.log('Data connection opened successfully (peer side)');
                     // Store share code for status display
                     state.shareCode = code;
                     setupDataConnection(state.dataConnection);
@@ -1248,7 +1190,6 @@
                     console.error('Data connection error:', err);
                     
                     if (retryCount < maxRetries) {
-                        console.log(`Retrying connection after error (${retryCount + 1}/${maxRetries})...`);
                         setTimeout(() => attemptConnection(code, retryCount + 1), retryDelay);
                     } else {
                         alert('Failed to establish connection. Please check the share code and try again.');
@@ -1259,7 +1200,6 @@
                 state.dataConnection.on('close', () => {
                     clearTimeout(connectionTimeout);
                     if (!state.isCollaborating) {
-                        console.log('Data connection closed before establishing');
                         if (retryCount < maxRetries) {
                             setTimeout(() => attemptConnection(code, retryCount + 1), retryDelay);
                         }
@@ -1291,24 +1231,13 @@
                 }
                 
                 if (streamToShare && state.peer) {
-                    console.log('Initiating video call to:', code);
                     state.call = state.peer.call(code, streamToShare);
                     
                     if (state.call) {
                         setupCallHandlers(state.call);
-                        
-                        state.call.on('stream', (remoteStream) => {
-                            console.log('Received remote stream from host');
-                        });
-                        
-                        state.call.on('error', (err) => {
-                            console.warn('Call error (non-critical):', err);
-                            // Call errors are often non-critical if data connection works
-                        });
                     }
                 }
             } catch (err) {
-                console.warn('Error initiating video call (non-critical):', err);
                 // Video call failure is not critical if data connection works
             }
         }
@@ -1648,7 +1577,6 @@
                     x: x,
                     y: y
                 });
-                console.log('Sent ANNOTATION_START:', elementId, 'success:', sent);
             }
 
             updateUI(); // For undo button state
@@ -1676,9 +1604,6 @@
                     x: x,
                     y: y
                 });
-                if (!sent) {
-                    console.warn('Failed to send ANNOTATION_MOVE');
-                }
             }
 
             redrawCanvas();
@@ -1693,7 +1618,6 @@
                         type: 'ANNOTATION_END',
                         id: currentElement.id
                     });
-                    console.log('Sent ANNOTATION_END:', currentElement.id);
                 } else {
                     sendToPeer({ type: 'ANNOTATION_END' });
                 }
@@ -1823,11 +1747,10 @@
                     if (!newElement.id) {
                         newElement.id = `local-${Date.now()}-${Math.random()}`;
                     }
-                    const sent = sendToPeer({
+                    sendToPeer({
                         type: 'ANNOTATION_ELEMENT',
                         element: newElement
                     });
-                    console.log('Sent ANNOTATION_ELEMENT:', newElement.id, 'success:', sent);
                 }
                 
                 redrawCanvas();
@@ -1924,7 +1847,6 @@
                     
                     if (videoSender) {
                         videoSender.replaceTrack(videoTrack).then(() => {
-                            console.log('Screen share track replaced for existing call');
                         }).catch(err => {
                             console.error('Error replacing track:', err);
                             // If replace fails, close and recreate the call
@@ -1940,7 +1862,6 @@
             else if (state.isHosting && state.dataConnection && !state.call && state.dataConnection.open) {
                 const peerId = state.dataConnection.peer;
                 if (peerId && state.peer) {
-                    console.log('Initiating call with screen share to peer:', peerId);
                     state.call = state.peer.call(peerId, stream);
                     setupCallHandlers(state.call);
                 }
@@ -1949,7 +1870,6 @@
             else if (!state.isHosting && state.dataConnection && state.dataConnection.open) {
                 const peerId = state.dataConnection.peer;
                 if (peerId && state.peer && !state.call) {
-                    console.log('Initiating call with screen share to host:', peerId);
                     state.call = state.peer.call(peerId, stream);
                     setupCallHandlers(state.call);
                 } else if (state.call && state.call.peerConnection) {
@@ -1983,7 +1903,6 @@
             }
 
             // Create new call with screen stream
-            console.log('Recreating call with screen share');
             state.call = state.peer.call(peerId, stream);
             setupCallHandlers(state.call);
         }
@@ -1992,13 +1911,11 @@
             if (!call) return;
 
             call.on('stream', (remoteStream) => {
-                console.log('Received remote stream from peer');
                 // Handle remote stream - could display it in a separate video element
                 // For now, we'll just log it since the main screen share is shown locally
             });
 
             call.on('close', () => {
-                console.log('Call closed');
                 if (state.call === call) {
                     state.call = null;
                 }
