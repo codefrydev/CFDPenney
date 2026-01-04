@@ -10,6 +10,9 @@ import { downloadSnapshot, initExport } from './export.js';
 import { stopCollaboration, sendToAllPeers } from './collaboration.js';
 import { showCollaborationModal } from './modal.js';
 
+// Make updateUI available globally for collaboration module
+window.updateUI = null;
+
 let canvas = null;
 let container = null;
 let toolContainer = null;
@@ -66,10 +69,12 @@ export function initUI() {
     renderColors();
     setupEventListeners();
     resizeCanvas();
-    updateUI();
+    updateUI(); // This will set window.updateUI
 }
 
 export function updateUI() {
+    // Store reference globally for collaboration module
+    window.updateUI = updateUI;
     // Update Tool Buttons
     document.querySelectorAll('.tool-btn').forEach(btn => {
         if (btn.dataset.tool === state.tool) {
@@ -215,7 +220,15 @@ function setupEventListeners() {
     const fileInput = document.getElementById('file-input');
     
     if (btnModeBoard) btnModeBoard.addEventListener('click', () => { setMode('whiteboard'); updateUI(); });
-    if (btnModeScreen) btnModeScreen.addEventListener('click', startScreenShare);
+    if (btnModeScreen) btnModeScreen.addEventListener('click', async () => { 
+        try {
+            await startScreenShare(); 
+        } catch (err) {
+            console.error('Error in startScreenShare:', err);
+        } finally {
+            updateUI(); 
+        }
+    });
     if (btnModeImage && fileInput) btnModeImage.addEventListener('click', () => fileInput.click());
 
     // Video Controls

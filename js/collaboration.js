@@ -132,13 +132,153 @@ function setupCallHandlers(call, peerId) {
     if (!call) return;
 
     call.on('stream', (remoteStream) => {
-        // Handle remote stream - could display it in a separate video element
-        // For now, we'll just log it since the main screen share is shown locally
+        console.log(`Received remote stream from peer ${peerId}`, remoteStream);
+        
+        // Check if this is a real video stream (not a dummy stream)
+        const videoTrack = remoteStream.getVideoTracks()[0];
+        if (!videoTrack) {
+            console.warn(`No video track in stream from peer ${peerId}`);
+            return;
+        }
+        
+        // Check if it's a dummy stream (1x1 canvas stream)
+        // Dummy streams are used as placeholders when screen sharing is not active
+        let isDummyStream = false;
+        try {
+            const settings = videoTrack.getSettings ? videoTrack.getSettings() : null;
+            const constraints = videoTrack.getConstraints ? videoTrack.getConstraints() : null;
+            
+            // Check dimensions - dummy streams are typically 1x1
+            if (settings && settings.width === 1 && settings.height === 1) {
+                isDummyStream = true;
+            } else if (constraints && constraints.width === 1 && constraints.height === 1) {
+                isDummyStream = true;
+            }
+            
+            // Also check track label - dummy streams often have specific labels
+            if (videoTrack.label && (videoTrack.label.includes('canvas') || videoTrack.label.includes('dummy'))) {
+                isDummyStream = true;
+            }
+        } catch (e) {
+            // If we can't check, assume it's a real stream
+            console.warn('Could not check if stream is dummy:', e);
+        }
+        
+        if (isDummyStream) {
+            console.log(`Dummy stream received from peer ${peerId}, ignoring`);
+            return;
+        }
+        
+        // Display the remote stream in the video element
+        const videoElem = document.getElementById('screen-video');
+        const videoPlaceholder = document.getElementById('screen-placeholder');
+        const videoControls = document.getElementById('screen-controls');
+        const bgScreen = document.getElementById('bg-screen');
+        
+        if (videoElem && remoteStream) {
+            console.log(`Displaying remote stream from peer ${peerId} in video element`);
+            
+            // Set the remote stream to the video element
+            videoElem.srcObject = remoteStream;
+            
+            // Ensure video plays
+            videoElem.play().catch(err => {
+                console.warn('Error playing remote stream:', err);
+            });
+            
+            // Hide placeholder and show video
+            if (videoPlaceholder) {
+                videoPlaceholder.classList.add('hidden');
+            }
+            
+            // Show controls (but hide stop button for remote streams)
+            if (videoControls) {
+                videoControls.classList.remove('hidden');
+                // Hide stop button for remote streams (peers can't stop host's share)
+                const stopBtn = document.getElementById('btn-stop-share');
+                if (stopBtn && !state.isHosting) {
+                    stopBtn.style.display = 'none';
+                } else if (stopBtn && state.isHosting) {
+                    stopBtn.style.display = '';
+                }
+            }
+            
+            // Switch to screen mode if not already
+            if (state.mode !== 'screen') {
+                // Import setMode dynamically to avoid circular dependency
+                import('./screenShare.js').then(module => {
+                    module.setMode('screen');
+                    // Update UI if available
+                    if (window.updateUI) {
+                        window.updateUI();
+                    }
+                });
+            }
+            
+            // Show the screen background layer
+            if (bgScreen) {
+                bgScreen.classList.remove('hidden');
+            }
+            
+            // Update UI to reflect screen mode
+            if (window.updateUI) {
+                window.updateUI();
+            }
+            
+            // Track when the remote stream ends
+            videoTrack.onended = () => {
+                console.log(`Remote stream from peer ${peerId} ended`);
+                // Clear the video element
+                if (videoElem) {
+                    videoElem.srcObject = null;
+                }
+                // Show placeholder again
+                if (videoPlaceholder) {
+                    videoPlaceholder.classList.remove('hidden');
+                }
+                // Hide controls
+                if (videoControls) {
+                    videoControls.classList.add('hidden');
+                }
+                // Switch back to whiteboard mode if we're not sharing our own screen
+                if (!state.stream || state.mode === 'screen') {
+                    import('./screenShare.js').then(module => {
+                        if (!state.stream) {
+                            module.setMode('whiteboard');
+                            if (window.updateUI) {
+                                window.updateUI();
+                            }
+                        }
+                    });
+                }
+            };
+        } else {
+            console.error('Video element not found or no remote stream');
+        }
     });
 
     call.on('close', () => {
+        console.log(`Call closed for peer ${peerId}`);
         if (peerId && state.calls.has(peerId)) {
             state.calls.delete(peerId);
+        }
+        
+        // If this was the only call and we're viewing a remote stream, clear it
+        if (state.calls.size === 0) {
+            const videoElem = document.getElementById('screen-video');
+            const videoPlaceholder = document.getElementById('screen-placeholder');
+            const videoControls = document.getElementById('screen-controls');
+            
+            // Only clear if we don't have our own stream
+            if (!state.stream && videoElem) {
+                videoElem.srcObject = null;
+                if (videoPlaceholder) {
+                    videoPlaceholder.classList.remove('hidden');
+                }
+                if (videoControls) {
+                    videoControls.classList.add('hidden');
+                }
+            }
         }
     });
 
@@ -293,10 +433,8 @@ function setupDataConnection(dataConnection, peerId) {
 
     const connectionPeerId = peerId || dataConnection.peer;
 
-    // If connection is already open (e.g., peer initiated connection), set state immediately
-    // Check both 'open' property and readyState for reliability
-    const isAlreadyOpen = dataConnection.open || dataConnection.readyState === 'open';
-    if (isAlreadyOpen) {
+    // Helper function to handle connection open
+    const handleConnectionOpen = () => {
         state.isCollaborating = true;
         updateConnectionStatus(true, state.shareCode);
         
@@ -309,22 +447,68 @@ function setupDataConnection(dataConnection, peerId) {
                 historyStep: state.historyStep
             }, connectionPeerId);
         }
+        
+        // If we're the host and screen sharing is active, share it with this peer
+        if (state.isHosting && state.mode === 'screen' && state.stream && window.shareScreenWithPeers) {
+            // Small delay to ensure peer connection is ready
+            setTimeout(() => {
+                if (window.shareScreenWithPeers) {
+                    window.shareScreenWithPeers(state.stream);
+                }
+            }, 200);
+        } else if (state.isHosting) {
+            // Host should initiate video call to peer even if not screen sharing
+            // This establishes the media connection for when screen sharing starts
+            setTimeout(() => {
+                if (state.peer && connectionPeerId && !state.calls.has(connectionPeerId)) {
+                    let streamToSend = null;
+                    
+                    // If screen sharing is active, use that stream
+                    if (state.mode === 'screen' && state.stream) {
+                        streamToSend = state.stream;
+                        console.log(`Host initiating call to peer ${connectionPeerId} with screen stream`);
+                    } else {
+                        // Create dummy stream for non-screen modes
+                        const canvas = document.createElement('canvas');
+                        canvas.width = 1;
+                        canvas.height = 1;
+                        streamToSend = canvas.captureStream ? canvas.captureStream(1) : null;
+                        console.log(`Host initiating call to peer ${connectionPeerId} with dummy stream`);
+                    }
+                    
+                    if (streamToSend) {
+                        try {
+                            const call = state.peer.call(connectionPeerId, streamToSend);
+                            if (call) {
+                                state.calls.set(connectionPeerId, call);
+                                setupCallHandlers(call, connectionPeerId);
+                                console.log(`Host successfully initiated call to peer ${connectionPeerId}`);
+                            } else {
+                                console.error(`Host failed to create call to peer ${connectionPeerId}`);
+                            }
+                        } catch (err) {
+                            console.error(`Error host initiating call to ${connectionPeerId}:`, err);
+                        }
+                    } else {
+                        console.error(`Host: No stream available to call peer ${connectionPeerId}`);
+                    }
+                } else {
+                    if (state.calls.has(connectionPeerId)) {
+                        console.log(`Host: Call to peer ${connectionPeerId} already exists`);
+                    }
+                }
+            }, 500); // Increased delay to ensure peer is ready
+        }
+    };
+
+    // If connection is already open (e.g., peer initiated connection), set state immediately
+    // Check both 'open' property and readyState for reliability
+    const isAlreadyOpen = dataConnection.open || dataConnection.readyState === 'open';
+    if (isAlreadyOpen) {
+        handleConnectionOpen();
     } else {
         // Connection not open yet, wait for open event
-        dataConnection.on('open', () => {
-            state.isCollaborating = true;
-            updateConnectionStatus(true, state.shareCode);
-            
-            // Send current canvas state to new peer (only if we're the host)
-            // Use sendToPeer for targeted message to this specific peer
-            if (state.isHosting) {
-                sendToPeer({
-                    type: 'ANNOTATION_SYNC',
-                    elements: state.elements,
-                    historyStep: state.historyStep
-                }, connectionPeerId);
-            }
-        });
+        dataConnection.on('open', handleConnectionOpen);
     }
 
     // Always set up data handlers (regardless of connection state)
@@ -373,15 +557,31 @@ function initiateVideoCall(code) {
             streamToShare = canvas.captureStream ? canvas.captureStream(1) : null;
         }
         
-        if (streamToShare && state.peer) {
-            const call = state.peer.call(code, streamToShare);
+        if (state.peer) {
+            // Create call to host (peer initiates call to receive host's stream)
+            // Pass null or dummy stream - the host will answer with their stream
+            const call = state.peer.call(code, streamToShare || null);
             
             if (call) {
+                console.log(`Initiating video call to host ${code}`);
                 state.calls.set(code, call);
+                
+                // Set up handlers to receive the host's stream
                 setupCallHandlers(call, code);
+                
+                // Also listen for stream event (when host answers)
+                call.on('stream', (remoteStream) => {
+                    console.log(`Received stream from host ${code} via initiated call`);
+                    // setupCallHandlers should handle this, but ensure it's processed
+                });
+            } else {
+                console.error('Failed to create call to host');
             }
+        } else {
+            console.error('No peer instance available to initiate call');
         }
     } catch (err) {
+        console.error('Error initiating video call:', err);
         // Video call failure is not critical if data connection works
     }
 }
@@ -427,10 +627,19 @@ function attemptConnection(code, retryCount = 0) {
             state.shareCode = code;
             setupDataConnection(dataConnection, code);
             
-            // Call for video stream after data connection is established
-            setTimeout(() => {
-                initiateVideoCall(code);
-            }, 500);
+            // As a peer joining, we wait for the host to call us
+            // The host will initiate the video call when they receive our data connection
+            // We don't need to call initiateVideoCall here - that was for the old flow
+            // Instead, we just wait for the host's incoming call
+            
+            // If we're already screen sharing, we can share it with the host
+            if (state.mode === 'screen' && state.stream && window.shareScreenWithPeers) {
+                setTimeout(() => {
+                    if (window.shareScreenWithPeers) {
+                        window.shareScreenWithPeers(state.stream);
+                    }
+                }, 500);
+            }
         });
 
         dataConnection.on('error', (err) => {
@@ -504,6 +713,9 @@ export async function startCollaboration() {
             state.myPeerId = id;
             // Don't set isCollaborating here - wait for data connection to open
             // This ensures we only mark as collaborating when actually connected
+            
+            // If screen sharing is already active, share it with peers when they connect
+            // This will be handled when connections are established in setupDataConnection
         });
 
         state.peer.on('connection', (dataConnection) => {
@@ -619,6 +831,49 @@ export async function joinCollaborationWithCode(code) {
             }, 500);
         });
 
+        // Listen for incoming calls from the host
+        state.peer.on('call', (incomingCall) => {
+            const peerId = incomingCall.peer;
+            console.log(`Peer received incoming call from host ${peerId}`, incomingCall);
+            
+            // Check if we already have a call from this peer
+            if (state.calls.has(peerId)) {
+                console.log(`Call from host ${peerId} already exists, closing duplicate`);
+                incomingCall.close();
+                return;
+            }
+            
+            // Set up handlers FIRST before answering, so we can receive the stream
+            state.calls.set(peerId, incomingCall);
+            setupCallHandlers(incomingCall, peerId);
+            
+            // Answer the call - we'll receive the host's stream via the 'stream' event
+            // Create a dummy stream to send (or our own screen if sharing)
+            let streamToAnswer = null;
+            if (state.mode === 'screen' && state.stream) {
+                streamToAnswer = state.stream;
+            } else {
+                // Create dummy stream for non-screen modes
+                const canvas = document.createElement('canvas');
+                canvas.width = 1;
+                canvas.height = 1;
+                streamToAnswer = canvas.captureStream ? canvas.captureStream(1) : null;
+            }
+            
+            if (streamToAnswer) {
+                incomingCall.answer(streamToAnswer);
+                console.log(`Peer answered call from host ${peerId} with stream:`, streamToAnswer);
+            } else {
+                console.error('Peer: No stream available to answer call');
+                // Still answer even without stream
+                try {
+                    incomingCall.answer();
+                } catch (e) {
+                    console.error('Error answering call without stream:', e);
+                }
+            }
+        });
+
         state.peer.on('error', (err) => {
             console.error('Peer error:', err);
             
@@ -688,43 +943,94 @@ export function stopCollaboration() {
 
 // Export function for screen sharing integration
 export function shareScreenWithPeers(stream) {
-    if (!state.isCollaborating || !stream) return;
+    if (!state.isCollaborating || !stream) {
+        console.warn('shareScreenWithPeers: Not collaborating or no stream');
+        return;
+    }
 
     const videoTrack = stream.getVideoTracks()[0];
-    if (!videoTrack) return;
+    if (!videoTrack) {
+        console.warn('shareScreenWithPeers: No video track in stream');
+        return;
+    }
+
+    // Helper function to check if peer connection is ready
+    const isPeerConnectionReady = (peerConnection) => {
+        if (!peerConnection) return false;
+        const connectionState = peerConnection.connectionState || peerConnection.iceConnectionState;
+        return connectionState === 'connected' || connectionState === 'completed' || connectionState === 'checking';
+    };
+
+    // Helper function to replace track with better error handling
+    const replaceTrackSafely = async (videoSender, track, peerId, fallbackFn) => {
+        try {
+            if (!videoSender || !track) {
+                throw new Error('Invalid sender or track');
+            }
+            await videoSender.replaceTrack(track);
+            console.log(`Successfully replaced track for peer ${peerId}`);
+        } catch (err) {
+            console.error(`Error replacing track for peer ${peerId}:`, err);
+            // If replace fails, use fallback (recreate call)
+            if (fallbackFn) {
+                setTimeout(() => fallbackFn(), 100);
+            }
+        }
+    };
 
     // If we're the host, broadcast to all connected peers
     if (state.isHosting) {
         state.dataConnections.forEach((conn, peerId) => {
-            if (conn && conn.open) {
-                const existingCall = state.calls.get(peerId);
+            if (!conn || !conn.open) {
+                console.warn(`shareScreenWithPeers: Connection to ${peerId} not open`);
+                return;
+            }
+
+            const existingCall = state.calls.get(peerId);
+            
+            if (existingCall && existingCall.peerConnection) {
+                // Check if peer connection is in a ready state
+                if (!isPeerConnectionReady(existingCall.peerConnection)) {
+                    console.warn(`shareScreenWithPeers: Peer connection to ${peerId} not ready, will retry`);
+                    // Wait a bit and retry
+                    setTimeout(() => {
+                        if (state.calls.has(peerId) && state.mode === 'screen' && state.stream) {
+                            shareScreenWithPeers(state.stream);
+                        }
+                    }, 500);
+                    return;
+                }
+
+                // Update existing call
+                const senders = existingCall.peerConnection.getSenders();
+                const videoSender = senders.find(s => 
+                    s.track && s.track.kind === 'video'
+                );
                 
-                if (existingCall && existingCall.peerConnection) {
-                    // Update existing call
-                    const senders = existingCall.peerConnection.getSenders();
-                    const videoSender = senders.find(s => 
-                        s.track && s.track.kind === 'video'
-                    );
-                    
-                    if (videoSender) {
-                        videoSender.replaceTrack(videoTrack).catch(err => {
-                            console.error(`Error replacing track for peer ${peerId}:`, err);
-                            // If replace fails, recreate the call
-                            recreateCallWithStream(stream, peerId);
-                        });
-                    } else {
-                        // No video sender found, recreate call
+                if (videoSender) {
+                    replaceTrackSafely(videoSender, videoTrack, peerId, () => {
                         recreateCallWithStream(stream, peerId);
-                    }
+                    });
                 } else {
-                    // No call exists, create new one
-                    if (state.peer) {
+                    // No video sender found, recreate call
+                    console.log(`shareScreenWithPeers: No video sender found for ${peerId}, recreating call`);
+                    recreateCallWithStream(stream, peerId);
+                }
+            } else {
+                // No call exists, create new one
+                if (state.peer) {
+                    console.log(`shareScreenWithPeers: Creating new call to ${peerId}`);
+                    try {
                         const call = state.peer.call(peerId, stream);
                         if (call) {
                             state.calls.set(peerId, call);
                             setupCallHandlers(call, peerId);
                         }
+                    } catch (err) {
+                        console.error(`Error creating call to ${peerId}:`, err);
                     }
+                } else {
+                    console.warn(`shareScreenWithPeers: No peer instance available for ${peerId}`);
                 }
             }
         });
@@ -737,24 +1043,69 @@ export function shareScreenWithPeers(stream) {
             const existingCall = state.calls.get(hostPeerId);
             
             if (existingCall && existingCall.peerConnection) {
+                // Check if peer connection is in a ready state
+                if (!isPeerConnectionReady(existingCall.peerConnection)) {
+                    console.warn('shareScreenWithPeers: Peer connection to host not ready, will retry');
+                    setTimeout(() => {
+                        if (state.calls.has(hostPeerId) && state.mode === 'screen' && state.stream) {
+                            shareScreenWithPeers(state.stream);
+                        }
+                    }, 500);
+                    return;
+                }
+
                 // Update existing call
                 const senders = existingCall.peerConnection.getSenders();
                 const videoSender = senders.find(s => 
                     s.track && s.track.kind === 'video'
                 );
                 if (videoSender) {
-                    videoSender.replaceTrack(videoTrack).catch(err => {
-                        console.error('Error replacing track as joiner:', err);
+                    replaceTrackSafely(videoSender, videoTrack, hostPeerId, () => {
+                        // Recreate call as joiner
+                        if (state.peer && hostPeerId) {
+                            const existingCall = state.calls.get(hostPeerId);
+                            if (existingCall) {
+                                existingCall.close();
+                                state.calls.delete(hostPeerId);
+                            }
+                            const call = state.peer.call(hostPeerId, stream);
+                            if (call) {
+                                state.calls.set(hostPeerId, call);
+                                setupCallHandlers(call, hostPeerId);
+                            }
+                        }
                     });
+                } else {
+                    // No video sender, recreate call
+                    console.log('shareScreenWithPeers: No video sender found as joiner, recreating call');
+                    const existingCall = state.calls.get(hostPeerId);
+                    if (existingCall) {
+                        existingCall.close();
+                        state.calls.delete(hostPeerId);
+                    }
+                    if (state.peer) {
+                        const call = state.peer.call(hostPeerId, stream);
+                        if (call) {
+                            state.calls.set(hostPeerId, call);
+                            setupCallHandlers(call, hostPeerId);
+                        }
+                    }
                 }
             } else if (state.peer && !existingCall) {
                 // Create new call to host
-                const call = state.peer.call(hostPeerId, stream);
-                if (call) {
-                    state.calls.set(hostPeerId, call);
-                    setupCallHandlers(call, hostPeerId);
+                console.log('shareScreenWithPeers: Creating new call to host as joiner');
+                try {
+                    const call = state.peer.call(hostPeerId, stream);
+                    if (call) {
+                        state.calls.set(hostPeerId, call);
+                        setupCallHandlers(call, hostPeerId);
+                    }
+                } catch (err) {
+                    console.error('Error creating call to host as joiner:', err);
                 }
             }
+        } else {
+            console.warn('shareScreenWithPeers: No open connection to host');
         }
     }
 }
