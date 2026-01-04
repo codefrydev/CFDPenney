@@ -150,6 +150,26 @@ function setupCallHandlers(call, peerId) {
 function handlePeerMessage(message, peerId) {
     const senderPeerId = message.peerId || peerId || 'unknown';
     
+    // If we're the host, rebroadcast this message to all other peers (except the sender)
+    // This ensures all peers see each other's annotations
+    if (state.isHosting && senderPeerId !== state.myPeerId) {
+        // Don't rebroadcast SYNC messages (those are one-time initial syncs from host)
+        if (message.type !== 'ANNOTATION_SYNC') {
+            state.dataConnections.forEach((conn, targetPeerId) => {
+                // Don't send back to the original sender
+                if (targetPeerId !== senderPeerId && conn && conn.open) {
+                    try {
+                        // Preserve the original peerId so recipients know who sent it
+                        const rebroadcastMessage = { ...message, peerId: senderPeerId };
+                        conn.send(JSON.stringify(rebroadcastMessage));
+                    } catch (err) {
+                        console.error(`Error rebroadcasting to peer ${targetPeerId}:`, err);
+                    }
+                }
+            });
+        }
+    }
+    
     switch (message.type) {
         case 'ANNOTATION_START':
             // Peer started drawing
