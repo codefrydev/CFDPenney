@@ -1,0 +1,27 @@
+CFD Penney - Collaborative Annotation Tool
+
+URL: https://codefrydev.in/CFDPenney/
+
+Description: A free web-based collaborative annotation tool for real-time drawing, screen sharing, and image annotation.
+
+Key Features:
+- Real-time collaborative drawing
+- Screen sharing with annotation
+- Image upload and annotation
+- Whiteboard drawing
+- Multiple drawing tools (pen, arrow, box, text, eraser)
+- Color customization
+- Stroke width adjustment
+- Undo/redo functionality
+- Snapshot capture
+- Dark/light theme support
+
+Use Cases:
+- Team collaboration and brainstorming
+- Educational presentations and teaching
+- Design feedback and reviews
+- Screen annotation and tutorials
+- Visual communication
+
+Technology: Web-based application, requires modern browser with JavaScript enabled.
+
