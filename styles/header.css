@@ -1,0 +1,90 @@
+/* ============================================
+   HEADER STYLES
+   ============================================ */
+
+.header-main {
+    background-color: var(--bg-primary);
+    border-color: var(--border-primary);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.header-logo-text {
+    color: var(--text-primary);
+}
+
+.header-online-text {
+    color: var(--text-secondary);
+}
+
+.header-online-bg {
+    background-color: var(--bg-tertiary);
+}
+
+.theme-toggle-btn {
+    color: var(--text-secondary);
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.theme-toggle-btn:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.theme-icon-light,
+.theme-icon-dark {
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
+}
+
+[data-theme="dark"] .theme-icon-light {
+    display: none;
+}
+
+[data-theme="dark"] .theme-icon-dark {
+    display: block !important;
+}
+
+[data-theme="light"] .theme-icon-dark,
+:root:not([data-theme]) .theme-icon-dark {
+    display: none;
+}
+
+[data-theme="light"] .theme-icon-light,
+:root:not([data-theme]) .theme-icon-light {
+    display: block;
+}
+
+/* ============================================
+   HEADER RESPONSIVENESS
+   ============================================ */
+
+.header-responsive {
+    min-height: 48px;
+    height: auto;
+}
+
+@media (max-width: 639px) {
+    .header-responsive {
+        min-height: 44px;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .header-online-count {
+        font-size: 0.625rem;
+        padding: 0.25rem 0.5rem;
+    }
+}
+
+@media (min-width: 640px) and (max-width: 767px) {
+    .header-responsive {
+        min-height: 52px;
+    }
+}
+
+@media (min-width: 768px) {
+    .header-responsive {
+        min-height: 56px;
+    }
+}
+

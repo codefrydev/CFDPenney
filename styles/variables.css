@@ -1,0 +1,110 @@
+/* ============================================
+   CSS CUSTOM PROPERTIES (THEME VARIABLES)
+   ============================================ */
+
+:root {
+    /* Light Theme Colors */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --bg-tertiary: #f1f5f9;
+    --bg-gradient-start: #f9fafb;
+    --bg-gradient-end: #ffffff;
+    
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --text-tertiary: #9ca3af;
+    --text-inverse: #ffffff;
+    
+    --border-primary: #e5e7eb;
+    --border-secondary: #d1d5db;
+    --border-tertiary: #cbd5e1;
+    
+    --accent-primary: #3b82f6;
+    --accent-primary-hover: #2563eb;
+    --accent-primary-light: #dbeafe;
+    --accent-secondary: #10b981;
+    
+    --message-you-bg: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    --message-stranger-bg: #ffffff;
+    --message-stranger-border: #e5e7eb;
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    
+    --modal-overlay: rgba(0, 0, 0, 0.6);
+    --modal-bg: #ffffff;
+    
+    --input-bg: #ffffff;
+    --input-border: #d1d5db;
+    --input-border-focus: #3b82f6;
+    --input-disabled-bg: #f3f4f6;
+    --input-disabled-text: #9ca3af;
+    
+    --button-primary-bg: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    --button-secondary-bg: #ffffff;
+    --button-secondary-border: #d1d5db;
+    --button-secondary-hover: #f3f4f6;
+    
+    --status-online: #10b981;
+    --status-warning: #f59e0b;
+    --status-error: #ef4444;
+    
+    --video-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    --video-overlay: rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="dark"] {
+    /* Dark Theme Colors */
+    --bg-primary: #111827;
+    --bg-secondary: #1f2937;
+    --bg-tertiary: #374151;
+    --bg-gradient-start: #1f2937;
+    --bg-gradient-end: #111827;
+    
+    --text-primary: #f9fafb;
+    --text-secondary: #d1d5db;
+    --text-tertiary: #9ca3af;
+    --text-inverse: #111827;
+    
+    --border-primary: #374151;
+    --border-secondary: #4b5563;
+    --border-tertiary: #6b7280;
+    
+    --accent-primary: #60a5fa;
+    --accent-primary-hover: #3b82f6;
+    --accent-primary-light: #1e3a8a;
+    --accent-secondary: #34d399;
+    
+    --message-you-bg: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    --message-stranger-bg: #374151;
+    --message-stranger-border: #4b5563;
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+    
+    --modal-overlay: rgba(0, 0, 0, 0.8);
+    --modal-bg: #1f2937;
+    
+    --input-bg: #374151;
+    --input-border: #4b5563;
+    --input-border-focus: #60a5fa;
+    --input-disabled-bg: #1f2937;
+    --input-disabled-text: #6b7280;
+    
+    --button-primary-bg: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    --button-secondary-bg: #374151;
+    --button-secondary-border: #4b5563;
+    --button-secondary-hover: #4b5563;
+    
+    --status-online: #10b981;
+    --status-warning: #f59e0b;
+    --status-error: #ef4444;
+    
+    --video-bg: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
+    --video-overlay: rgba(0, 0, 0, 0.85);
+}
+

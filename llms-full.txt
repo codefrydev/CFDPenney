@@ -1,0 +1,84 @@
+# CFD Penney - Collaborative Annotation Tool
+
+## Overview
+CFD Penney is a free, web-based collaborative annotation tool that enables real-time drawing, screen sharing, and image annotation. It's designed for teams, educators, and anyone who needs to collaborate visually.
+
+## URL
+https://codefrydev.in/CFDPenney/
+
+## Description
+CFD Penney is a comprehensive annotation platform that allows multiple users to collaborate in real-time. Users can draw on whiteboards, annotate shared screens, or upload and annotate images. The tool supports various drawing modes and provides a seamless collaboration experience.
+
+## Key Features
+
+### Drawing Modes
+1. **Board Mode**: Draw on a blank whiteboard canvas
+2. **Screen Mode**: Share your screen and annotate over it in real-time
+3. **Image Mode**: Upload images and annotate them
+
+### Drawing Tools
+- **Pen**: Freehand drawing tool
+- **Arrow**: Draw arrows for pointing and directing attention
+- **Box**: Draw rectangular shapes
+- **Text**: Add text annotations
+- **Eraser**: Remove parts of drawings
+
+### Collaboration Features
+- Real-time synchronization across all connected users
+- Host sessions to create collaboration rooms
+- Join sessions using 5-character room codes
+- Connection status indicators
+- Screen sharing with annotation overlay
+
+### Customization Options
+- Color picker with preset colors and custom color selection
+- Adjustable stroke width (2-30 pixels)
+- Dark and light theme support
+- Responsive design for various screen sizes
+
+### Additional Features
+- Undo/redo functionality for drawing history
+- Snapshot capture to save current canvas state
+- Clear all functionality to reset the canvas
+- Touch-friendly interface for mobile devices
+
+## Use Cases
+
+1. **Team Collaboration**: Brainstorming sessions, design reviews, and team meetings
+2. **Education**: Online teaching, presentations, and interactive learning
+3. **Design Feedback**: Annotating designs, mockups, and visual assets
+4. **Screen Tutorials**: Creating visual guides and tutorials with screen annotations
+5. **Visual Communication**: Expressing ideas visually in real-time
+
+## Technical Requirements
+
+- **Platform**: Web browser (cross-platform)
+- **Browser Support**: Modern browsers with JavaScript and HTML5 support
+- **Permissions**: Screen sharing permissions required for screen annotation feature
+- **Network**: Internet connection required for collaboration features
+- **No Installation**: Fully web-based, no software installation needed
+
+## Technology Stack
+
+- Frontend: HTML5, CSS3, JavaScript (ES6+)
+- Canvas API: For drawing functionality
+- WebRTC: For real-time collaboration and screen sharing
+- PeerJS: For peer-to-peer connections
+- Responsive Design: Mobile and desktop compatible
+
+## How to Use
+
+1. **Start Drawing**: Select a mode (Board, Screen, or Image) and choose a drawing tool
+2. **Collaborate**: Click "Collaborate" to host a session or join an existing one
+3. **Customize**: Adjust colors and stroke width using the sidebar controls
+4. **Share**: Use snapshot feature to capture and share your annotations
+
+## Pricing
+Free - No cost, no registration required
+
+## Version
+1.0 - Initial release with collaborative annotation features
+
+## Contact & Support
+For more information, visit: https://codefrydev.in/CFDPenney/
+

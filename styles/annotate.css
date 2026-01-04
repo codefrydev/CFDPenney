@@ -1,0 +1,145 @@
+/* ============================================
+   ANNOTATION PAGE SPECIFIC STYLES
+   ============================================ */
+
+/* Custom scrollbar for tool area */
+.annotate-toolbar ::-webkit-scrollbar {
+    width: 6px;
+}
+
+.annotate-toolbar ::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+.annotate-toolbar ::-webkit-scrollbar-thumb {
+    background: var(--border-primary);
+    border-radius: 3px;
+}
+
+/* Cursor logic */
+.cursor-crosshair {
+    cursor: crosshair;
+}
+
+.canvas-container {
+    touch-action: none; /* Prevent scrolling while drawing */
+}
+
+/* Range Slider Styling */
+input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent; 
+}
+
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    margin-top: -6px; 
+    cursor: pointer;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 4px;
+    cursor: pointer;
+    background: var(--border-primary);
+    border-radius: 2px;
+}
+
+/* Theme-aware colors */
+.annotate-header {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-primary);
+}
+
+.annotate-toolbar {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-primary);
+}
+
+.annotate-tool-btn-active {
+    background: var(--button-primary-bg);
+    color: var(--text-inverse);
+}
+
+.annotate-tool-btn {
+    color: var(--text-secondary);
+}
+
+.annotate-tool-btn:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.annotate-mode-btn-active {
+    background: var(--button-primary-bg);
+    color: var(--text-inverse);
+}
+
+.annotate-mode-btn {
+    color: var(--text-secondary);
+}
+
+.annotate-mode-btn:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.annotate-canvas-wrapper {
+    background-color: var(--bg-primary);
+}
+
+.annotate-bg-whiteboard {
+    background-color: var(--bg-primary);
+}
+
+.annotate-bg-screen {
+    background-color: var(--bg-primary);
+}
+
+.annotate-bg-image {
+    background-color: var(--bg-primary);
+}
+
+.annotate-placeholder {
+    color: var(--text-secondary);
+}
+
+.annotate-controls {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-primary);
+}
+
+.annotate-footer {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-primary);
+    color: var(--text-tertiary);
+}
+
+/* Mode Switcher Container */
+.mode-switcher-container {
+    background-color: var(--bg-tertiary);
+}
+
+/* Text Input Tool */
+.text-tool-input {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+}
+
+/* Connection Status Dot Colors */
+#connection-dot[style*="green"] {
+    background-color: #10b981 !important;
+}
+
+#connection-dot[style*="yellow"] {
+    background-color: #f59e0b !important;
+}
+
+#connection-dot[style*="blue"] {
+    background-color: #3b82f6 !important;
+}
+
