@@ -68,9 +68,21 @@ export async function startCollaboration() {
                     dataConnection.close();
                     return;
                 } else {
+                    // Check if ICE is actively negotiating - don't replace if it is
+                    const pc = existingConnection.peerConnection;
+                    const iceState = pc?.iceConnectionState;
+                    const isIceActive = iceState === 'checking' || iceState === 'connected' || iceState === 'completed';
+                    
                     // Existing connection is not open - check if it's truly stale
                     const existingPeerInfo = state.connectedPeers.get(peerId);
                     const existingAge = existingPeerInfo ? (now - existingPeerInfo.connectedAt) : 0;
+                    
+                    // Don't replace if ICE is actively negotiating (unless it's been a very long time)
+                    if (isIceActive && existingAge < 20000) {
+                        console.log(`[Host Connection] ${peerId}: ICE actively negotiating (${iceState}), blocking replacement (age: ${existingAge}ms)`);
+                        dataConnection.close();
+                        return;
+                    }
                     
                     // Get replacement attempt info
                     const attemptInfo = connectionAttempts.get(peerId) || { count: 0, firstAttempt: now, lastAttempt: now };
@@ -79,7 +91,7 @@ export async function startCollaboration() {
                     // 1. Existing connection is older than grace period, OR
                     // 2. We haven't exceeded max replacements
                     if (existingAge < CONNECTION_GRACE_PERIOD && attemptInfo.count >= MAX_REPLACEMENTS) {
-                        console.log(`[Host Connection] ${peerId}: Blocking replacement (age: ${existingAge}ms, attempts: ${attemptInfo.count}/${MAX_REPLACEMENTS})`);
+                        console.log(`[Host Connection] ${peerId}: Blocking replacement (age: ${existingAge}ms, attempts: ${attemptInfo.count}/${MAX_REPLACEMENTS}, ICE: ${iceState})`);
                         dataConnection.close();
                         return;
                     }
@@ -92,7 +104,7 @@ export async function startCollaboration() {
                     }
                     connectionAttempts.set(peerId, attemptInfo);
                     
-                    console.log(`[Host Connection] ${peerId}: Replacing connection (age: ${existingAge}ms, replacement #${attemptInfo.count})`);
+                    console.log(`[Host Connection] ${peerId}: Replacing connection (age: ${existingAge}ms, replacement #${attemptInfo.count}, ICE: ${iceState || 'unknown'})`);
                     existingConnection.close();
                     // Remove the stale connection from maps
                     state.dataConnections.delete(peerId);

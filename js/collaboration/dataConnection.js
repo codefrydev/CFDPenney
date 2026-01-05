@@ -18,6 +18,9 @@ export function setupDataConnection(dataConnection, peerId) {
     
     // Track connection state transitions for diagnostics
     let lastReadyState = dataConnection.readyState;
+    let lastIceState = null;
+    let lastIceGatheringState = null;
+    
     const logStateChange = (newState, reason) => {
         if (newState !== lastReadyState) {
             const elapsed = Date.now() - connectionStartTime;
@@ -26,18 +29,35 @@ export function setupDataConnection(dataConnection, peerId) {
         }
     };
     
-    // Monitor readyState changes
+    // Monitor readyState and ICE state changes (only log when state actually changes)
     if (dataConnection.peerConnection) {
         const pc = dataConnection.peerConnection;
+        
         const checkState = () => {
             const currentState = dataConnection.readyState;
             logStateChange(currentState);
             
-            // Also log ICE connection state if available
-            if (pc.iceConnectionState) {
-                console.log(`[ICE State] ${connectionPeerId}: ${pc.iceConnectionState}, ICE gathering: ${pc.iceGatheringState}`);
+            // Only log ICE state when it actually changes
+            if (pc.iceConnectionState && pc.iceConnectionState !== lastIceState) {
+                const elapsed = Date.now() - connectionStartTime;
+                console.log(`[ICE State] ${connectionPeerId}: ${lastIceState || 'initial'} -> ${pc.iceConnectionState} (${elapsed}ms), gathering: ${pc.iceGatheringState}`);
+                lastIceState = pc.iceConnectionState;
+            }
+            
+            if (pc.iceGatheringState && pc.iceGatheringState !== lastIceGatheringState) {
+                const elapsed = Date.now() - connectionStartTime;
+                console.log(`[ICE Gathering] ${connectionPeerId}: ${lastIceGatheringState || 'initial'} -> ${pc.iceGatheringState} (${elapsed}ms)`);
+                lastIceGatheringState = pc.iceGatheringState;
             }
         };
+        
+        // Initialize ICE state tracking
+        if (pc.iceConnectionState) {
+            lastIceState = pc.iceConnectionState;
+        }
+        if (pc.iceGatheringState) {
+            lastIceGatheringState = pc.iceGatheringState;
+        }
         
         // Poll for state changes (PeerJS doesn't always emit readyState change events)
         const stateCheckInterval = setInterval(() => {
@@ -46,7 +66,7 @@ export function setupDataConnection(dataConnection, peerId) {
             } else {
                 checkState();
             }
-        }, 500);
+        }, 1000); // Reduced frequency to 1 second to reduce noise
         
         // Clear interval when connection closes
         dataConnection.on('close', () => {
