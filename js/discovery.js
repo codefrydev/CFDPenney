@@ -431,12 +431,15 @@ export function registerSession(code, name, mode) {
     });
 
     clientPeer.on('error', (err) => {
-      console.error('Registration peer error:', err);
-      // If discovery peer doesn't exist, start as host
+      // If discovery peer doesn't exist, start as host (expected behavior)
       if (err.type === 'peer-unavailable' || err.message?.includes('Could not connect')) {
+        // This is expected when no discovery host exists - we'll become the host
+        console.log('No discovery host found, starting as discovery host...');
         startDiscoveryHost();
         registerSession(code, name, mode).then(resolve).catch(reject);
       } else {
+        // Only log actual errors (not expected fallback scenarios)
+        console.error('Registration peer error:', err);
         reject(err);
       }
     });
