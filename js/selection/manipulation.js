@@ -5,11 +5,12 @@ import { getBoundingBox, getCenter } from '../shapes/shapeUtils.js';
 import { redrawCanvas, normalizeCoordinates } from '../canvas.js';
 import { sendToAllPeers } from '../collaboration.js';
 import { getHandleAtPoint } from './selectionUI.js';
-import { getSelectedElement, clearSelection } from './selectionCore.js';
+import { getSelectedElement, clearSelection, getSelectedElements } from './selectionCore.js';
 import { isGroup, getGroupChildren, updateGroupBounds } from './grouping.js';
 
 let dragStart = null;
 let dragStartElement = null;
+let dragStartElements = null; // For multi-element drag
 
 // Minimum size constraint for resizing
 const MIN_SIZE = 10;
@@ -180,6 +181,118 @@ export function endMove() {
 }
 
 /**
+ * Start moving multiple selected elements
+ */
+export function startMoveMultiple(point) {
+    const selectedElements = getSelectedElements();
+    if (selectedElements.length === 0) return false;
+    
+    state.isDrawing = true;
+    dragStart = point;
+    
+    // Store original positions for all selected elements
+    dragStartElements = selectedElements.map(({ element }) => ({
+        element,
+        start: { ...element.start },
+        end: { ...element.end },
+        points: element.points ? element.points.map(p => ({ ...p })) : null
+    }));
+    
+    return true;
+}
+
+/**
+ * Move multiple selected elements
+ */
+export function moveMultipleElements(point) {
+    if (!dragStart || !dragStartElements || dragStartElements.length === 0) return;
+    
+    const dx = point.x - dragStart.x;
+    const dy = point.y - dragStart.y;
+    
+    // Update all selected elements
+    dragStartElements.forEach(({ element, start, end, points }) => {
+        // Update start and end positions
+        element.start = {
+            x: start.x + dx,
+            y: start.y + dy
+        };
+        element.end = {
+            x: end.x + dx,
+            y: end.y + dy
+        };
+        
+        // Update points for pencil/eraser
+        if (points && points.length > 0) {
+            element.points = points.map(p => ({
+                x: p.x + dx,
+                y: p.y + dy
+            }));
+        }
+        
+        // Handle groups
+        if (isGroup(element)) {
+            // Groups are already handled by updating start/end
+            // Children positions are relative to group start
+        }
+    });
+    
+    redrawCanvas();
+}
+
+/**
+ * End move operation for multiple elements
+ */
+export function endMoveMultiple() {
+    if (!dragStart || !dragStartElements || dragStartElements.length === 0) {
+        state.isDrawing = false;
+        dragStart = null;
+        dragStartElements = null;
+        return;
+    }
+    
+    if (state.isCollaborating) {
+        // Send updates for all moved elements
+        dragStartElements.forEach(({ element }) => {
+            const updateData = {
+                start: normalizeCoordinates(element.start.x, element.start.y),
+                end: normalizeCoordinates(element.end.x, element.end.y)
+            };
+            
+            // Include points array for pencil/eraser elements
+            if (element.points && element.points.length > 0) {
+                updateData.points = element.points.map(p => normalizeCoordinates(p.x, p.y));
+            }
+            
+            // Include children for groups
+            if (isGroup(element) && element.children) {
+                updateData.children = element.children.map(child => ({
+                    id: child.id,
+                    relativeStart: normalizeCoordinates(child.relativeStart.x, child.relativeStart.y),
+                    relativeEnd: normalizeCoordinates(child.relativeEnd.x, child.relativeEnd.y),
+                    element: child.element && child.element.points && child.element.points.length > 0
+                        ? {
+                            ...child.element,
+                            points: child.element.points.map(p => normalizeCoordinates(p.x, p.y))
+                        }
+                        : child.element
+                }));
+            }
+            
+            sendToAllPeers({
+                type: 'ELEMENT_UPDATE',
+                id: element.id,
+                element: updateData
+            });
+        });
+    }
+    
+    state.isDrawing = false;
+    dragStart = null;
+    dragStartElements = null;
+}
+
+/**
  * Start resize operation
  */
 export function startResize(point, handle) {
@@ -198,6 +311,8 @@ export function startResize(point, handle) {
         start: { ...element.start },
         end: { ...element.end },
         originalBbox: originalBbox,
+        // Store original width for stickers
+        originalWidth: element.width || state.strokeWidth,
         // Store original points array for pencil/eraser
         originalPoints: element.points ? element.points.map(p => ({ ...p })) : null,
         // Store original group children for groups
@@ -321,6 +436,30 @@ export function resizeElement(point, event = null) {
     element.start = newStart;
     element.end = newEnd;
     
+    // Handle stickers - update width based on bounding box size
+    if (element.type === 'sticker') {
+        // Calculate new size from bounding box
+        // For emojis: fontSize = width * 8, so width = fontSize / 8
+        // For icons: fontSize = width * 6, so width = fontSize / 6
+        // For images: size = width * 10, so width = size / 10
+        // Use average of width and height for consistent scaling
+        const avgSize = (newBbox.width + newBbox.height) / 2;
+        
+        if (element.stickerType === 'emoji') {
+            // Emoji: fontSize = width * 8, so width = fontSize / 8
+            element.width = Math.max(avgSize / 8, 1);
+        } else if (element.stickerType === 'icon') {
+            // Icon: fontSize = width * 6, so width = fontSize / 6
+            element.width = Math.max(avgSize / 6, 1);
+        } else if (element.stickerType === 'image') {
+            // Image: size = width * 10, so width = size / 10
+            element.width = Math.max(avgSize / 10, 1);
+        } else {
+            // Default scaling
+            element.width = Math.max(avgSize / 8, 1);
+        }
+    }
+    
     // Handle groups - scale all children proportionally
     if (isGroup(element) && element.children && dragStartElement.originalGroupChildren) {
         scaleGroupChildren(element, originalBbox, newBbox, dragStartElement.originalGroupChildren);
@@ -346,6 +485,11 @@ export function endResize() {
             start: normalizeCoordinates(element.start.x, element.start.y),
             end: normalizeCoordinates(element.end.x, element.end.y)
         };
+        
+        // Include width for stickers (so size is preserved)
+        if (element.type === 'sticker') {
+            updateData.width = element.width;
+        }
         
         // Include points array for pencil/eraser elements
         if (element.points && element.points.length > 0) {

@@ -21,8 +21,11 @@ export const state = {
     isRotating: false,
     resizeHandle: null,
     isMultiSelecting: false, // For drag selection box
+    isDraggingSelection: false, // For tracking drag-to-select vs drag-to-move
     selectionBoxStart: null, // For drag selection
     selectionBoxEnd: null,
+    selectionMode: 'intersect', // 'contain' or 'intersect' - how selection box selects elements
+    dragStartPoint: null, // Starting point for drag operations
     // Peer collaboration state
     peer: null,
     dataConnections: new Map(), // Map<peerId, DataConnection>

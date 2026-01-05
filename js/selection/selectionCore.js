@@ -132,8 +132,12 @@ export function getElementAtPoint(point) {
 
 /**
  * Select element at point
+ * @param {Object} point - Point to check
+ * @param {boolean} addToSelection - If true, add to existing selection (Ctrl/Cmd+Click)
+ * @param {boolean} toggleSelection - If true, toggle selection state (Shift+Click)
+ * @returns {boolean} True if element was found and selected
  */
-export function selectElementAtPoint(point, addToSelection = false) {
+export function selectElementAtPoint(point, addToSelection = false, toggleSelection = false) {
     const result = getElementAtPoint(point);
     if (result) {
         // Ensure selectedElementIds is initialized
@@ -141,23 +145,49 @@ export function selectElementAtPoint(point, addToSelection = false) {
             state.selectedElementIds = [];
         }
         
-        if (addToSelection) {
-            // Add to multi-selection
-            if (!state.selectedElementIds.includes(result.element.id)) {
-                state.selectedElementIds.push(result.element.id);
+        const elementId = result.element.id;
+        const isAlreadySelected = state.selectedElementIds.includes(elementId);
+        
+        if (toggleSelection) {
+            // Shift+Click: Toggle selection
+            if (isAlreadySelected) {
+                // Remove from selection
+                state.selectedElementIds = state.selectedElementIds.filter(id => id !== elementId);
+                if (state.selectedElementId === elementId) {
+                    // If removing primary selection, set new primary
+                    if (state.selectedElementIds.length > 0) {
+                        const newPrimaryIndex = state.elements.findIndex(el => el.id === state.selectedElementIds[0]);
+                        if (newPrimaryIndex >= 0) {
+                            state.selectedElementId = state.selectedElementIds[0];
+                            state.selectedElementIndex = newPrimaryIndex;
+                        }
+                    } else {
+                        clearSelection();
+                    }
+                }
+            } else {
+                // Add to selection
+                state.selectedElementIds.push(elementId);
+                state.selectedElementId = elementId;
+                state.selectedElementIndex = result.index;
             }
-            // Also set as primary selection
-            state.selectedElementId = result.element.id;
+        } else if (addToSelection) {
+            // Ctrl/Cmd+Click: Add to selection
+            if (!isAlreadySelected) {
+                state.selectedElementIds.push(elementId);
+            }
+            // Always set as primary selection
+            state.selectedElementId = elementId;
             state.selectedElementIndex = result.index;
         } else {
             // Single selection
-            state.selectedElementId = result.element.id;
+            state.selectedElementId = elementId;
             state.selectedElementIndex = result.index;
-            state.selectedElementIds = [result.element.id];
+            state.selectedElementIds = [elementId];
         }
         return true;
     } else {
-        if (!addToSelection) {
+        if (!addToSelection && !toggleSelection) {
             clearSelection();
         }
         return false;
@@ -165,31 +195,134 @@ export function selectElementAtPoint(point, addToSelection = false) {
 }
 
 /**
- * Get elements in selection box
+ * Check if two rectangles intersect
  */
-export function getElementsInBox(boxStart, boxEnd) {
+function rectanglesIntersect(rect1, rect2) {
+    return rect1.x <= rect2.x + rect2.width &&
+           rect1.x + rect1.width >= rect2.x &&
+           rect1.y <= rect2.y + rect2.height &&
+           rect1.y + rect1.height >= rect2.y;
+}
+
+/**
+ * Check if rectangle1 contains rectangle2
+ */
+function rectangleContains(rect1, rect2) {
+    return rect1.x <= rect2.x &&
+           rect1.y <= rect2.y &&
+           rect1.x + rect1.width >= rect2.x + rect2.width &&
+           rect1.y + rect1.height >= rect2.y + rect2.height;
+}
+
+/**
+ * Get element bounding box with proper handling for different element types
+ */
+function getElementBoundingBox(element) {
+    if (!element || !element.start) return null;
+    
+    // For groups, use the group's bounding box
+    if (element.type === 'group') {
+        return getBoundingBox(element.start, element.end);
+    }
+    
+    // For pencil/eraser, calculate bounding box from points
+    if (element.type === 'pencil' || element.type === 'eraser') {
+        if (!element.points || element.points.length === 0) return null;
+        const xs = element.points.map(p => p.x);
+        const ys = element.points.map(p => p.y);
+        const minX = Math.min(...xs);
+        const maxX = Math.max(...xs);
+        const minY = Math.min(...ys);
+        const maxY = Math.max(...ys);
+        return {
+            x: minX,
+            y: minY,
+            width: maxX - minX,
+            height: maxY - minY,
+            centerX: (minX + maxX) / 2,
+            centerY: (minY + maxY) / 2
+        };
+    }
+    
+    // For text, calculate approximate bounding box
+    if (element.type === 'text_rendered') {
+        const textWidth = (element.text?.length || 0) * (element.width * 3 || 12);
+        const textHeight = element.width * 6 || 24;
+        return {
+            x: element.start.x,
+            y: element.start.y - textHeight,
+            width: textWidth,
+            height: textHeight,
+            centerX: element.start.x + textWidth / 2,
+            centerY: element.start.y - textHeight / 2
+        };
+    }
+    
+    // For stickers, calculate from size
+    if (element.type === 'sticker') {
+        const size = element.width * 10 || 40;
+        const halfSize = size / 2;
+        return {
+            x: element.start.x - halfSize,
+            y: element.start.y - halfSize,
+            width: size,
+            height: size,
+            centerX: element.start.x,
+            centerY: element.start.y
+        };
+    }
+    
+    // For lines and arrows, create a bounding box with padding for hit testing
+    if (element.type === 'line' || element.type === 'arrow') {
+        const padding = (element.width || 5) / 2;
+        const bbox = getBoundingBox(element.start, element.end);
+        return {
+            x: bbox.x - padding,
+            y: bbox.y - padding,
+            width: bbox.width + padding * 2,
+            height: bbox.height + padding * 2,
+            centerX: bbox.centerX,
+            centerY: bbox.centerY
+        };
+    }
+    
+    // For all other shapes, use standard bounding box
+    return getBoundingBox(element.start, element.end);
+}
+
+/**
+ * Get elements in selection box
+ * @param {Object} boxStart - Start point of selection box
+ * @param {Object} boxEnd - End point of selection box
+ * @param {string} mode - 'contain' (default) or 'intersect'
+ * @returns {Array} Array of {element, index} objects
+ */
+export function getElementsInBox(boxStart, boxEnd, mode = 'intersect') {
     const bbox = getBoundingBox(boxStart, boxEnd);
     const elements = state.elements.slice(0, state.historyStep + 1);
     const selected = [];
     
+    // Minimum size threshold to avoid selecting with tiny boxes (but allow small boxes for selection)
+    const minSize = 1;
+    if (bbox.width < minSize || bbox.height < minSize) {
+        return selected;
+    }
+    
     elements.forEach((el, index) => {
-        if (el.type === 'group') {
-            // Check if group bounding box intersects with selection box
-            const elBbox = getBoundingBox(el.start, el.end);
-            if (bbox.x <= elBbox.x + elBbox.width &&
-                bbox.x + bbox.width >= elBbox.x &&
-                bbox.y <= elBbox.y + elBbox.height &&
-                bbox.y + bbox.height >= elBbox.y) {
+        // Skip elements without IDs (they can't be selected)
+        if (!el || !el.id) return;
+        
+        const elBbox = getElementBoundingBox(el);
+        if (!elBbox) return;
+        
+        if (mode === 'contain') {
+            // Element must be completely contained within selection box
+            if (rectangleContains(bbox, elBbox)) {
                 selected.push({ element: el, index });
             }
         } else {
-            // Check if element is inside selection box
-            const elBbox = getBoundingBox(el.start, el.end);
-            const centerX = elBbox.x + elBbox.width / 2;
-            const centerY = elBbox.y + elBbox.height / 2;
-            
-            if (centerX >= bbox.x && centerX <= bbox.x + bbox.width &&
-                centerY >= bbox.y && centerY <= bbox.y + bbox.height) {
+            // Element intersects with selection box (default behavior)
+            if (rectanglesIntersect(bbox, elBbox)) {
                 selected.push({ element: el, index });
             }
         }
@@ -209,8 +342,32 @@ export function clearSelection() {
     state.isRotating = false;
     state.resizeHandle = null;
     state.isMultiSelecting = false;
+    state.isDraggingSelection = false;
     state.selectionBoxStart = null;
     state.selectionBoxEnd = null;
+    state.dragStartPoint = null;
+}
+
+/**
+ * Get all selected elements
+ * @returns {Array} Array of {element, index} objects
+ */
+export function getSelectedElements() {
+    if (!state.selectedElementIds || state.selectedElementIds.length === 0) {
+        return [];
+    }
+    
+    const elements = state.elements.slice(0, state.historyStep + 1);
+    const selected = [];
+    
+    state.selectedElementIds.forEach(id => {
+        const index = elements.findIndex(el => el.id === id);
+        if (index >= 0) {
+            selected.push({ element: elements[index], index });
+        }
+    });
+    
+    return selected;
 }
 
 /**

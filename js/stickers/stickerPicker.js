@@ -209,13 +209,19 @@ function selectSticker(type, data) {
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
     
+    // Use a larger default width for stickers (so they're visible)
+    // For emojis: width of 8 = 64px font size (8 * 8)
+    // For icons: width of 8 = 48px font size (8 * 6)
+    // For images: width of 8 = 80px size (8 * 10)
+    const defaultStickerWidth = Math.max(state.strokeWidth, 8);
+    
     const newElement = {
         id: elementId,
         type: 'sticker',
         stickerType: type,
         stickerData: data,
         color: state.color,
-        width: state.strokeWidth,
+        width: defaultStickerWidth,
         start: { x: centerX, y: centerY },
         end: { x: centerX, y: centerY },
         isActive: false

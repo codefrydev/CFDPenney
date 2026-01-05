@@ -10,12 +10,14 @@ import { handleImageUpload, initImageUpload } from './imageUpload.js';
 import { downloadSnapshot, initExport } from './export.js';
 import { stopCollaboration, sendToAllPeers, sendToPeer } from './collaboration.js';
 import { showCollaborationModal } from './modal.js';
-import { selectElementAtPoint, clearSelection, getElementsInBox } from './selection/selectionCore.js';
+import { selectElementAtPoint, clearSelection, getElementsInBox, getSelectedElements } from './selection/selectionCore.js';
 import { getHandleAtPoint } from './selection/selectionUI.js';
-import { startMove, moveElement, endMove, startResize, resizeElement, endResize, startRotate, rotateElement, endRotate, deleteElement, nudgeElement } from './selection/manipulation.js';
+import { startMove, moveElement, endMove, startResize, resizeElement, endResize, startRotate, rotateElement, endRotate, deleteElement, nudgeElement, startMoveMultiple, moveMultipleElements, endMoveMultiple } from './selection/manipulation.js';
 import { initStickerPicker } from './stickers/stickerPicker.js';
 import { initShapePicker } from './shapes/shapePicker.js';
 import { createGroup, ungroupElement, isGroup } from './selection/grouping.js';
+import { resetSelectionBoxAnimation } from './selection/selectionUI.js';
+import { getBoundingBox } from './shapes/shapeUtils.js';
 
 // Make updateUI available globally for collaboration module
 window.updateUI = null;
@@ -384,15 +386,20 @@ function handleSelectionStart(e) {
     const { x, y } = getMousePos(e);
     const point = { x, y };
     
-    // Check for Ctrl/Cmd key for multi-selection
-    const isMultiSelect = e.ctrlKey || e.metaKey;
+    // Store drag start point
+    state.dragStartPoint = point;
     
-    // Check if clicking on a handle
+    // Check modifier keys
+    const isMultiSelect = e.ctrlKey || e.metaKey;
+    const isToggleSelect = e.shiftKey;
+    
+    // Priority 1: Check if clicking on a handle of selected element
     if (state.selectedElementId) {
         const selectedElement = state.elements[state.selectedElementIndex];
         if (selectedElement) {
             const handle = getHandleAtPoint(point, selectedElement);
             if (handle) {
+                // Clicked on handle - start resize or rotate
                 if (handle.position === 'rotate') {
                     startRotate(point);
                 } else {
@@ -403,29 +410,39 @@ function handleSelectionStart(e) {
         }
     }
     
-    // Try to select element at point first
-    const elementFound = selectElementAtPoint(point, isMultiSelect);
+    // Priority 2: Check if clicking on an element
+    const elementFound = selectElementAtPoint(point, isMultiSelect, isToggleSelect);
     
     if (elementFound) {
-        // Element was clicked
-        const selectedElement = state.elements[state.selectedElementIndex];
-        if (selectedElement) {
-            // Only start move if not multi-selecting (Ctrl+Click just adds to selection)
-            if (!isMultiSelect) {
-                startMove(point);
-            }
+        // Element was clicked - prepare for potential drag
+        const selectedElements = getSelectedElements();
+        if (selectedElements.length > 0) {
+            // Store that we might be dragging (will be confirmed on move)
+            state.isDraggingSelection = false;
+            // Don't start move immediately - wait to see if it's a click or drag
+            // Clear multi-selecting flag to prevent selection box
+            state.isMultiSelecting = false;
         }
         redrawCanvas();
     } else {
         // No element clicked - start drag selection box
-        if (!isMultiSelect) {
+        if (!isMultiSelect && !isToggleSelect) {
+            // Clear any existing selection box first
+            state.isMultiSelecting = false;
+            state.selectionBoxStart = null;
+            state.selectionBoxEnd = null;
+            
+            // Now start fresh selection box
             state.isMultiSelecting = true;
-            state.selectionBoxStart = point;
-            state.selectionBoxEnd = point;
+            state.isDraggingSelection = false;
+            // Set both start and end to the same point initially - use exact coordinates
+            state.selectionBoxStart = { x: x, y: y };
+            state.selectionBoxEnd = { x: x, y: y };
+            resetSelectionBoxAnimation();
             clearSelection();
             redrawCanvas();
         } else {
-            // Ctrl+Click on empty space - just clear if not adding to selection
+            // Modifier key on empty space - clear selection
             clearSelection();
             redrawCanvas();
         }
@@ -436,71 +453,170 @@ function handleSelectionMove(e) {
     const { x, y } = getMousePos(e);
     const point = { x, y };
     
-    // Handle drag selection box (must check this first)
+    // Priority 1: Handle resize/rotate (active operations)
+    if (state.isResizing) {
+        resizeElement(point, e);
+        return;
+    }
+    
+    if (state.isRotating) {
+        rotateElement(point);
+        return;
+    }
+    
+    // Priority 2: Handle drag selection box
     if (state.isMultiSelecting && state.selectionBoxStart) {
-        state.selectionBoxEnd = point;
+        // Update end point to current mouse position - use exact coordinates
+        state.selectionBoxEnd = { x: x, y: y };
+        
+        // Calculate bounding box
+        const bbox = getBoundingBox(state.selectionBoxStart, state.selectionBoxEnd);
+        
+        // Update selection in real-time as box is dragged (even for small boxes)
+        if (bbox.width >= 1 && bbox.height >= 1) {
+            const selected = getElementsInBox(state.selectionBoxStart, state.selectionBoxEnd, state.selectionMode);
+            
+            // Ensure selectedElementIds is initialized
+            if (!state.selectedElementIds) {
+                state.selectedElementIds = [];
+            }
+            
+            if (selected.length > 0) {
+                // Filter out any elements without IDs and map to IDs
+                state.selectedElementIds = selected
+                    .filter(s => s.element && s.element.id)
+                    .map(s => s.element.id);
+                
+                if (state.selectedElementIds.length > 0) {
+                    // Set primary selection to first element
+                    state.selectedElementId = state.selectedElementIds[0];
+                    // Find the index of the primary element
+                    const primaryElement = selected.find(s => s.element.id === state.selectedElementId);
+                    if (primaryElement) {
+                        state.selectedElementIndex = primaryElement.index;
+                    }
+                } else {
+                    state.selectedElementId = null;
+                    state.selectedElementIndex = -1;
+                }
+            } else {
+                // No elements in box - clear selection
+                state.selectedElementIds = [];
+                state.selectedElementId = null;
+                state.selectedElementIndex = -1;
+            }
+        }
+        // Always redraw to show the selection box
         redrawCanvas();
         return;
     }
     
-    // Handle element manipulation
-    // Check for resize/rotate first (they don't require isDrawing flag)
-    if (state.selectedElementId) {
-        if (state.isResizing) {
-            resizeElement(point, e);
-            return;
-        } else if (state.isRotating) {
-            rotateElement(point);
-            return;
-        } else if (state.isDrawing) {
-            moveElement(point);
+    // Priority 3: Handle drag-to-move selected elements
+    // Only if we're not multi-selecting and we have selected elements
+    if (!state.isMultiSelecting && state.dragStartPoint && state.selectedElementIds && state.selectedElementIds.length > 0) {
+        // Check if we've moved enough to consider it a drag (not just a click)
+        const dx = Math.abs(point.x - state.dragStartPoint.x);
+        const dy = Math.abs(point.y - state.dragStartPoint.y);
+        const dragThreshold = 3; // pixels
+        
+        if (dx > dragThreshold || dy > dragThreshold) {
+            // This is a drag, not a click
+            if (!state.isDraggingSelection) {
+                // Start drag operation
+                state.isDraggingSelection = true;
+                if (state.selectedElementIds.length === 1) {
+                    startMove(state.dragStartPoint);
+                } else {
+                    startMoveMultiple(state.dragStartPoint);
+                }
+            }
+            
+            // Continue drag
+            if (state.selectedElementIds.length === 1) {
+                moveElement(point);
+            } else {
+                moveMultipleElements(point);
+            }
             return;
         }
     }
 }
 
 function handleSelectionEnd(e) {
-    // Handle drag selection box end
+    // Priority 1: Handle drag selection box end
     if (state.isMultiSelecting && state.selectionBoxStart && state.selectionBoxEnd) {
-        const selected = getElementsInBox(state.selectionBoxStart, state.selectionBoxEnd);
-        if (selected.length > 0) {
+        const bbox = getBoundingBox(state.selectionBoxStart, state.selectionBoxEnd);
+        
+        // Check if box is large enough to be a selection (not just a click)
+        // Use smaller threshold to allow more precise selection
+        if (bbox.width >= 2 && bbox.height >= 2) {
+            const selected = getElementsInBox(state.selectionBoxStart, state.selectionBoxEnd, state.selectionMode);
+            
             // Ensure selectedElementIds is initialized
             if (!state.selectedElementIds) {
                 state.selectedElementIds = [];
             }
             
-            state.selectedElementIds = selected.map(s => s.element.id);
-            if (selected.length === 1) {
-                state.selectedElementId = selected[0].element.id;
-                state.selectedElementIndex = selected[0].index;
-                state.selectedElementIds = [selected[0].element.id];
+            if (selected.length > 0) {
+                // Filter out any elements without IDs and map to IDs
+                state.selectedElementIds = selected
+                    .filter(s => s.element && s.element.id)
+                    .map(s => s.element.id);
+                
+                if (state.selectedElementIds.length > 0) {
+                    if (state.selectedElementIds.length === 1) {
+                        state.selectedElementId = state.selectedElementIds[0];
+                        const primaryElement = selected.find(s => s.element.id === state.selectedElementId);
+                        if (primaryElement) {
+                            state.selectedElementIndex = primaryElement.index;
+                        }
+                    } else {
+                        // Multiple elements selected
+                        state.selectedElementId = state.selectedElementIds[0];
+                        const primaryElement = selected.find(s => s.element.id === state.selectedElementId);
+                        if (primaryElement) {
+                            state.selectedElementIndex = primaryElement.index;
+                        }
+                    }
+                } else {
+                    clearSelection();
+                }
             } else {
-                // Multiple elements selected
-                state.selectedElementId = selected[0].element.id;
-                state.selectedElementIndex = selected[0].index;
-                console.log('Multi-selection: Selected', selected.length, 'elements:', state.selectedElementIds);
+                // No elements in selection box - clear selection
+                clearSelection();
             }
         } else {
-            // No elements in selection box
+            // Very small box - treat as click on empty space, clear selection
             clearSelection();
         }
+        
         state.isMultiSelecting = false;
         state.selectionBoxStart = null;
         state.selectionBoxEnd = null;
+        resetSelectionBoxAnimation();
         redrawCanvas();
         return;
     }
     
-    // Handle element manipulation end
+    // Priority 2: Handle element manipulation end
     if (state.isResizing) {
         endResize();
     } else if (state.isRotating) {
         endRotate();
-    } else if (state.selectedElementId && state.isDrawing) {
-        endMove();
+    } else if (state.isDraggingSelection) {
+        // End drag-to-move
+        if (state.selectedElementIds && state.selectedElementIds.length > 1) {
+            endMoveMultiple();
+        } else {
+            endMove();
+        }
+        state.isDraggingSelection = false;
     }
     
+    // Reset drag state
     state.isDrawing = false;
+    state.dragStartPoint = null;
+    state.isDraggingSelection = false;
 }
 
 // Keyboard shortcuts

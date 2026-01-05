@@ -9,6 +9,13 @@ const HANDLE_COLOR = '#007AFF';
 const HANDLE_FILL = '#FFFFFF';
 const SELECTION_COLOR = '#007AFF';
 const SELECTION_DASH = [5, 5];
+const SELECTION_FILL_OPACITY = 0.15;
+const MULTI_SELECTION_COLOR = '#007AFF';
+const MULTI_SELECTION_DASH = [3, 3];
+
+// Animation state for marching ants effect
+let dashOffset = 0;
+let lastAnimationTime = 0;
 
 /**
  * Draw selection handles around an element
@@ -145,7 +152,7 @@ function getHandlePosition(index) {
 }
 
 /**
- * Draw selection box (for multi-selection)
+ * Draw selection box (for multi-selection) with marching ants effect
  */
 export function drawSelectionBox() {
     if (!state.isMultiSelecting || !state.selectionBoxStart || !state.selectionBoxEnd) return;
@@ -155,15 +162,72 @@ export function drawSelectionBox() {
     
     const bbox = getBoundingBox(state.selectionBoxStart, state.selectionBoxEnd);
     
-    // Only draw if box has some size
-    if (bbox.width < 5 || bbox.height < 5) return;
+    // Draw even for small boxes (minimum 1px to show something is happening)
+    if (bbox.width < 1 || bbox.height < 1) return;
     
-    ctx.strokeStyle = SELECTION_COLOR;
-    ctx.lineWidth = 2;
-    ctx.setLineDash([5, 5]);
-    ctx.fillStyle = 'rgba(0, 122, 255, 0.1)';
+    // Update dash offset for marching ants effect
+    const now = Date.now();
+    if (lastAnimationTime === 0) {
+        lastAnimationTime = now;
+    }
+    const deltaTime = now - lastAnimationTime;
+    dashOffset += deltaTime * 0.1; // Adjust speed of animation
+    if (dashOffset > 20) dashOffset = 0;
+    lastAnimationTime = now;
+    
+    // Draw fill (semi-transparent blue)
+    ctx.fillStyle = `rgba(0, 122, 255, ${SELECTION_FILL_OPACITY})`;
     ctx.fillRect(bbox.x, bbox.y, bbox.width, bbox.height);
+    
+    // Draw border with marching ants effect (more visible)
+    ctx.strokeStyle = SELECTION_COLOR;
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([8, 4]);
+    ctx.lineDashOffset = -dashOffset;
     ctx.strokeRect(bbox.x, bbox.y, bbox.width, bbox.height);
+    ctx.setLineDash([]);
+    ctx.lineDashOffset = 0;
+}
+
+/**
+ * Reset animation state (call when selection box ends)
+ */
+export function resetSelectionBoxAnimation() {
+    dashOffset = 0;
+    lastAnimationTime = 0;
+}
+
+/**
+ * Draw highlight for a selected element (without handles)
+ */
+function drawElementHighlight(element, isPrimary = false) {
+    if (!element) return;
+    
+    const ctx = getCtx();
+    if (!ctx) return;
+    
+    const bbox = getBoundingBox(element.start, element.end);
+    
+    // Draw highlight rectangle with more visible styling
+    if (isPrimary) {
+        // Primary selection gets a thicker, more prominent border
+        ctx.strokeStyle = SELECTION_COLOR;
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash(SELECTION_DASH);
+    } else {
+        // Secondary selections get a thinner, dashed border (but still visible)
+        ctx.strokeStyle = MULTI_SELECTION_COLOR;
+        ctx.lineWidth = 2;
+        ctx.setLineDash(MULTI_SELECTION_DASH);
+    }
+    
+    const padding = isPrimary ? 5 : 4;
+    ctx.strokeRect(
+        bbox.x - padding,
+        bbox.y - padding,
+        bbox.width + padding * 2,
+        bbox.height + padding * 2
+    );
     ctx.setLineDash([]);
 }
 
@@ -174,7 +238,23 @@ export function renderSelection() {
     // Draw selection box if multi-selecting (draw this first so it's behind handles)
     drawSelectionBox();
     
-    // Draw selection handles for selected element
+    const ctx = getCtx();
+    if (!ctx) return;
+    
+    const elements = state.elements.slice(0, state.historyStep + 1);
+    
+    // Draw highlights for all selected elements first
+    if (state.selectedElementIds && state.selectedElementIds.length > 0) {
+        state.selectedElementIds.forEach(id => {
+            const el = elements.find(e => e.id === id);
+            if (el) {
+                const isPrimary = el.id === state.selectedElementId;
+                drawElementHighlight(el, isPrimary);
+            }
+        });
+    }
+    
+    // Draw selection handles for primary selected element (on top)
     if (state.selectedElementId && state.selectedElementIndex >= 0) {
         const element = state.elements[state.selectedElementIndex];
         if (element) {
@@ -182,24 +262,46 @@ export function renderSelection() {
         }
     }
     
-    // Draw visual indicator for multi-selected elements
-    if (state.selectedElementIds && state.selectedElementIds.length > 1) {
-        const ctx = getCtx();
-        if (ctx) {
-            const elements = state.elements.slice(0, state.historyStep + 1);
-            state.selectedElementIds.forEach(id => {
-                const el = elements.find(e => e.id === id);
-                if (el && el.id !== state.selectedElementId) {
-                    // Draw a subtle highlight for other selected elements
-                    const bbox = getBoundingBox(el.start, el.end);
-                    ctx.strokeStyle = SELECTION_COLOR;
-                    ctx.lineWidth = 1;
-                    ctx.setLineDash([3, 3]);
-                    ctx.strokeRect(bbox.x - 3, bbox.y - 3, bbox.width + 6, bbox.height + 6);
-                    ctx.setLineDash([]);
-                }
-            });
+    // Draw selection count indicator if multiple elements selected (while dragging)
+    if (state.selectedElementIds && state.selectedElementIds.length > 1 && state.isMultiSelecting && state.selectionBoxStart && state.selectionBoxEnd) {
+        const bbox = getBoundingBox(state.selectionBoxStart, state.selectionBoxEnd);
+        if (bbox.width >= 5 && bbox.height >= 5) {
+            drawSelectionCount(bbox, state.selectedElementIds.length);
         }
     }
+}
+
+/**
+ * Draw selection count indicator
+ */
+function drawSelectionCount(bbox, count) {
+    const ctx = getCtx();
+    if (!ctx) return;
+    
+    const text = `${count} selected`;
+    const padding = 8;
+    const fontSize = 12;
+    
+    ctx.font = `${fontSize}px sans-serif`;
+    ctx.textBaseline = 'top';
+    ctx.textAlign = 'left';
+    
+    // Measure text
+    const metrics = ctx.measureText(text);
+    const textWidth = metrics.width;
+    const textHeight = fontSize;
+    
+    // Draw background
+    const bgX = bbox.x + padding;
+    const bgY = bbox.y + padding;
+    const bgWidth = textWidth + padding * 2;
+    const bgHeight = textHeight + padding;
+    
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(bgX, bgY, bgWidth, bgHeight);
+    
+    // Draw text
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillText(text, bgX + padding, bgY + padding / 2);
 }
 
