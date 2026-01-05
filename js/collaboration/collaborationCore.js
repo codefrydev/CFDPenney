@@ -48,34 +48,75 @@ export async function startCollaboration() {
             // This will be handled when connections are established in setupDataConnection
         });
 
+        // Track connection attempts per peer to prevent replacement loops
+        const connectionAttempts = new Map(); // peerId -> { count, firstAttempt, lastAttempt }
+        const CONNECTION_GRACE_PERIOD = 8000; // 8 seconds grace period before considering stale
+        const MAX_REPLACEMENTS = 3; // Max replacements per peer before blocking
+        
         state.peer.on('connection', (dataConnection) => {
             const peerId = dataConnection.peer;
+            const now = Date.now();
             
-            console.log(`Host received connection from peer ${peerId}, open: ${dataConnection.open}, readyState: ${dataConnection.readyState}`);
+            console.log(`[Host Connection] Received from peer ${peerId}, open: ${dataConnection.open}, readyState: ${dataConnection.readyState}`);
             
             // Check if we already have a connection from this peer
             const existingConnection = state.dataConnections.get(peerId);
             if (existingConnection) {
                 // If existing connection is open, close the new duplicate
                 if (existingConnection.open || existingConnection.readyState === 'open') {
-                    console.log(`Connection from peer ${peerId} already exists and is open, closing duplicate`);
+                    console.log(`[Host Connection] ${peerId}: Existing connection is open, closing duplicate`);
                     dataConnection.close();
                     return;
                 } else {
-                    // Existing connection is not open, replace it with the new one
-                    console.log(`Replacing stale connection from peer ${peerId}`);
+                    // Existing connection is not open - check if it's truly stale
+                    const existingPeerInfo = state.connectedPeers.get(peerId);
+                    const existingAge = existingPeerInfo ? (now - existingPeerInfo.connectedAt) : 0;
+                    
+                    // Get replacement attempt info
+                    const attemptInfo = connectionAttempts.get(peerId) || { count: 0, firstAttempt: now, lastAttempt: now };
+                    
+                    // Only replace if:
+                    // 1. Existing connection is older than grace period, OR
+                    // 2. We haven't exceeded max replacements
+                    if (existingAge < CONNECTION_GRACE_PERIOD && attemptInfo.count >= MAX_REPLACEMENTS) {
+                        console.log(`[Host Connection] ${peerId}: Blocking replacement (age: ${existingAge}ms, attempts: ${attemptInfo.count}/${MAX_REPLACEMENTS})`);
+                        dataConnection.close();
+                        return;
+                    }
+                    
+                    // Track this replacement attempt
+                    attemptInfo.count += 1;
+                    attemptInfo.lastAttempt = now;
+                    if (attemptInfo.count === 1) {
+                        attemptInfo.firstAttempt = now;
+                    }
+                    connectionAttempts.set(peerId, attemptInfo);
+                    
+                    console.log(`[Host Connection] ${peerId}: Replacing connection (age: ${existingAge}ms, replacement #${attemptInfo.count})`);
                     existingConnection.close();
                     // Remove the stale connection from maps
                     state.dataConnections.delete(peerId);
                     state.connectedPeers.delete(peerId);
+                }
+            } else {
+                // New connection attempt - reset counter if enough time has passed
+                const attemptInfo = connectionAttempts.get(peerId);
+                if (attemptInfo && (now - attemptInfo.firstAttempt) > 30000) {
+                    // Reset after 30 seconds
+                    connectionAttempts.delete(peerId);
                 }
             }
             
             // Don't store the connection yet - wait for it to open
             // This prevents premature duplicate detection
             // setupDataConnection will store it when it opens
-            console.log(`Host setting up data connection for peer ${peerId}`);
+            console.log(`[Host Connection] ${peerId}: Setting up data connection`);
             setupDataConnection(dataConnection, peerId);
+            
+            // Clean up attempt tracking when connection opens
+            dataConnection.on('open', () => {
+                connectionAttempts.delete(peerId);
+            });
         });
 
         state.peer.on('call', (incomingCall) => {
