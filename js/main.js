@@ -4,6 +4,7 @@ import { initUI, updateUI } from './ui.js';
 import { closeCollaborationModal, handleHostSession, handleJoinSession } from './modal.js';
 import { getCodeFromURL, joinCollaborationWithCode } from './collaboration.js';
 import { state } from './state.js';
+import './popupModal.js'; // Initialize popup modal system
 
 // Initialize app
 function init() {

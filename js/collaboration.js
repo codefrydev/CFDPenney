@@ -1,6 +1,7 @@
 // Peer Collaboration
 import { state } from './state.js';
 import { redrawCanvas, denormalizeCoordinates, normalizeCoordinates } from './canvas.js';
+import { showAlert } from './popupModal.js';
 
 // URL Query Parameter Management
 function updateURLWithCode(code) {
@@ -803,7 +804,7 @@ function attemptConnection(code, retryCount = 0) {
                 if (retryCount < maxRetries) {
                     setTimeout(() => attemptConnection(code, retryCount + 1), retryDelay);
                 } else {
-                    alert('Could not connect to host after multiple attempts. Please check the share code and try again.');
+                    showAlert('Could not connect to host after multiple attempts. Please check the share code and try again.');
                     stopCollaboration();
                 }
             }
@@ -840,7 +841,7 @@ function attemptConnection(code, retryCount = 0) {
             if (retryCount < maxRetries) {
                 setTimeout(() => attemptConnection(code, retryCount + 1), retryDelay);
             } else {
-                alert('Failed to establish connection. Please check the share code and try again.');
+                showAlert('Failed to establish connection. Please check the share code and try again.');
                 stopCollaboration();
             }
         });
@@ -862,7 +863,7 @@ function attemptConnection(code, retryCount = 0) {
         if (retryCount < maxRetries) {
             setTimeout(() => attemptConnection(code, retryCount + 1), retryDelay);
         } else {
-            alert('Failed to connect: ' + err.message);
+            showAlert('Failed to connect: ' + err.message);
             stopCollaboration();
         }
     }
@@ -964,19 +965,19 @@ export async function startCollaboration() {
             if (err.type === 'peer-unavailable') {
                 // This is expected if someone tries to connect before we're ready
             } else if (err.type === 'network') {
-                alert('Network error. Please check your internet connection.');
+                showAlert('Network error. Please check your internet connection.');
             }
         });
 
     } catch (err) {
         console.error('Error starting collaboration:', err);
-        alert('Failed to start collaboration: ' + err.message);
+        showAlert('Failed to start collaboration: ' + err.message);
     }
 }
 
 export async function joinCollaborationWithCode(code) {
     if (!code || code.length !== 5) {
-        alert('Invalid share code. Please enter a 5-character code.');
+        showAlert('Invalid share code. Please enter a 5-character code.');
         return;
     }
 
@@ -1071,27 +1072,27 @@ export async function joinCollaborationWithCode(code) {
                     statusText.textContent = 'Host not found';
                 }
                 setTimeout(() => {
-                    alert('Could not connect to host. Please check:\n\n1. The share code is correct\n2. The host is still online\n3. Try again in a moment');
+                    showAlert('Could not connect to host. Please check:\n\n1. The share code is correct\n2. The host is still online\n3. Try again in a moment');
                     stopCollaboration();
                 }, 1000);
             } else if (err.type === 'network') {
                 if (statusText) {
                     statusText.textContent = 'Network error';
                 }
-                alert('Network error. Please check your internet connection and try again.');
+                showAlert('Network error. Please check your internet connection and try again.');
                 stopCollaboration();
             } else {
                 if (statusText) {
                     statusText.textContent = 'Connection failed';
                 }
-                alert('Connection error: ' + (err.message || err.type || 'Unknown error'));
+                showAlert('Connection error: ' + (err.message || err.type || 'Unknown error'));
                 stopCollaboration();
             }
         });
 
     } catch (err) {
         console.error('Error joining collaboration:', err);
-        alert('Failed to join: ' + err.message);
+        showAlert('Failed to join: ' + err.message);
         stopCollaboration();
     }
 }

@@ -1,5 +1,6 @@
 // Screen Sharing
 import { state } from './state.js';
+import { showAlert } from './popupModal.js';
 
 let videoElem = null;
 let videoPlaceholder = null;
@@ -24,7 +25,7 @@ function isSecureContext() {
 
 // Show user-friendly error message
 function showScreenShareError(message) {
-    alert(`Screen Sharing Error: ${message}\n\nPlease ensure:\n- You're using a modern browser (Chrome, Firefox, Edge, Safari)\n- The page is served over HTTPS or localhost\n- You grant screen sharing permissions when prompted`);
+    showAlert(`Screen Sharing Error: ${message}\n\nPlease ensure:\n- You're using a modern browser (Chrome, Firefox, Edge, Safari)\n- The page is served over HTTPS or localhost\n- You grant screen sharing permissions when prompted`, 'Screen Sharing Error');
 }
 
 export function setMode(newMode) {

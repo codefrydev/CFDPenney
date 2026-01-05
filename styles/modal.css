@@ -89,3 +89,92 @@
     background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
 }
 
+/* ============================================
+   POPUP MODAL STYLES (Alerts & Confirmations)
+   ============================================ */
+
+/* Popup Modal Overlay */
+#popup-modal-overlay {
+    animation: fadeIn 0.2s ease-out;
+}
+
+/* Popup Modal Container */
+#popup-modal {
+    animation: slideUp 0.3s ease-out;
+    background-color: var(--bg-secondary);
+    border-color: var(--border-primary);
+    width: auto;
+    max-width: 400px;
+    min-width: 280px;
+}
+
+/* Popup Modal Message Text */
+.modal-message-text {
+    color: var(--text-primary);
+    line-height: 1.7;
+    white-space: pre-line; /* Preserve line breaks in messages */
+    font-size: 0.9375rem;
+}
+
+/* Popup Modal Buttons - Match collaboration modal button styling */
+.popup-modal-btn-primary {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+}
+
+.popup-modal-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+.popup-modal-btn-primary:active {
+    transform: translateY(0);
+}
+
+.popup-modal-btn-secondary {
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    color: var(--text-primary);
+}
+
+.popup-modal-btn-secondary:hover {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-secondary);
+    transform: translateY(-2px);
+}
+
+.popup-modal-btn-secondary:active {
+    transform: translateY(0);
+}
+
+/* Modal Header Border */
+.modal-header-border {
+    border-color: var(--border-primary);
+}
+
+/* Responsive adjustments for popup modal */
+@media (max-width: 640px) {
+    #popup-modal {
+        max-width: calc(100% - 2rem);
+        min-width: 260px;
+        margin: 1rem;
+    }
+    
+    #popup-modal .p-6 {
+        padding: 1rem;
+    }
+    
+    #popup-modal-title {
+        font-size: 1.25rem;
+    }
+    
+    .modal-message-text {
+        font-size: 0.875rem;
+    }
+    
+    .popup-modal-btn-primary,
+    .popup-modal-btn-secondary {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.875rem;
+    }
+}
+

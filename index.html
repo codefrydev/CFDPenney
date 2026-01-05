@@ -426,6 +426,34 @@
         </div>
     </div>
 
+    <!-- Popup Modal for Alerts and Confirmations -->
+    <div id="popup-modal-overlay" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onclick="handlePopupModalOverlayClick(event)">
+        <div id="popup-modal" class="hidden relative bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-auto border border-gray-700 modal-bg" onclick="event.stopPropagation()">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-6 border-b modal-header-border">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center modal-icon-container">
+                        <i data-lucide="alert-triangle" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <h2 id="popup-modal-title" class="text-2xl font-bold modal-title">Alert</h2>
+                </div>
+                <button id="popup-modal-close" class="w-8 h-8 flex items-center justify-center rounded-lg transition-colors modal-close-btn">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="p-6 pt-4">
+                <p id="popup-modal-message" class="modal-message-text"></p>
+            </div>
+
+            <!-- Footer -->
+            <div id="popup-modal-footer" class="flex items-center justify-end gap-3 p-6 border-t modal-header-border">
+                <!-- Buttons will be inserted here by JavaScript -->
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="js/main.js"></script>
 </body>
 </html>
