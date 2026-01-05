@@ -2,6 +2,7 @@
 import { state } from './state.js';
 import { redrawCanvas, denormalizeCoordinates, normalizeCoordinates } from './canvas.js';
 import { showAlert } from './popupModal.js';
+import { registerSession, unregisterSession, markSessionConnected, markSessionAvailable } from './discovery.js';
 
 // URL Query Parameter Management
 function updateURLWithCode(code) {
@@ -625,6 +626,18 @@ function setupDataConnection(dataConnection, peerId) {
         state.isCollaborating = true;
         updateConnectionStatus(true, state.shareCode);
         
+        // Mark session as connected in discovery service
+        if (state.isHosting && state.shareCode) {
+            markSessionConnected(state.shareCode).catch(err => {
+                console.warn('Failed to mark session as connected:', err);
+            });
+        } else if (!state.isHosting && state.shareCode) {
+            // Joiner marks the target session as connected
+            markSessionConnected(state.shareCode).catch(err => {
+                console.warn('Failed to mark target session as connected:', err);
+            });
+        }
+        
         // Send current canvas state to new peer (only if we're the host)
         // Use sendToPeer for targeted message to this specific peer
         // Normalize coordinates for cross-resolution compatibility
@@ -717,6 +730,15 @@ function setupDataConnection(dataConnection, peerId) {
             state.calls.delete(connectionPeerId);
             state.connectedPeers.delete(connectionPeerId);
         }
+        
+        // Mark session as available again (only host manages its own availability)
+        // Host stays available for new connections when a peer disconnects
+        if (state.isHosting && state.shareCode) {
+            markSessionAvailable(state.shareCode).catch(err => {
+                console.warn('Failed to mark session as available:', err);
+            });
+        }
+        // Joiners don't manage host session availability - host handles it
         
         // Update collaboration status - check if any connections remain
         if (state.dataConnections.size === 0) {
@@ -902,6 +924,12 @@ export async function startCollaboration() {
             state.myPeerId = id;
             // Don't set isCollaborating here - wait for data connection to open
             // This ensures we only mark as collaborating when actually connected
+            
+            // Register session with discovery service
+            registerSession(shareCode, null, state.mode).catch(err => {
+                console.warn('Failed to register session with discovery service:', err);
+                // Continue anyway - discovery is optional
+            });
             
             // If screen sharing is already active, share it with peers when they connect
             // This will be handled when connections are established in setupDataConnection
@@ -1098,6 +1126,18 @@ export async function joinCollaborationWithCode(code) {
 }
 
 export function stopCollaboration() {
+    // Mark session as available before unregistering (if it was connected)
+    if (state.shareCode && state.isHosting) {
+        markSessionAvailable(state.shareCode).catch(err => {
+            console.warn('Failed to mark session as available:', err);
+        });
+    }
+    
+    // Unregister from discovery service
+    if (state.shareCode && state.isHosting) {
+        unregisterSession(state.shareCode);
+    }
+    
     // Close all data connections
     state.dataConnections.forEach((conn, peerId) => {
         if (conn) {
