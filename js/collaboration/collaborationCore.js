@@ -18,6 +18,14 @@ export async function startCollaboration() {
             shareCode += chars.charAt(Math.floor(Math.random() * chars.length));
         }
 
+        // Log environment info for debugging
+        console.log('[PeerJS Config] Environment:', {
+            protocol: window.location.protocol,
+            host: window.location.host,
+            secureContext: window.isSecureContext,
+            userAgent: navigator.userAgent
+        });
+
         state.peer = new Peer(shareCode, {
             debug: 1,
             config: {
@@ -30,6 +38,15 @@ export async function startCollaboration() {
                 ],
                 iceCandidatePoolSize: 10
             }
+        });
+        
+        // Log PeerJS connection events
+        state.peer.on('open', (id) => {
+            console.log('[PeerJS] Peer opened with ID:', id);
+        });
+        
+        state.peer.on('error', (err) => {
+            console.error('[PeerJS] Peer error:', err);
         });
 
         state.isHosting = true;
@@ -203,6 +220,14 @@ export async function joinCollaborationWithCode(code) {
             state.peer = null;
         }
 
+        // Log environment info for debugging
+        console.log('[PeerJS Config] Environment:', {
+            protocol: window.location.protocol,
+            host: window.location.host,
+            secureContext: window.isSecureContext,
+            userAgent: navigator.userAgent
+        });
+
         state.peer = new Peer({
             debug: 1,
             config: {
@@ -215,6 +240,15 @@ export async function joinCollaborationWithCode(code) {
                 ],
                 iceCandidatePoolSize: 10
             }
+        });
+        
+        // Log PeerJS connection events
+        state.peer.on('open', (id) => {
+            console.log('[PeerJS] Peer opened with ID:', id);
+        });
+        
+        state.peer.on('error', (err) => {
+            console.error('[PeerJS] Peer error:', err);
         });
 
         let connectionAttempted = false;
