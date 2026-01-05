@@ -5,7 +5,7 @@ import { registerSession, unregisterSession, markSessionAvailable } from '../dis
 import { redrawCanvas } from '../canvas.js';
 import { updateConnectionStatus } from './connectionStatus.js';
 import { removeCodeFromURL } from './urlUtils.js';
-import { setupDataConnection, attemptConnection } from './dataConnection.js';
+import { setupDataConnection, attemptConnection, clearOngoingConnections } from './dataConnection.js';
 import { setupCallHandlers } from './videoCall.js';
 
 export async function startCollaboration() {
@@ -52,10 +52,18 @@ export async function startCollaboration() {
             const peerId = dataConnection.peer;
             
             // Check if we already have a connection from this peer
-            if (state.dataConnections.has(peerId)) {
-                console.log(`Connection from peer ${peerId} already exists, closing duplicate`);
-                dataConnection.close();
-                return;
+            const existingConnection = state.dataConnections.get(peerId);
+            if (existingConnection) {
+                // If existing connection is open, close the new duplicate
+                if (existingConnection.open || existingConnection.readyState === 'open') {
+                    console.log(`Connection from peer ${peerId} already exists and is open, closing duplicate`);
+                    dataConnection.close();
+                    return;
+                } else {
+                    // Existing connection is not open, replace it with the new one
+                    console.log(`Replacing stale connection from peer ${peerId}`);
+                    existingConnection.close();
+                }
             }
             
             // Store the connection
@@ -241,6 +249,9 @@ export async function joinCollaborationWithCode(code) {
 }
 
 export function stopCollaboration() {
+    // Clear any ongoing connection attempts
+    clearOngoingConnections();
+    
     // Mark session as available before unregistering (if it was connected)
     if (state.shareCode && state.isHosting) {
         markSessionAvailable(state.shareCode).catch(err => {

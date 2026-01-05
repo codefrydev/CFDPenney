@@ -191,30 +191,51 @@ function initiateVideoCall(code) {
     }
 }
 
+// Track ongoing connection attempts to prevent duplicates
+const ongoingConnections = new Set();
+
+// Clear all ongoing connection attempts (used when stopping collaboration)
+export function clearOngoingConnections() {
+    ongoingConnections.clear();
+}
+
 export function attemptConnection(code, retryCount = 0, stopCollaborationFn) {
     const maxRetries = 3;
     const retryDelay = 2000; // 2 seconds
 
+    // Prevent multiple simultaneous connection attempts for the same code
+    if (ongoingConnections.has(code)) {
+        console.log(`Connection attempt to ${code} already in progress, skipping duplicate`);
+        return;
+    }
+
+    // Check if we already have an open connection
+    const existingConnection = state.dataConnections.get(code);
+    if (existingConnection && (existingConnection.open || existingConnection.readyState === 'open')) {
+        console.log(`Connection to ${code} already exists and is open`);
+        return;
+    }
+
     try {
+        // Mark that we're attempting a connection
+        ongoingConnections.add(code);
+        
         // Connect data channel
         const dataConnection = state.peer.connect(code, {
             reliable: true
         });
-        
-        // Store connection in Map (for joiners, there's only one connection)
-        state.dataConnections.set(code, dataConnection);
-        state.connectedPeers.set(code, {
-            id: code,
-            connectedAt: Date.now()
-        });
 
         // Set connection timeout
         const connectionTimeout = setTimeout(() => {
+            ongoingConnections.delete(code);
             if (!state.isCollaborating && dataConnection) {
                 if (dataConnection) {
                     dataConnection.close();
-                    state.dataConnections.delete(code);
-                    state.connectedPeers.delete(code);
+                    // Only delete if this is still the active connection
+                    if (state.dataConnections.get(code) === dataConnection) {
+                        state.dataConnections.delete(code);
+                        state.connectedPeers.delete(code);
+                    }
                 }
                 
                 if (retryCount < maxRetries) {
@@ -228,6 +249,23 @@ export function attemptConnection(code, retryCount = 0, stopCollaborationFn) {
 
         dataConnection.on('open', () => {
             clearTimeout(connectionTimeout);
+            ongoingConnections.delete(code);
+            
+            // Check if another connection already opened (race condition protection)
+            const existingConn = state.dataConnections.get(code);
+            if (existingConn && existingConn !== dataConnection && (existingConn.open || existingConn.readyState === 'open')) {
+                console.log(`Another connection to ${code} already opened, closing duplicate`);
+                dataConnection.close();
+                return;
+            }
+            
+            // Store connection in Map only when it's confirmed open (for joiners, there's only one connection)
+            state.dataConnections.set(code, dataConnection);
+            state.connectedPeers.set(code, {
+                id: code,
+                connectedAt: Date.now()
+            });
+            
             // Store share code for status display
             state.shareCode = code;
             setupDataConnection(dataConnection, code);
@@ -249,10 +287,14 @@ export function attemptConnection(code, retryCount = 0, stopCollaborationFn) {
 
         dataConnection.on('error', (err) => {
             clearTimeout(connectionTimeout);
+            ongoingConnections.delete(code);
             console.error('Data connection error:', err);
             
-            state.dataConnections.delete(code);
-            state.connectedPeers.delete(code);
+            // Only delete if this is still the active connection
+            if (state.dataConnections.get(code) === dataConnection) {
+                state.dataConnections.delete(code);
+                state.connectedPeers.delete(code);
+            }
             
             if (retryCount < maxRetries) {
                 setTimeout(() => attemptConnection(code, retryCount + 1, stopCollaborationFn), retryDelay);
@@ -264,8 +306,13 @@ export function attemptConnection(code, retryCount = 0, stopCollaborationFn) {
 
         dataConnection.on('close', () => {
             clearTimeout(connectionTimeout);
-            state.dataConnections.delete(code);
-            state.connectedPeers.delete(code);
+            ongoingConnections.delete(code);
+            
+            // Only delete if this is still the active connection
+            if (state.dataConnections.get(code) === dataConnection) {
+                state.dataConnections.delete(code);
+                state.connectedPeers.delete(code);
+            }
             
             if (!state.isCollaborating) {
                 if (retryCount < maxRetries) {
@@ -275,6 +322,7 @@ export function attemptConnection(code, retryCount = 0, stopCollaborationFn) {
         });
 
     } catch (err) {
+        ongoingConnections.delete(code);
         console.error('Error attempting connection:', err);
         if (retryCount < maxRetries) {
             setTimeout(() => attemptConnection(code, retryCount + 1, stopCollaborationFn), retryDelay);
