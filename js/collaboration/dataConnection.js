@@ -416,7 +416,12 @@ export function attemptConnection(code, retryCount = 0, stopCollaborationFn) {
                     setTimeout(() => attemptConnection(code, retryCount + 1, stopCollaborationFn), retryDelay);
                 } else {
                     console.error(`[Connection Failed] ${code}: Timeout after ${maxRetries} retries`);
-                    showAlert('Could not connect to host after multiple attempts. Please check the share code and try again.');
+                    const iceState = dataConnection.peerConnection?.iceConnectionState;
+                    let errorMsg = 'Could not connect to host after multiple attempts. Please check the share code and try again.';
+                    if (iceState === 'failed' || iceState === 'disconnected') {
+                        errorMsg = 'Connection failed due to network restrictions. This may be due to firewall or NAT settings. Please try:\n\n1. Check your network connection\n2. Try a different network\n3. Ensure both users are on networks that allow peer-to-peer connections';
+                    }
+                    showAlert(errorMsg);
                     if (stopCollaborationFn) stopCollaborationFn();
                 }
             }
@@ -501,14 +506,19 @@ export function attemptConnection(code, retryCount = 0, stopCollaborationFn) {
                 state.connectedPeers.delete(hostPeerId);
             }
             
-            if (retryCount < maxRetries) {
-                console.log(`[Connection Retry] ${code}: Retrying after error (${retryCount + 1}/${maxRetries})...`);
-                setTimeout(() => attemptConnection(code, retryCount + 1, stopCollaborationFn), retryDelay);
-            } else {
-                console.error(`[Connection Failed] ${code}: Error after ${maxRetries} retries`);
-                showAlert('Failed to establish connection. Please check the share code and try again.');
-                if (stopCollaborationFn) stopCollaborationFn();
-            }
+                if (retryCount < maxRetries) {
+                    console.log(`[Connection Retry] ${code}: Retrying after error (${retryCount + 1}/${maxRetries})...`);
+                    setTimeout(() => attemptConnection(code, retryCount + 1, stopCollaborationFn), retryDelay);
+                } else {
+                    console.error(`[Connection Failed] ${code}: Error after ${maxRetries} retries`);
+                    const iceState = dataConnection.peerConnection?.iceConnectionState;
+                    let errorMsg = 'Failed to establish connection. Please check the share code and try again.';
+                    if (iceState === 'failed') {
+                        errorMsg = 'Connection failed due to network restrictions. This may be due to firewall or NAT settings. Please try:\n\n1. Check your network connection\n2. Try a different network\n3. Ensure both users are on networks that allow peer-to-peer connections';
+                    }
+                    showAlert(errorMsg);
+                    if (stopCollaborationFn) stopCollaborationFn();
+                }
         });
 
         dataConnection.on('close', () => {
