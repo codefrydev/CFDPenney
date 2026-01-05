@@ -1,12 +1,100 @@
 // Peer Collaboration
 import { state } from './state.js';
-import { redrawCanvas } from './canvas.js';
+import { redrawCanvas, denormalizeCoordinates, normalizeCoordinates } from './canvas.js';
+
+// URL Query Parameter Management
+function updateURLWithCode(code) {
+    if (!code) return;
+    const url = new URL(window.location.href);
+    url.searchParams.set('code', code);
+    window.history.replaceState({}, '', url);
+}
+
+function removeCodeFromURL() {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('code');
+    window.history.replaceState({}, '', url);
+}
+
+export function getCodeFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    return code ? code.trim().toUpperCase() : null;
+}
+
+function getShareableURL(code) {
+    if (!code) return null;
+    const url = new URL(window.location.href);
+    url.searchParams.set('code', code);
+    return url.toString();
+}
+
+// Copy code to clipboard
+async function copyCodeToClipboard(code) {
+    if (!code) return false;
+    
+    try {
+        // Use modern Clipboard API if available
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(code);
+            return true;
+        } else {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = code;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.select();
+            const success = document.execCommand('copy');
+            document.body.removeChild(textArea);
+            return success;
+        }
+    } catch (err) {
+        console.error('Failed to copy code:', err);
+        return false;
+    }
+}
+
+// Handle copy button click with visual feedback
+function handleCopyCode(code) {
+    const copyBtn = document.getElementById('btn-copy-code');
+    if (!copyBtn) return;
+    
+    // Copy the full URL with code parameter instead of just the code
+    const shareableURL = getShareableURL(code);
+    const textToCopy = shareableURL || code;
+    
+    copyCodeToClipboard(textToCopy).then(success => {
+        if (success) {
+            // Change icon to checkmark
+            const icon = copyBtn.querySelector('i');
+            if (icon) {
+                icon.setAttribute('data-lucide', 'check');
+                if (window.lucide) {
+                    lucide.createIcons();
+                }
+            }
+            
+            // Reset icon back to copy after 2 seconds
+            setTimeout(() => {
+                if (icon) {
+                    icon.setAttribute('data-lucide', 'copy');
+                    if (window.lucide) {
+                        lucide.createIcons();
+                    }
+                }
+            }, 2000);
+        }
+    });
+}
 
 export function updateConnectionStatus(isConnected, shareCode = null, statusText = null) {
     const statusEl = document.getElementById('connection-status');
     const dotEl = document.getElementById('connection-dot');
     const textEl = document.getElementById('connection-text');
     const codeEl = document.getElementById('share-code-display');
+    const copyBtn = document.getElementById('btn-copy-code');
     const btnEl = document.getElementById('btn-collaborate');
     
     if (!statusEl || !dotEl || !textEl || !btnEl) return;
@@ -41,6 +129,13 @@ export function updateConnectionStatus(isConnected, shareCode = null, statusText
         if (shareCode) {
             codeEl.textContent = shareCode;
             codeEl.classList.remove('hidden');
+            if (copyBtn) {
+                copyBtn.classList.remove('hidden');
+                // Set up copy button event listener
+                copyBtn.onclick = () => handleCopyCode(shareCode);
+            }
+        } else {
+            if (copyBtn) copyBtn.classList.add('hidden');
         }
         btnEl.innerHTML = '<i data-lucide="users" class="w-4 h-4 inline mr-1"></i><span class="hidden sm:inline">Stop</span>';
         btnEl.style.backgroundColor = 'var(--status-error)';
@@ -52,6 +147,11 @@ export function updateConnectionStatus(isConnected, shareCode = null, statusText
         textEl.title = '';
         codeEl.textContent = shareCode;
         codeEl.classList.remove('hidden');
+        if (copyBtn) {
+            copyBtn.classList.remove('hidden');
+            // Set up copy button event listener
+            copyBtn.onclick = () => handleCopyCode(shareCode);
+        }
         btnEl.innerHTML = '<i data-lucide="users" class="w-4 h-4 inline mr-1"></i><span class="hidden sm:inline">Stop</span>';
     } else if (statusText) {
         // Show status even without share code (e.g., "Connecting...")
@@ -60,10 +160,12 @@ export function updateConnectionStatus(isConnected, shareCode = null, statusText
         textEl.textContent = statusText;
         textEl.title = '';
         codeEl.classList.add('hidden');
+        if (copyBtn) copyBtn.classList.add('hidden');
         btnEl.innerHTML = '<i data-lucide="users" class="w-4 h-4 inline mr-1"></i><span class="hidden sm:inline">Stop</span>';
     } else {
         statusEl.classList.add('hidden');
         codeEl.classList.add('hidden');
+        if (copyBtn) copyBtn.classList.add('hidden');
         btnEl.innerHTML = '<i data-lucide="users" class="w-4 h-4 inline mr-1"></i><span class="hidden sm:inline">Collaborate</span>';
         btnEl.style.backgroundColor = 'var(--button-secondary-bg)';
         btnEl.style.color = 'var(--text-primary)';
@@ -294,6 +396,77 @@ function setupCallHandlers(call, peerId) {
     });
 }
 
+// Helper function to normalize element coordinates for sending
+function normalizeElement(element) {
+    if (!element) return element;
+    
+    const normalized = { ...element };
+    
+    // Normalize start coordinates
+    if (normalized.start && typeof normalized.start.x === 'number' && typeof normalized.start.y === 'number') {
+        const norm = normalizeCoordinates(normalized.start.x, normalized.start.y);
+        normalized.start = { x: norm.x, y: norm.y };
+    }
+    
+    // Normalize end coordinates
+    if (normalized.end && typeof normalized.end.x === 'number' && typeof normalized.end.y === 'number') {
+        const norm = normalizeCoordinates(normalized.end.x, normalized.end.y);
+        normalized.end = { x: norm.x, y: norm.y };
+    }
+    
+    // Normalize points array
+    if (normalized.points && Array.isArray(normalized.points)) {
+        normalized.points = normalized.points.map(point => {
+            if (point && typeof point.x === 'number' && typeof point.y === 'number') {
+                return normalizeCoordinates(point.x, point.y);
+            }
+            return point;
+        });
+    }
+    
+    return normalized;
+}
+
+// Helper function to denormalize element coordinates
+function denormalizeElement(element) {
+    if (!element) return element;
+    
+    const denormalized = { ...element };
+    
+    // Denormalize start coordinates
+    if (denormalized.start && typeof denormalized.start.x === 'number' && typeof denormalized.start.y === 'number') {
+        // Check if coordinates are normalized (0.0-1.0 range) or already pixels
+        // If they're > 1.0, assume they're already pixels (backward compatibility)
+        if (denormalized.start.x <= 1.0 && denormalized.start.y <= 1.0) {
+            const denorm = denormalizeCoordinates(denormalized.start.x, denormalized.start.y);
+            denormalized.start = { x: denorm.x, y: denorm.y };
+        }
+    }
+    
+    // Denormalize end coordinates
+    if (denormalized.end && typeof denormalized.end.x === 'number' && typeof denormalized.end.y === 'number') {
+        if (denormalized.end.x <= 1.0 && denormalized.end.y <= 1.0) {
+            const denorm = denormalizeCoordinates(denormalized.end.x, denormalized.end.y);
+            denormalized.end = { x: denorm.x, y: denorm.y };
+        }
+    }
+    
+    // Denormalize points array
+    if (denormalized.points && Array.isArray(denormalized.points)) {
+        denormalized.points = denormalized.points.map(point => {
+            if (point && typeof point.x === 'number' && typeof point.y === 'number') {
+                // Check if normalized (backward compatibility)
+                if (point.x <= 1.0 && point.y <= 1.0) {
+                    return denormalizeCoordinates(point.x, point.y);
+                }
+            }
+            return point;
+        });
+    }
+    
+    return denormalized;
+}
+
 function handlePeerMessage(message, peerId) {
     const senderPeerId = message.peerId || peerId || 'unknown';
     
@@ -319,15 +492,16 @@ function handlePeerMessage(message, peerId) {
     
     switch (message.type) {
         case 'ANNOTATION_START':
-            // Peer started drawing
+            // Peer started drawing - denormalize coordinates
+            const denormStart = denormalizeCoordinates(message.x, message.y);
             const newPeerElement = {
                 id: message.id || `peer-${Date.now()}-${Math.random()}`,
                 type: message.tool,
                 color: message.color,
                 width: message.width,
-                points: [{ x: message.x, y: message.y }],
-                start: { x: message.x, y: message.y },
-                end: { x: message.x, y: message.y },
+                points: [{ x: denormStart.x, y: denormStart.y }],
+                start: { x: denormStart.x, y: denormStart.y },
+                end: { x: denormStart.x, y: denormStart.y },
                 isPeer: true,
                 isActive: true, // Mark as active drawing
                 peerId: senderPeerId // Track which peer created this
@@ -336,7 +510,8 @@ function handlePeerMessage(message, peerId) {
             redrawCanvas();
             break;
         case 'ANNOTATION_MOVE':
-            // Peer moved while drawing - find the active element by ID or last active element
+            // Peer moved while drawing - denormalize coordinates and find the active element
+            const denormMove = denormalizeCoordinates(message.x, message.y);
             let activePeerEl = null;
             if (message.id) {
                 // Try to find by ID first
@@ -363,9 +538,9 @@ function handlePeerMessage(message, peerId) {
             
             if (activePeerEl) {
                 if (message.tool === 'pencil' || message.tool === 'eraser') {
-                    activePeerEl.points.push({ x: message.x, y: message.y });
+                    activePeerEl.points.push({ x: denormMove.x, y: denormMove.y });
                 } else {
-                    activePeerEl.end = { x: message.x, y: message.y };
+                    activePeerEl.end = { x: denormMove.x, y: denormMove.y };
                 }
                 redrawCanvas();
             } else {
@@ -375,9 +550,9 @@ function handlePeerMessage(message, peerId) {
                     type: message.tool,
                     color: state.color, // Use default color if not provided
                     width: state.strokeWidth, // Use default width if not provided
-                    points: [{ x: message.x, y: message.y }],
-                    start: { x: message.x, y: message.y },
-                    end: { x: message.x, y: message.y },
+                    points: [{ x: denormMove.x, y: denormMove.y }],
+                    start: { x: denormMove.x, y: denormMove.y },
+                    end: { x: denormMove.x, y: denormMove.y },
                     isPeer: true,
                     isActive: true,
                     peerId: senderPeerId
@@ -405,9 +580,10 @@ function handlePeerMessage(message, peerId) {
             redrawCanvas();
             break;
         case 'ANNOTATION_ELEMENT':
-            // Peer added a complete element (e.g., text)
+            // Peer added a complete element (e.g., text) - denormalize coordinates
+            const denormalizedElement = denormalizeElement(message.element);
             state.peerElements.push({
-                ...message.element,
+                ...denormalizedElement,
                 isPeer: true,
                 peerId: senderPeerId
             });
@@ -419,14 +595,17 @@ function handlePeerMessage(message, peerId) {
             redrawCanvas();
             break;
         case 'ANNOTATION_SYNC':
-            // Full state sync
+            // Full state sync - denormalize all element coordinates
             // Mark all synced elements as not active (they're complete)
-            const syncedElements = (message.elements || []).map(el => ({
-                ...el,
-                isPeer: true,
-                isActive: false,
-                peerId: senderPeerId // Elements from sync are from the host
-            }));
+            const syncedElements = (message.elements || []).map(el => {
+                const denormEl = denormalizeElement(el);
+                return {
+                    ...denormEl,
+                    isPeer: true,
+                    isActive: false,
+                    peerId: senderPeerId // Elements from sync are from the host
+                };
+            });
             state.peerElements = syncedElements;
             redrawCanvas();
             break;
@@ -447,10 +626,12 @@ function setupDataConnection(dataConnection, peerId) {
         
         // Send current canvas state to new peer (only if we're the host)
         // Use sendToPeer for targeted message to this specific peer
+        // Normalize coordinates for cross-resolution compatibility
         if (state.isHosting) {
+            const normalizedElements = state.elements.map(el => normalizeElement(el));
             sendToPeer({
                 type: 'ANNOTATION_SYNC',
-                elements: state.elements,
+                elements: normalizedElements,
                 historyStep: state.historyStep
             }, connectionPeerId);
         }
@@ -944,6 +1125,7 @@ export function stopCollaboration() {
     state.shareCode = null;
     state.peerElements = [];
     state.myPeerId = null;
+    removeCodeFromURL();
     updateConnectionStatus(false);
     redrawCanvas();
 }

@@ -22,9 +22,22 @@ export function resizeCanvas() {
 export function getMousePos(e) {
     if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
+    
+    // Calculate scale factors to convert from display coordinates to canvas internal coordinates
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    // Handle edge cases (division by zero)
+    if (!isFinite(scaleX) || !isFinite(scaleY)) {
+        return {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+    }
+    
     return {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY
     };
 }
 
@@ -114,5 +127,23 @@ export function getCanvas() {
 
 export function getCtx() {
     return ctx;
+}
+
+// Normalize coordinates to 0.0-1.0 range for cross-resolution collaboration
+export function normalizeCoordinates(x, y) {
+    if (!canvas) return { x: 0, y: 0 };
+    return {
+        x: canvas.width > 0 ? x / canvas.width : 0,
+        y: canvas.height > 0 ? y / canvas.height : 0
+    };
+}
+
+// Denormalize coordinates from 0.0-1.0 range to pixel coordinates
+export function denormalizeCoordinates(normX, normY) {
+    if (!canvas) return { x: 0, y: 0 };
+    return {
+        x: normX * canvas.width,
+        y: normY * canvas.height
+    };
 }
 

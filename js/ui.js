@@ -1,13 +1,13 @@
 // UI Management
 import { state } from './state.js';
-import { resizeCanvas, redrawCanvas, initCanvas } from './canvas.js';
+import { resizeCanvas, redrawCanvas, initCanvas, normalizeCoordinates } from './canvas.js';
 import { renderTools, renderColors, setTool, setColor, confirmText, initTools, updateTextInputStyle } from './tools.js';
 import { handleStart, handleMove, handleEnd, initDrawing } from './drawing.js';
 import { undo, redo, clearCanvas } from './history.js';
 import { startScreenShare, stopScreenShare, toggleVideoPause, setMode, initScreenShare } from './screenShare.js';
 import { handleImageUpload, initImageUpload } from './imageUpload.js';
 import { downloadSnapshot, initExport } from './export.js';
-import { stopCollaboration, sendToAllPeers } from './collaboration.js';
+import { stopCollaboration, sendToAllPeers, sendToPeer } from './collaboration.js';
 import { showCollaborationModal } from './modal.js';
 
 // Make updateUI available globally for collaboration module
@@ -253,9 +253,14 @@ function setupEventListeners() {
                     if (!newElement.id) {
                         newElement.id = `local-${Date.now()}-${Math.random()}`;
                     }
+                    // Normalize coordinates for cross-resolution compatibility
+                    const normalizedElement = {
+                        ...newElement,
+                        start: normalizeCoordinates(newElement.start.x, newElement.start.y)
+                    };
                     sendToAllPeers({
                         type: 'ANNOTATION_ELEMENT',
-                        element: newElement
+                        element: normalizedElement
                     });
                 }
                 redrawCanvas();
@@ -269,9 +274,14 @@ function setupEventListeners() {
                 if (!newElement.id) {
                     newElement.id = `local-${Date.now()}-${Math.random()}`;
                 }
+                // Normalize coordinates for cross-resolution compatibility
+                const normalizedElement = {
+                    ...newElement,
+                    start: normalizeCoordinates(newElement.start.x, newElement.start.y)
+                };
                 sendToPeer({
                     type: 'ANNOTATION_ELEMENT',
-                    element: newElement
+                    element: normalizedElement
                 });
             }
             redrawCanvas();

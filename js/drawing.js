@@ -1,6 +1,6 @@
 // Drawing Logic
 import { state } from './state.js';
-import { getMousePos, getCanvas, redrawCanvas } from './canvas.js';
+import { getMousePos, getCanvas, redrawCanvas, normalizeCoordinates } from './canvas.js';
 import { setTool, confirmText, startText } from './tools.js';
 import { sendToAllPeers } from './collaboration.js';
 
@@ -34,9 +34,14 @@ export function handleStart(e) {
             if (!newElement.id) {
                 newElement.id = `local-${Date.now()}-${Math.random()}`;
             }
+            // Normalize coordinates for cross-resolution compatibility
+            const normalizedElement = {
+                ...newElement,
+                start: normalizeCoordinates(newElement.start.x, newElement.start.y)
+            };
             sendToAllPeers({
                 type: 'ANNOTATION_ELEMENT',
-                element: newElement
+                element: normalizedElement
             });
         }
         redrawCanvas();
@@ -62,16 +67,17 @@ export function handleStart(e) {
     state.elements.push(newElement);
     state.historyStep++;
 
-    // Send to all peers
+    // Send to all peers (normalize coordinates for cross-resolution compatibility)
     if (state.isCollaborating) {
+        const normalized = normalizeCoordinates(x, y);
         sendToAllPeers({
             type: 'ANNOTATION_START',
             id: elementId,
             tool: state.tool,
             color: newElement.color,
             width: newElement.width,
-            x: x,
-            y: y
+            x: normalized.x,
+            y: normalized.y
         });
     }
 
@@ -89,15 +95,16 @@ export function handleMove(e) {
         currentElement.end = { x, y };
     }
 
-    // Send to all peers
+    // Send to all peers (normalize coordinates for cross-resolution compatibility)
     if (state.isCollaborating) {
         const currentElement = state.elements[state.historyStep];
+        const normalized = normalizeCoordinates(x, y);
         sendToAllPeers({
             type: 'ANNOTATION_MOVE',
             id: currentElement ? currentElement.id : null,
             tool: state.tool,
-            x: x,
-            y: y
+            x: normalized.x,
+            y: normalized.y
         });
     }
 
