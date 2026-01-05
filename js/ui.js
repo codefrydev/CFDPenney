@@ -14,6 +14,7 @@ import { selectElementAtPoint, clearSelection, getElementsInBox } from './select
 import { getHandleAtPoint } from './selection/selectionUI.js';
 import { startMove, moveElement, endMove, startResize, resizeElement, endResize, startRotate, rotateElement, endRotate, deleteElement, nudgeElement } from './selection/manipulation.js';
 import { initStickerPicker } from './stickers/stickerPicker.js';
+import { initShapePicker } from './shapes/shapePicker.js';
 import { createGroup, ungroupElement, isGroup } from './selection/grouping.js';
 
 // Make updateUI available globally for collaboration module
@@ -73,6 +74,9 @@ export function initUI() {
     // Initialize sticker picker
     initStickerPicker();
     
+    // Initialize shape picker
+    initShapePicker();
+    
     // Render initial UI
     renderTools();
     renderColors();
@@ -86,7 +90,11 @@ export function updateUI() {
     window.updateUI = updateUI;
     // Update Tool Buttons
     document.querySelectorAll('.tool-btn').forEach(btn => {
-        if (btn.dataset.tool === state.tool) {
+        const toolId = btn.dataset.tool;
+        const isShapeTool = toolId === 'shapes' && ['line', 'arrow', 'rect', 'circle', 'ellipse', 'triangle', 'diamond', 'star', 'pentagon', 'hexagon', 'octagon'].includes(state.tool);
+        const isActive = toolId === state.tool || isShapeTool;
+        
+        if (isActive) {
             btn.className = 'annotate-tool-btn tool-btn p-3 rounded-xl flex justify-center transition-all duration-200 annotate-tool-btn-active shadow-lg scale-105';
         } else {
             btn.className = 'annotate-tool-btn tool-btn p-3 rounded-xl flex justify-center transition-all duration-200';
@@ -436,13 +444,17 @@ function handleSelectionMove(e) {
     }
     
     // Handle element manipulation
-    if (state.selectedElementId && state.isDrawing) {
+    // Check for resize/rotate first (they don't require isDrawing flag)
+    if (state.selectedElementId) {
         if (state.isResizing) {
-            resizeElement(point);
+            resizeElement(point, e);
+            return;
         } else if (state.isRotating) {
             rotateElement(point);
-        } else {
+            return;
+        } else if (state.isDrawing) {
             moveElement(point);
+            return;
         }
     }
 }

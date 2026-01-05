@@ -2,6 +2,7 @@
 import { state } from './state.js';
 import { TOOLS, COLORS } from './config.js';
 import { openStickerPicker } from './stickers/stickerPicker.js';
+import { openShapePicker } from './shapes/shapePicker.js';
 
 let toolContainer = null;
 let colorContainer = null;
@@ -17,12 +18,55 @@ export function initTools(toolContainerEl, colorContainerEl, textInputEl, fillCo
 
 export function renderTools() {
     if (!toolContainer) return;
-    toolContainer.innerHTML = TOOLS.map(t => `
-        <button data-tool="${t.id}" title="${t.label}" 
-            class="annotate-tool-btn tool-btn p-3 rounded-xl flex justify-center transition-all duration-200 ${state.tool === t.id ? 'annotate-tool-btn-active shadow-lg scale-105' : ''}">
-            <i data-lucide="${t.icon}" class="w-5 h-5 pointer-events-none"></i>
+    
+    // Separate tools into categories
+    const drawingTools = TOOLS.filter(t => t.category === 'drawing');
+    const shapeTools = TOOLS.filter(t => t.category === 'shapes');
+    const stickerTool = TOOLS.find(t => t.id === 'sticker');
+    const utilityTools = TOOLS.filter(t => t.category === 'utilities');
+    
+    let html = '';
+    
+    // Render drawing tools
+    drawingTools.forEach(t => {
+        html += `
+            <button data-tool="${t.id}" title="${t.label}" 
+                class="annotate-tool-btn tool-btn p-3 rounded-xl flex justify-center transition-all duration-200 ${state.tool === t.id ? 'annotate-tool-btn-active shadow-lg scale-105' : ''}">
+                <i data-lucide="${t.icon}" class="w-5 h-5 pointer-events-none"></i>
+            </button>
+        `;
+    });
+    
+    // Render Shapes button (opens picker)
+    const isShapeActive = shapeTools.some(t => state.tool === t.id);
+    html += `
+        <button data-tool="shapes" title="Shapes" 
+            class="annotate-tool-btn tool-btn p-3 rounded-xl flex justify-center transition-all duration-200 ${isShapeActive ? 'annotate-tool-btn-active shadow-lg scale-105' : ''}">
+            <i data-lucide="shapes" class="w-5 h-5 pointer-events-none"></i>
         </button>
-    `).join('');
+    `;
+    
+    // Render sticker tool
+    if (stickerTool) {
+        html += `
+            <button data-tool="${stickerTool.id}" title="${stickerTool.label}" 
+                class="annotate-tool-btn tool-btn p-3 rounded-xl flex justify-center transition-all duration-200 ${state.tool === stickerTool.id ? 'annotate-tool-btn-active shadow-lg scale-105' : ''}">
+                <i data-lucide="${stickerTool.icon}" class="w-5 h-5 pointer-events-none"></i>
+            </button>
+        `;
+    }
+    
+    // Render utility tools
+    utilityTools.forEach(t => {
+        html += `
+            <button data-tool="${t.id}" title="${t.label}" 
+                class="annotate-tool-btn tool-btn p-3 rounded-xl flex justify-center transition-all duration-200 ${state.tool === t.id ? 'annotate-tool-btn-active shadow-lg scale-105' : ''}">
+                <i data-lucide="${t.icon}" class="w-5 h-5 pointer-events-none"></i>
+            </button>
+        `;
+    });
+    
+    toolContainer.innerHTML = html;
 }
 
 export function renderColors() {
@@ -54,6 +98,12 @@ export function setTool(toolId) {
     // Handle sticker tool - open picker
     if (toolId === 'sticker') {
         openStickerPicker();
+        return; // Don't change tool, keep previous tool
+    }
+    
+    // Handle shapes button - open shape picker
+    if (toolId === 'shapes') {
+        openShapePicker();
         return; // Don't change tool, keep previous tool
     }
     

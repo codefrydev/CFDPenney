@@ -108,7 +108,8 @@ export function getHandleAtPoint(point, element) {
         const dy = point.y - handle.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
-        if (distance < HANDLE_SIZE) {
+        // Use larger threshold for easier clicking (handle size + some padding)
+        if (distance < HANDLE_SIZE + 4) {
             return {
                 index: i,
                 position: getHandlePosition(i),
@@ -124,7 +125,8 @@ export function getHandleAtPoint(point, element) {
     const dy = point.y - rotationHandle.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
     
-    if (distance < HANDLE_SIZE) {
+    // Use larger threshold for easier clicking
+    if (distance < HANDLE_SIZE + 4) {
         return { index: -1, position: 'rotate', x: rotationHandle.x, y: rotationHandle.y };
     }
     
