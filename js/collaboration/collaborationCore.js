@@ -51,6 +51,8 @@ export async function startCollaboration() {
         state.peer.on('connection', (dataConnection) => {
             const peerId = dataConnection.peer;
             
+            console.log(`Host received connection from peer ${peerId}, open: ${dataConnection.open}, readyState: ${dataConnection.readyState}`);
+            
             // Check if we already have a connection from this peer
             const existingConnection = state.dataConnections.get(peerId);
             if (existingConnection) {
@@ -63,16 +65,16 @@ export async function startCollaboration() {
                     // Existing connection is not open, replace it with the new one
                     console.log(`Replacing stale connection from peer ${peerId}`);
                     existingConnection.close();
+                    // Remove the stale connection from maps
+                    state.dataConnections.delete(peerId);
+                    state.connectedPeers.delete(peerId);
                 }
             }
             
-            // Store the connection
-            state.dataConnections.set(peerId, dataConnection);
-            state.connectedPeers.set(peerId, {
-                id: peerId,
-                connectedAt: Date.now()
-            });
-            
+            // Don't store the connection yet - wait for it to open
+            // This prevents premature duplicate detection
+            // setupDataConnection will store it when it opens
+            console.log(`Host setting up data connection for peer ${peerId}`);
             setupDataConnection(dataConnection, peerId);
         });
 
