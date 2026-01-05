@@ -8,8 +8,6 @@ function setupCallHandlers(call, peerId) {
     if (!call) return;
 
     call.on('stream', (remoteStream) => {
-        console.log(`[Call] Received stream from ${peerId}`);
-        
         // Display stream in video element
         const videoElem = document.getElementById('screen-video');
         if (videoElem) {
@@ -23,7 +21,6 @@ function setupCallHandlers(call, peerId) {
     });
 
     call.on('close', () => {
-        console.log(`[Call] Closed for peer ${peerId}`);
         state.calls.delete(peerId);
     });
 
@@ -40,8 +37,6 @@ export function setupDataConnection(dataConnection, peerId) {
     const connectionPeerId = peerId || dataConnection.peer;
     const connectionStartTime = Date.now();
     
-    console.log(`[Connection Setup] ${connectionPeerId}: Setting up data connection`);
-    
     // Store the connection
     if (!state.dataConnections.has(connectionPeerId)) {
         state.dataConnections.set(connectionPeerId, dataConnection);
@@ -54,7 +49,6 @@ export function setupDataConnection(dataConnection, peerId) {
     // Helper function to handle connection open
     const handleConnectionOpen = () => {
         state.isCollaborating = true;
-        console.log(`[Connection Opened] ${connectionPeerId}: Connection is now open`);
         
         // Update UI if available
         if (window.updateConnectionStatus) {
@@ -75,8 +69,6 @@ export function setupDataConnection(dataConnection, peerId) {
             
             // Share screen stream with the new peer if available
             if (state.stream && state.peer) {
-                console.log(`[Host] Sharing screen stream with peer ${connectionPeerId}`);
-                
                 // Check if call already exists
                 if (!state.calls.has(connectionPeerId)) {
                     try {
@@ -84,18 +76,11 @@ export function setupDataConnection(dataConnection, peerId) {
                         if (call) {
                             state.calls.set(connectionPeerId, call);
                             setupCallHandlers(call, connectionPeerId);
-                            console.log(`[Host] Successfully initiated call to peer ${connectionPeerId}`);
-                        } else {
-                            console.error(`[Host] Failed to create call to peer ${connectionPeerId}`);
                         }
                     } catch (err) {
                         console.error(`[Host] Error initiating call to ${connectionPeerId}:`, err);
                     }
-                } else {
-                    console.log(`[Host] Call to peer ${connectionPeerId} already exists`);
                 }
-            } else {
-                console.log(`[Host] No stream available yet to share with peer ${connectionPeerId}`);
             }
         }
     };
@@ -103,12 +88,9 @@ export function setupDataConnection(dataConnection, peerId) {
     // Check if connection is already open
     const isAlreadyOpen = dataConnection.open || dataConnection.readyState === 'open';
     if (isAlreadyOpen) {
-        console.log(`[Connection Open] ${connectionPeerId}: Already open`);
         handleConnectionOpen();
     } else {
         dataConnection.on('open', () => {
-            const elapsed = Date.now() - connectionStartTime;
-            console.log(`[Connection Opened] ${connectionPeerId}: Open event fired (${elapsed}ms since setup)`);
             handleConnectionOpen();
         });
     }
@@ -124,9 +106,6 @@ export function setupDataConnection(dataConnection, peerId) {
     });
 
     dataConnection.on('close', () => {
-        const elapsed = Date.now() - connectionStartTime;
-        console.log(`[Connection Closed] ${connectionPeerId}: Closed after ${elapsed}ms`);
-        
         // Remove peer from all Maps
         if (connectionPeerId) {
             state.dataConnections.delete(connectionPeerId);
@@ -165,20 +144,17 @@ export function attemptConnection(code, retryCount = 0, stopCollaborationFn) {
 
     // Prevent duplicates
     if (ongoingConnections.has(code)) {
-        console.log(`[Connection Attempt] ${code}: Already in progress`);
         return;
     }
 
     // Check if already connected
     const existingConnection = state.dataConnections.get(code);
     if (existingConnection && (existingConnection.open || existingConnection.readyState === 'open')) {
-        console.log(`[Connection Attempt] ${code}: Already connected`);
         return;
     }
 
     try {
         ongoingConnections.add(code);
-        console.log(`[Connection Attempt] ${code}: Starting attempt ${retryCount + 1}/${maxRetries + 1}`);
         
         const dataConnection = state.peer.connect(code, {
             reliable: true
@@ -196,7 +172,6 @@ export function attemptConnection(code, retryCount = 0, stopCollaborationFn) {
                 state.connectedPeers.delete(code);
                 
                 if (retryCount < maxRetries) {
-                    console.log(`[Connection Retry] ${code}: Retrying...`);
                     setTimeout(() => attemptConnection(code, retryCount + 1, stopCollaborationFn), retryDelay);
                 } else {
                     console.error(`[Connection Failed] ${code}: Timeout after ${maxRetries} retries`);
@@ -213,8 +188,6 @@ export function attemptConnection(code, retryCount = 0, stopCollaborationFn) {
             ongoingConnections.delete(code);
             
             const hostPeerId = dataConnection.peer || code;
-            const elapsed = Date.now() - connectionStartTime;
-            console.log(`[Connection Success] ${code}: Opened to host ${hostPeerId} in ${elapsed}ms`);
             
             state.dataConnections.set(hostPeerId, dataConnection);
             state.connectedPeers.set(hostPeerId, {
@@ -240,7 +213,6 @@ export function attemptConnection(code, retryCount = 0, stopCollaborationFn) {
             }
             
             if (retryCount < maxRetries) {
-                console.log(`[Connection Retry] ${code}: Retrying after error...`);
                 setTimeout(() => attemptConnection(code, retryCount + 1, stopCollaborationFn), retryDelay);
             } else {
                 console.error(`[Connection Failed] ${code}: Error after ${maxRetries} retries`);
@@ -255,9 +227,6 @@ export function attemptConnection(code, retryCount = 0, stopCollaborationFn) {
             clearTimeout(connectionTimeout);
             ongoingConnections.delete(code);
             
-            const elapsed = Date.now() - connectionStartTime;
-            console.log(`[Connection Closed] ${code}: Closed after ${elapsed}ms`);
-            
             const hostPeerId = dataConnection.peer || code;
             if (state.dataConnections.get(hostPeerId) === dataConnection) {
                 state.dataConnections.delete(hostPeerId);
@@ -265,7 +234,6 @@ export function attemptConnection(code, retryCount = 0, stopCollaborationFn) {
             }
             
             if (!state.isCollaborating && retryCount < maxRetries) {
-                console.log(`[Connection Retry] ${code}: Retrying after close...`);
                 setTimeout(() => attemptConnection(code, retryCount + 1, stopCollaborationFn), retryDelay);
             }
         });

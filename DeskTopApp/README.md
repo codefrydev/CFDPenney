@@ -227,7 +227,7 @@ npm run dev
 1. **Start the App**: Click "Select Screen" to choose what to share
 2. **Begin Sharing**: Click "Start Sharing" to capture the selected screen/window
 3. **Host a Session**: Click "Host Session" to generate a 5-character share code
-4. **Join a Session**: Enter a share code and click "Join Session"
+4. **Share the code**: Give the code to others who want to view your screen (they can join from the web app)
 5. **Use Overlay**: 
    - Press `P` for pointer mode (view only)
    - Press `D` for draw mode (annotate)
@@ -246,11 +246,13 @@ npm run dev
 
 ## Multi-User Collaboration
 
-- **Host**: Generates a share code, accepts multiple joiners
-- **Joiners**: Connect to host via share code
+- **Desktop App (Host)**: Shares screen and generates a share code, accepts multiple viewers
+- **Web App (Viewers)**: Connect to host via share code from the web interface
 - **Everyone can**: Point and draw on the shared screen
 - **Color coding**: Each peer has a unique color based on their peer ID
 - **Real-time sync**: All events broadcasted via WebRTC data channels
+
+**Note**: The Desktop app is for **hosting/sharing** your screen only. Viewers should use the web app at your project URL to join sessions.
 
 ## Debugging Tips
 

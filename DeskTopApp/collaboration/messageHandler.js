@@ -14,8 +14,6 @@ export function setCanvasDimensions(width, height) {
 export function handlePeerMessage(message, peerId) {
     const senderPeerId = message.peerId || peerId || 'unknown';
     
-    console.log('[MessageHandler] Received message:', message.type, 'from', senderPeerId);
-    
     // Forward to screen.js handler for overlay updates
     if (typeof window.handlePeerOverlayEvent === 'function') {
         window.handlePeerOverlayEvent(message);

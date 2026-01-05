@@ -1,6 +1,6 @@
 // Screen Capture and WebRTC Connection (Main Window)
 import { state, getPeerColor } from './state.js';
-import { startCollaboration, joinCollaborationWithCode, stopCollaboration, initPeerJS } from './collaboration/collaborationCore.js';
+import { startCollaboration, stopCollaboration, initPeerJS } from './collaboration/collaborationCore.js';
 import { sendToAllPeers } from './collaboration/messageSender.js';
 import { setCanvasDimensions } from './collaboration/messageHandler.js';
 
@@ -16,9 +16,7 @@ const btnSelectSource = document.getElementById('btn-select-source');
 const btnStartShare = document.getElementById('btn-start-share');
 const btnStopShare = document.getElementById('btn-stop-share');
 const btnHostSession = document.getElementById('btn-host-session');
-const btnJoinSession = document.getElementById('btn-join-session');
 const btnStopSession = document.getElementById('btn-stop-session');
-const joinCodeInput = document.getElementById('join-code-input');
 const statusDot = document.getElementById('status-dot');
 const statusText = document.getElementById('status-text');
 const sourcePicker = document.getElementById('source-picker');
@@ -150,8 +148,6 @@ btnStartShare.addEventListener('click', async () => {
                 }
             });
         }
-        
-        console.log('Screen sharing started');
     } catch (err) {
         console.error('Error starting screen share:', err);
         alert('Failed to start screen sharing: ' + err.message);
@@ -181,31 +177,9 @@ btnHostSession.addEventListener('click', async () => {
         await startCollaboration();
         
         btnHostSession.style.display = 'none';
-        btnJoinSession.style.display = 'none';
-        joinCodeInput.style.display = 'none';
         btnStopSession.style.display = 'block';
     } catch (err) {
         console.error('Error hosting session:', err);
-    }
-});
-
-// Join session
-btnJoinSession.addEventListener('click', async () => {
-    const code = joinCodeInput.value.trim().toUpperCase();
-    if (!code) {
-        alert('Please enter a share code');
-        return;
-    }
-    
-    try {
-        await joinCollaborationWithCode(code);
-        
-        btnHostSession.style.display = 'none';
-        btnJoinSession.style.display = 'none';
-        joinCodeInput.style.display = 'none';
-        btnStopSession.style.display = 'block';
-    } catch (err) {
-        console.error('Error joining session:', err);
     }
 });
 
@@ -214,8 +188,6 @@ btnStopSession.addEventListener('click', () => {
     stopCollaboration();
     
     btnHostSession.style.display = 'block';
-    btnJoinSession.style.display = 'block';
-    joinCodeInput.style.display = 'block';
     btnStopSession.style.display = 'none';
 });
 
@@ -230,25 +202,27 @@ if (window.electronAPI) {
 }
 
 // Create a custom event handler for peer messages that forwards to overlay
+// Send NORMALIZED coordinates to overlay - let overlay denormalize using its own canvas dimensions
 window.handlePeerOverlayEvent = (message) => {
     if (!message || !message.type) return;
     
-    console.log('[Screen] Handling peer overlay event:', message.type, message);
-    
     // Forward overlay-related events to the overlay window via IPC
+    // IMPORTANT: Send normalized (0-1) coordinates, overlay will denormalize
     switch (message.type) {
         case 'POINTER_MOVE':
-            if (window.electronAPI && message.nx !== undefined && message.ny !== undefined) {
-                // Denormalize coordinates for this screen
-                const x = message.nx * (videoElem.videoWidth || 1920);
-                const y = message.ny * (videoElem.videoHeight || 1080);
-                console.log('[Screen] Forwarding pointer move:', x, y);
-                window.electronAPI.sendPointerMove({
-                    peerId: message.peerId,
-                    x: x,
-                    y: y,
-                    color: getPeerColor(message.peerId)
-                });
+            if (window.electronAPI) {
+                // Get normalized coords (either nx/ny or x/y)
+                const nx = message.nx !== undefined ? message.nx : message.x;
+                const ny = message.ny !== undefined ? message.ny : message.y;
+                
+                if (nx !== undefined && ny !== undefined) {
+                    window.electronAPI.sendPointerMove({
+                        peerId: message.peerId,
+                        nx: nx,
+                        ny: ny,
+                        color: getPeerColor(message.peerId)
+                    });
+                }
             }
             break;
             
@@ -256,27 +230,19 @@ window.handlePeerOverlayEvent = (message) => {
         case 'ANNOTATION_START':
         case 'STROKE_START':
             if (window.electronAPI) {
-                // Handle both normalized (nx/ny) and pixel (x/y) coordinates
-                let x, y;
-                if (message.nx !== undefined && message.ny !== undefined) {
-                    x = message.nx * (videoElem.videoWidth || 1920);
-                    y = message.ny * (videoElem.videoHeight || 1080);
-                } else if (message.x !== undefined && message.y !== undefined) {
-                    // Already normalized, denormalize
-                    x = message.x * (videoElem.videoWidth || 1920);
-                    y = message.y * (videoElem.videoHeight || 1080);
-                }
+                // Get normalized coords (either nx/ny or x/y)
+                const nx = message.nx !== undefined ? message.nx : message.x;
+                const ny = message.ny !== undefined ? message.ny : message.y;
                 
-                if (x !== undefined && y !== undefined) {
-                    console.log('[Screen] Forwarding stroke start:', x, y);
+                if (nx !== undefined && ny !== undefined) {
                     window.electronAPI.sendStrokeStart({
                         id: message.id,
                         peerId: message.peerId,
                         tool: message.tool,
                         color: message.color,
                         width: message.width,
-                        x: x,
-                        y: y
+                        nx: nx,
+                        ny: ny
                     });
                 }
             }
@@ -285,22 +251,16 @@ window.handlePeerOverlayEvent = (message) => {
         case 'ANNOTATION_MOVE':
         case 'STROKE_MOVE':
             if (window.electronAPI) {
-                // Handle both normalized (nx/ny) and pixel (x/y) coordinates
-                let x, y;
-                if (message.nx !== undefined && message.ny !== undefined) {
-                    x = message.nx * (videoElem.videoWidth || 1920);
-                    y = message.ny * (videoElem.videoHeight || 1080);
-                } else if (message.x !== undefined && message.y !== undefined) {
-                    x = message.x * (videoElem.videoWidth || 1920);
-                    y = message.y * (videoElem.videoHeight || 1080);
-                }
+                // Get normalized coords (either nx/ny or x/y)
+                const nx = message.nx !== undefined ? message.nx : message.x;
+                const ny = message.ny !== undefined ? message.ny : message.y;
                 
-                if (x !== undefined && y !== undefined) {
+                if (nx !== undefined && ny !== undefined) {
                     window.electronAPI.sendStrokeMove({
                         id: message.id,
                         peerId: message.peerId,
-                        x: x,
-                        y: y
+                        nx: nx,
+                        ny: ny
                     });
                 }
             }
@@ -309,7 +269,6 @@ window.handlePeerOverlayEvent = (message) => {
         case 'ANNOTATION_END':
         case 'STROKE_END':
             if (window.electronAPI) {
-                console.log('[Screen] Forwarding stroke end');
                 window.electronAPI.sendStrokeEnd({
                     id: message.id,
                     peerId: message.peerId
@@ -320,7 +279,6 @@ window.handlePeerOverlayEvent = (message) => {
         case 'ANNOTATION_CLEAR':
         case 'CLEAR_OVERLAY':
             if (window.electronAPI) {
-                console.log('[Screen] Forwarding clear overlay');
                 window.electronAPI.sendClearOverlay();
             }
             break;
@@ -330,8 +288,5 @@ window.handlePeerOverlayEvent = (message) => {
 // Update video dimensions when metadata loads
 videoElem.addEventListener('loadedmetadata', () => {
     setCanvasDimensions(videoElem.videoWidth, videoElem.videoHeight);
-    console.log('Video dimensions:', videoElem.videoWidth, videoElem.videoHeight);
 });
-
-console.log('Screen.js loaded');
 

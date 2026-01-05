@@ -35,8 +35,6 @@ export async function startCollaboration() {
             shareCode += chars.charAt(Math.floor(Math.random() * chars.length));
         }
 
-        console.log('[PeerJS] Creating peer with ID:', shareCode);
-
         state.peer = new Peer(shareCode, {
             debug: 1,
             config: {
@@ -62,7 +60,6 @@ export async function startCollaboration() {
         state.shareCode = shareCode;
 
         state.peer.on('open', (id) => {
-            console.log('[PeerJS] Peer opened with ID:', id);
             state.myPeerId = id;
             
             if (window.updateConnectionStatus) {
@@ -72,12 +69,10 @@ export async function startCollaboration() {
 
         state.peer.on('connection', (dataConnection) => {
             const peerId = dataConnection.peer;
-            console.log(`[Host Connection] Received from peer ${peerId}`);
             
             // Check for existing connection
             const existingConnection = state.dataConnections.get(peerId);
             if (existingConnection && (existingConnection.open || existingConnection.readyState === 'open')) {
-                console.log(`[Host Connection] ${peerId}: Already connected, closing duplicate`);
                 dataConnection.close();
                 return;
             }
@@ -87,11 +82,9 @@ export async function startCollaboration() {
 
         state.peer.on('call', (incomingCall) => {
             const peerId = incomingCall.peer;
-            console.log(`[Host Call] Received from peer ${peerId}`);
             
             // Check for existing call
             if (state.calls.has(peerId)) {
-                console.log(`[Host Call] ${peerId}: Already exists, closing duplicate`);
                 incomingCall.close();
                 return;
             }
@@ -146,8 +139,6 @@ export async function joinCollaborationWithCode(code) {
             state.peer = null;
         }
 
-        console.log('[PeerJS] Creating peer for joining');
-
         state.peer = new Peer({
             debug: 1,
             config: {
@@ -172,7 +163,6 @@ export async function joinCollaborationWithCode(code) {
         let connectionAttempted = false;
 
         state.peer.on('open', (id) => {
-            console.log('[PeerJS] Peer opened with ID:', id);
             state.myPeerId = id;
             
             setTimeout(() => {
@@ -184,10 +174,8 @@ export async function joinCollaborationWithCode(code) {
 
         state.peer.on('call', (incomingCall) => {
             const peerId = incomingCall.peer;
-            console.log(`[Peer Call] Received from host ${peerId}`);
             
             if (state.calls.has(peerId)) {
-                console.log(`[Peer Call] ${peerId}: Already exists, closing duplicate`);
                 incomingCall.close();
                 return;
             }
@@ -253,8 +241,6 @@ function setupCallHandlers(call, peerId) {
     if (!call) return;
 
     call.on('stream', (remoteStream) => {
-        console.log(`[Call] Received stream from ${peerId}`);
-        
         // Display stream in video element
         const videoElem = document.getElementById('screen-video');
         if (videoElem) {
@@ -268,7 +254,6 @@ function setupCallHandlers(call, peerId) {
     });
 
     call.on('close', () => {
-        console.log(`[Call] Closed for peer ${peerId}`);
         state.calls.delete(peerId);
     });
 

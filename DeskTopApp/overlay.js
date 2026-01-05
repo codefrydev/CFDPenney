@@ -52,8 +52,6 @@ function resizeCanvas() {
     
     // Scale context to match DPI
     ctx.scale(dpr, dpr);
-    
-    console.log('Canvas resized:', canvasWidth, 'x', canvasHeight, 'DPR:', dpr);
 }
 
 // Get mouse position relative to canvas
@@ -88,14 +86,6 @@ function startRenderLoop() {
         remotePointers.forEach((pointer, peerId) => {
             renderPointer(pointer, peerId);
         });
-        
-        // Debug logging every 120 frames (~2 seconds at 60fps)
-        frameCount++;
-        if (frameCount % 120 === 0) {
-            if (remoteStrokes.size > 0 || remotePointers.size > 0) {
-                console.log('[Overlay Render] Strokes:', remoteStrokes.size, 'Pointers:', remotePointers.size);
-            }
-        }
         
         animationFrameId = requestAnimationFrame(render);
     }
@@ -291,8 +281,6 @@ function toggleMode(mode) {
     if (window.electronAPI) {
         window.electronAPI.toggleOverlayMode(overlayMode);
     }
-    
-    console.log('Overlay mode:', overlayMode);
 }
 
 // Clear overlay
@@ -315,8 +303,12 @@ function clearOverlay() {
 if (window.electronAPI) {
     // Remote pointer move
     window.electronAPI.onRemotePointerMove((data) => {
-        console.log('[Overlay] Received remote pointer:', data);
-        const { peerId, x, y, color } = data;
+        const { peerId, nx, ny, color } = data;
+        
+        // Denormalize using OUR canvas dimensions
+        const x = nx * canvasWidth;
+        const y = ny * canvasHeight;
+        
         remotePointers.set(peerId, {
             x, y, color,
             timestamp: Date.now()
@@ -333,8 +325,12 @@ if (window.electronAPI) {
     
     // Remote stroke start
     window.electronAPI.onRemoteStrokeStart((data) => {
-        console.log('[Overlay] Received remote stroke start:', data);
-        const { id, peerId, tool, color, width, x, y } = data;
+        const { id, peerId, tool, color, width, nx, ny } = data;
+        
+        // Denormalize using OUR canvas dimensions
+        const x = nx * canvasWidth;
+        const y = ny * canvasHeight;
+        
         remoteStrokes.set(id, {
             id,
             peerId,
@@ -344,12 +340,16 @@ if (window.electronAPI) {
             points: [{ x, y }],
             isActive: true
         });
-        console.log('[Overlay] Remote strokes count:', remoteStrokes.size);
     });
     
     // Remote stroke move
     window.electronAPI.onRemoteStrokeMove((data) => {
-        const { id, x, y } = data;
+        const { id, nx, ny } = data;
+        
+        // Denormalize using OUR canvas dimensions
+        const x = nx * canvasWidth;
+        const y = ny * canvasHeight;
+        
         if (remoteStrokes.has(id)) {
             const stroke = remoteStrokes.get(id);
             stroke.points.push({ x, y });
@@ -358,7 +358,6 @@ if (window.electronAPI) {
     
     // Remote stroke end
     window.electronAPI.onRemoteStrokeEnd((data) => {
-        console.log('[Overlay] Received remote stroke end:', data);
         const { id } = data;
         if (remoteStrokes.has(id)) {
             const stroke = remoteStrokes.get(id);
@@ -368,7 +367,6 @@ if (window.electronAPI) {
     
     // Clear overlay
     window.electronAPI.onClearOverlay(() => {
-        console.log('[Overlay] Clearing overlay');
         remoteStrokes.clear();
         currentStrokeId = null;
         isDrawing = false;
@@ -388,7 +386,6 @@ if (window.electronAPI) {
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('[Overlay] DOMContentLoaded - initializing...');
     initCanvas();
     
     // Add event listeners
@@ -401,9 +398,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Handle window resize
     window.addEventListener('resize', resizeCanvas);
-    
-    console.log('[Overlay] Overlay initialized, canvas size:', canvasWidth, 'x', canvasHeight);
-    console.log('[Overlay] electronAPI available:', !!window.electronAPI);
 });
 
 // Cleanup on unload
