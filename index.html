@@ -304,6 +304,21 @@
 
             <div class="w-8 h-px my-2 shrink-0 divider-horizontal"></div>
 
+            <!-- Fill Controls (only visible for fillable tools) -->
+            <div id="fill-controls" class="flex flex-col space-y-2 px-2 hidden">
+                <!-- Fill Toggle -->
+                <button id="fill-toggle" class="p-3 rounded-xl transition-colors btn-clear" title="Toggle Fill">
+                    <i data-lucide="paint-bucket" class="w-5 h-5"></i>
+                </button>
+                <!-- Fill Color Picker -->
+                <div class="relative group w-6 h-6 mx-auto">
+                    <div class="w-6 h-6 rounded-full border-2 border-gray-500 bg-gradient-to-br from-red-500 to-blue-500 cursor-pointer border-primary"></div>
+                    <input type="color" id="fill-color-picker" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                </div>
+            </div>
+
+            <div class="w-8 h-px my-2 shrink-0 divider-horizontal"></div>
+
             <!-- Clear Action -->
             <button id="btn-clear" class="p-3 rounded-xl transition-colors btn-clear" title="Clear All">
                 <i data-lucide="trash-2" class="w-5 h-5"></i>

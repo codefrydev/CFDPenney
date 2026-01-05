@@ -35,6 +35,8 @@ export function handlePeerMessage(message, peerId) {
                 id: message.id || `peer-${Date.now()}-${Math.random()}`,
                 type: message.tool,
                 color: message.color,
+                fillColor: message.fillColor || message.color,
+                filled: message.filled || false,
                 width: message.width,
                 points: [{ x: denormStart.x, y: denormStart.y }],
                 start: { x: denormStart.x, y: denormStart.y },
@@ -43,6 +45,9 @@ export function handlePeerMessage(message, peerId) {
                 isActive: true, // Mark as active drawing
                 peerId: senderPeerId // Track which peer created this
             };
+            // Add shape-specific properties
+            if (message.sides) newPeerElement.sides = message.sides;
+            if (message.radius !== undefined) newPeerElement.radius = message.radius;
             state.peerElements.push(newPeerElement);
             redrawCanvas();
             break;
@@ -117,7 +122,7 @@ export function handlePeerMessage(message, peerId) {
             redrawCanvas();
             break;
         case 'ANNOTATION_ELEMENT':
-            // Peer added a complete element (e.g., text) - denormalize coordinates
+            // Peer added a complete element (e.g., text, sticker) - denormalize coordinates
             const denormalizedElement = denormalizeElement(message.element);
             state.peerElements.push({
                 ...denormalizedElement,
@@ -125,6 +130,35 @@ export function handlePeerMessage(message, peerId) {
                 peerId: senderPeerId
             });
             redrawCanvas();
+            break;
+        case 'ELEMENT_UPDATE':
+            // Peer updated an element (move, resize, rotate)
+            const peerElement = state.peerElements.find(el => el.id === message.id && el.isPeer);
+            if (peerElement && message.element) {
+                if (message.element.start) {
+                    const denormStart = denormalizeCoordinates(message.element.start.x, message.element.start.y);
+                    peerElement.start = denormStart;
+                }
+                if (message.element.end) {
+                    const denormEnd = denormalizeCoordinates(message.element.end.x, message.element.end.y);
+                    peerElement.end = denormEnd;
+                }
+                if (message.element.points) {
+                    peerElement.points = message.element.points.map(p => denormalizeCoordinates(p.x, p.y));
+                }
+                if (message.element.rotation !== undefined) {
+                    peerElement.rotation = message.element.rotation;
+                }
+                redrawCanvas();
+            }
+            break;
+        case 'ELEMENT_DELETE':
+            // Peer deleted an element
+            const index = state.peerElements.findIndex(el => el.id === message.id && el.isPeer);
+            if (index >= 0) {
+                state.peerElements.splice(index, 1);
+                redrawCanvas();
+            }
             break;
         case 'ANNOTATION_CLEAR':
             // Peer cleared canvas

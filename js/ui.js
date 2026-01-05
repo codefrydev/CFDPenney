@@ -1,7 +1,8 @@
 // UI Management
 import { state } from './state.js';
-import { resizeCanvas, redrawCanvas, initCanvas, normalizeCoordinates } from './canvas.js';
-import { renderTools, renderColors, setTool, setColor, confirmText, initTools, updateTextInputStyle } from './tools.js';
+import { resizeCanvas, redrawCanvas, initCanvas, normalizeCoordinates, getMousePos } from './canvas.js';
+import { renderTools, renderColors, setTool, setColor, setFillColor, toggleFill, confirmText, initTools, updateTextInputStyle } from './tools.js';
+import { TOOLS } from './config.js';
 import { handleStart, handleMove, handleEnd, initDrawing } from './drawing.js';
 import { undo, redo, clearCanvas } from './history.js';
 import { startScreenShare, stopScreenShare, toggleVideoPause, setMode, initScreenShare } from './screenShare.js';
@@ -9,6 +10,11 @@ import { handleImageUpload, initImageUpload } from './imageUpload.js';
 import { downloadSnapshot, initExport } from './export.js';
 import { stopCollaboration, sendToAllPeers, sendToPeer } from './collaboration.js';
 import { showCollaborationModal } from './modal.js';
+import { selectElementAtPoint, clearSelection, getElementsInBox } from './selection/selectionCore.js';
+import { getHandleAtPoint } from './selection/selectionUI.js';
+import { startMove, moveElement, endMove, startResize, resizeElement, endResize, startRotate, rotateElement, endRotate, deleteElement, nudgeElement } from './selection/manipulation.js';
+import { initStickerPicker } from './stickers/stickerPicker.js';
+import { createGroup, ungroupElement, isGroup } from './selection/grouping.js';
 
 // Make updateUI available globally for collaboration module
 window.updateUI = null;
@@ -64,6 +70,9 @@ export function initUI() {
         initExport(videoElem);
     }
     
+    // Initialize sticker picker
+    initStickerPicker();
+    
     // Render initial UI
     renderTools();
     renderColors();
@@ -94,6 +103,20 @@ export function updateUI() {
             btn.classList.add('border-transparent');
         }
     });
+
+    // Update Fill Controls visibility
+    const fillControls = document.getElementById('fill-controls');
+    if (fillControls) {
+        const currentTool = TOOLS.find(t => t.id === state.tool);
+        const shouldShow = currentTool && currentTool.fillable;
+        fillControls.classList.toggle('hidden', !shouldShow);
+        
+        // Update fill toggle state
+        const fillToggle = document.getElementById('fill-toggle');
+        if (fillToggle) {
+            fillToggle.classList.toggle('bg-indigo-600', state.filled);
+        }
+    }
 
     // Update Mode Buttons
     const modeMap = { 'whiteboard': 'board', 'screen': 'screen', 'image': 'image' };
@@ -132,11 +155,35 @@ function setupEventListeners() {
 
     if (!canvas) return;
 
-    // Canvas Interaction
-    canvas.addEventListener('mousedown', handleStart);
-    canvas.addEventListener('mousemove', handleMove);
-    canvas.addEventListener('mouseup', handleEnd);
-    canvas.addEventListener('mouseleave', handleEnd);
+    // Canvas Interaction with selection support
+    canvas.addEventListener('mousedown', (e) => {
+        if (state.tool === 'select') {
+            handleSelectionStart(e);
+        } else {
+            handleStart(e);
+        }
+    });
+    canvas.addEventListener('mousemove', (e) => {
+        if (state.tool === 'select') {
+            handleSelectionMove(e);
+        } else {
+            handleMove(e);
+        }
+    });
+    canvas.addEventListener('mouseup', (e) => {
+        if (state.tool === 'select') {
+            handleSelectionEnd(e);
+        } else {
+            handleEnd(e);
+        }
+    });
+    canvas.addEventListener('mouseleave', (e) => {
+        if (state.tool === 'select') {
+            handleSelectionEnd(e);
+        } else {
+            handleEnd(e);
+        }
+    });
     
     // Touch support
     canvas.addEventListener('touchstart', (e) => {
@@ -300,6 +347,226 @@ function setupEventListeners() {
                 showCollaborationModal();
             }
         });
+    }
+    
+    // Fill color picker
+    const fillColorPicker = document.getElementById('fill-color-picker');
+    if (fillColorPicker) {
+        fillColorPicker.addEventListener('input', (e) => {
+            setFillColor(e.target.value);
+            updateUI();
+        });
+    }
+    
+    // Fill toggle
+    const fillToggle = document.getElementById('fill-toggle');
+    if (fillToggle) {
+        fillToggle.addEventListener('click', () => {
+            toggleFill();
+            updateUI();
+        });
+    }
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', handleKeyboardShortcuts);
+}
+
+// Selection handlers
+function handleSelectionStart(e) {
+    const { x, y } = getMousePos(e);
+    const point = { x, y };
+    
+    // Check for Ctrl/Cmd key for multi-selection
+    const isMultiSelect = e.ctrlKey || e.metaKey;
+    
+    // Check if clicking on a handle
+    if (state.selectedElementId) {
+        const selectedElement = state.elements[state.selectedElementIndex];
+        if (selectedElement) {
+            const handle = getHandleAtPoint(point, selectedElement);
+            if (handle) {
+                if (handle.position === 'rotate') {
+                    startRotate(point);
+                } else {
+                    startResize(point, handle);
+                }
+                return;
+            }
+        }
+    }
+    
+    // Try to select element at point first
+    const elementFound = selectElementAtPoint(point, isMultiSelect);
+    
+    if (elementFound) {
+        // Element was clicked
+        const selectedElement = state.elements[state.selectedElementIndex];
+        if (selectedElement) {
+            // Only start move if not multi-selecting (Ctrl+Click just adds to selection)
+            if (!isMultiSelect) {
+                startMove(point);
+            }
+        }
+        redrawCanvas();
+    } else {
+        // No element clicked - start drag selection box
+        if (!isMultiSelect) {
+            state.isMultiSelecting = true;
+            state.selectionBoxStart = point;
+            state.selectionBoxEnd = point;
+            clearSelection();
+            redrawCanvas();
+        } else {
+            // Ctrl+Click on empty space - just clear if not adding to selection
+            clearSelection();
+            redrawCanvas();
+        }
+    }
+}
+
+function handleSelectionMove(e) {
+    const { x, y } = getMousePos(e);
+    const point = { x, y };
+    
+    // Handle drag selection box (must check this first)
+    if (state.isMultiSelecting && state.selectionBoxStart) {
+        state.selectionBoxEnd = point;
+        redrawCanvas();
+        return;
+    }
+    
+    // Handle element manipulation
+    if (state.selectedElementId && state.isDrawing) {
+        if (state.isResizing) {
+            resizeElement(point);
+        } else if (state.isRotating) {
+            rotateElement(point);
+        } else {
+            moveElement(point);
+        }
+    }
+}
+
+function handleSelectionEnd(e) {
+    // Handle drag selection box end
+    if (state.isMultiSelecting && state.selectionBoxStart && state.selectionBoxEnd) {
+        const selected = getElementsInBox(state.selectionBoxStart, state.selectionBoxEnd);
+        if (selected.length > 0) {
+            // Ensure selectedElementIds is initialized
+            if (!state.selectedElementIds) {
+                state.selectedElementIds = [];
+            }
+            
+            state.selectedElementIds = selected.map(s => s.element.id);
+            if (selected.length === 1) {
+                state.selectedElementId = selected[0].element.id;
+                state.selectedElementIndex = selected[0].index;
+                state.selectedElementIds = [selected[0].element.id];
+            } else {
+                // Multiple elements selected
+                state.selectedElementId = selected[0].element.id;
+                state.selectedElementIndex = selected[0].index;
+                console.log('Multi-selection: Selected', selected.length, 'elements:', state.selectedElementIds);
+            }
+        } else {
+            // No elements in selection box
+            clearSelection();
+        }
+        state.isMultiSelecting = false;
+        state.selectionBoxStart = null;
+        state.selectionBoxEnd = null;
+        redrawCanvas();
+        return;
+    }
+    
+    // Handle element manipulation end
+    if (state.isResizing) {
+        endResize();
+    } else if (state.isRotating) {
+        endRotate();
+    } else if (state.selectedElementId && state.isDrawing) {
+        endMove();
+    }
+    
+    state.isDrawing = false;
+}
+
+// Keyboard shortcuts
+function handleKeyboardShortcuts(e) {
+    // Delete key
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (state.selectedElementId && state.tool === 'select') {
+            e.preventDefault();
+            deleteElement();
+            updateUI();
+        }
+    }
+    
+    // Group (Ctrl+G / Cmd+G)
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'g' || e.key === 'G') && !e.shiftKey) {
+        if (state.tool === 'select') {
+            e.preventDefault();
+            // Ensure selectedElementIds is initialized
+            if (!state.selectedElementIds) {
+                state.selectedElementIds = [];
+            }
+            
+            // Use selectedElementIds if we have multiple, otherwise check current selection
+            let idsToGroup = [];
+            
+            if (state.selectedElementIds && state.selectedElementIds.length >= 2) {
+                idsToGroup = [...state.selectedElementIds];
+            } else if (state.selectedElementId) {
+                // Only one element selected - can't group
+                console.log('Grouping: Need at least 2 elements selected. Currently have 1.');
+                return;
+            }
+            
+            if (idsToGroup.length >= 2) {
+                console.log('Grouping: Attempting to group', idsToGroup.length, 'elements');
+                const group = createGroup(idsToGroup);
+                if (group) {
+                    console.log('Grouping: Successfully created group');
+                }
+                updateUI();
+            } else {
+                console.log('Grouping: Not enough elements selected. Have:', idsToGroup.length);
+            }
+        }
+    }
+    
+    // Ungroup (Ctrl+Shift+G / Cmd+Shift+G)
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'G') {
+        if (state.tool === 'select' && state.selectedElementId) {
+            const element = state.elements[state.selectedElementIndex];
+            if (isGroup(element)) {
+                e.preventDefault();
+                ungroupElement(element);
+                updateUI();
+            }
+        }
+    }
+    
+    // Arrow keys for nudging (only when select tool is active and element is selected)
+    if (state.tool === 'select' && state.selectedElementId && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+        switch (e.key) {
+            case 'ArrowUp':
+                e.preventDefault();
+                nudgeElement('up');
+                break;
+            case 'ArrowDown':
+                e.preventDefault();
+                nudgeElement('down');
+                break;
+            case 'ArrowLeft':
+                e.preventDefault();
+                nudgeElement('left');
+                break;
+            case 'ArrowRight':
+                e.preventDefault();
+                nudgeElement('right');
+                break;
+        }
     }
 }
 

@@ -1,14 +1,17 @@
 // Tool Management
 import { state } from './state.js';
 import { TOOLS, COLORS } from './config.js';
+import { openStickerPicker } from './stickers/stickerPicker.js';
 
 let toolContainer = null;
 let colorContainer = null;
+let fillColorContainer = null;
 let textInputElem = null;
 
-export function initTools(toolContainerEl, colorContainerEl, textInputEl) {
+export function initTools(toolContainerEl, colorContainerEl, textInputEl, fillColorContainerEl = null) {
     toolContainer = toolContainerEl;
     colorContainer = colorContainerEl;
+    fillColorContainer = fillColorContainerEl;
     textInputElem = textInputEl;
 }
 
@@ -47,6 +50,13 @@ export function renderColors() {
 
 export function setTool(toolId) {
     confirmText(); // Finish any active text
+    
+    // Handle sticker tool - open picker
+    if (toolId === 'sticker') {
+        openStickerPicker();
+        return; // Don't change tool, keep previous tool
+    }
+    
     state.tool = toolId;
 }
 
@@ -55,6 +65,14 @@ export function setColor(colorHex) {
     if(state.textInput) {
         updateTextInputStyle();
     }
+}
+
+export function setFillColor(colorHex) {
+    state.fillColor = colorHex;
+}
+
+export function toggleFill() {
+    state.filled = !state.filled;
 }
 
 // Text Tool Logic

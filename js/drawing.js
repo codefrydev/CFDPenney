@@ -3,6 +3,7 @@ import { state } from './state.js';
 import { getMousePos, getCanvas, redrawCanvas, normalizeCoordinates } from './canvas.js';
 import { setTool, confirmText, startText } from './tools.js';
 import { sendToAllPeers } from './collaboration.js';
+import { handleShapeStart, handleShapeMove, handleShapeEnd, isShapeTool } from './shapes/shapeHandlers.js';
 
 let canvas = null;
 
@@ -23,6 +24,13 @@ export function handleStart(e) {
         } else {
             startText(x, y);
         }
+        return;
+    }
+
+    // Handle shape tools
+    if (isShapeTool(state.tool)) {
+        state.isDrawing = true;
+        handleShapeStart(x, y);
         return;
     }
 
@@ -75,6 +83,8 @@ export function handleStart(e) {
             id: elementId,
             tool: state.tool,
             color: newElement.color,
+            fillColor: newElement.fillColor,
+            filled: newElement.filled,
             width: newElement.width,
             x: normalized.x,
             y: normalized.y
@@ -87,6 +97,13 @@ export function handleStart(e) {
 export function handleMove(e) {
     if (!state.isDrawing) return;
     const { x, y } = getMousePos(e);
+    
+    // Handle shape tools
+    if (isShapeTool(state.tool)) {
+        handleShapeMove(x, y);
+        return;
+    }
+    
     const currentElement = state.elements[state.historyStep];
 
     if (state.tool === 'pencil' || state.tool === 'eraser') {
@@ -112,6 +129,13 @@ export function handleMove(e) {
 }
 
 export function handleEnd(e) {
+    // Handle shape tools
+    if (isShapeTool(state.tool) && state.isDrawing) {
+        handleShapeEnd();
+        state.isDrawing = false;
+        return;
+    }
+    
     if (state.isDrawing && state.isCollaborating) {
         const currentElement = state.elements[state.historyStep];
         if (currentElement) {

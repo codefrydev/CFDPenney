@@ -4,12 +4,38 @@ export const COLORS = [
 ];
 
 export const TOOLS = [
-    { id: 'pencil', icon: 'pencil', label: 'Pen' },
-    { id: 'arrow', icon: 'arrow-right', label: 'Arrow' },
-    { id: 'rect', icon: 'square', label: 'Box' },
-    { id: 'text', icon: 'type', label: 'Text' },
-    { id: 'eraser', icon: 'eraser', label: 'Eraser' },
+    // Drawing tools
+    { id: 'pencil', icon: 'pencil', label: 'Pen', category: 'drawing' },
+    { id: 'eraser', icon: 'eraser', label: 'Eraser', category: 'drawing' },
+    { id: 'text', icon: 'type', label: 'Text', category: 'drawing' },
+    
+    // Shape tools
+    { id: 'line', icon: 'minus', label: 'Line', category: 'shapes', fillable: false },
+    { id: 'arrow', icon: 'arrow-right', label: 'Arrow', category: 'shapes', fillable: false },
+    { id: 'rect', icon: 'square', label: 'Rectangle', category: 'shapes', fillable: true },
+    { id: 'circle', icon: 'circle', label: 'Circle', category: 'shapes', fillable: true },
+    { id: 'ellipse', icon: 'circle', label: 'Ellipse', category: 'shapes', fillable: true },
+    { id: 'triangle', icon: 'triangle', label: 'Triangle', category: 'shapes', fillable: true },
+    { id: 'diamond', icon: 'gem', label: 'Diamond', category: 'shapes', fillable: true },
+    { id: 'star', icon: 'star', label: 'Star', category: 'shapes', fillable: true },
+    { id: 'pentagon', icon: 'hexagon', label: 'Pentagon', category: 'shapes', fillable: true },
+    { id: 'hexagon', icon: 'hexagon', label: 'Hexagon', category: 'shapes', fillable: true },
+    { id: 'octagon', icon: 'hexagon', label: 'Octagon', category: 'shapes', fillable: true },
+    
+    // Stickers
+    { id: 'sticker', icon: 'smile', label: 'Sticker', category: 'stickers' },
+    
+    // Utilities
+    { id: 'select', icon: 'mouse-pointer-2', label: 'Select', category: 'utilities' },
 ];
+
+// Tool categories for UI organization
+export const TOOL_CATEGORIES = {
+    drawing: 'Drawing',
+    shapes: 'Shapes',
+    stickers: 'Stickers',
+    utilities: 'Utilities'
+};
 
 // Discovery Service Configuration
 // Random GUID for discovery peer ID (acts as central registry)

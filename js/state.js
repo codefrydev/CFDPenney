@@ -3,6 +3,8 @@ export const state = {
     mode: 'whiteboard', // 'whiteboard', 'screen', 'image'
     tool: 'pencil',
     color: '#FF3B30',
+    fillColor: '#FF3B30', // Fill color for shapes
+    filled: false, // Whether shapes should be filled
     strokeWidth: 4,
     isDrawing: false,
     elements: [], // History array
@@ -11,6 +13,16 @@ export const state = {
     isVideoPaused: false,
     backgroundImageSrc: null,
     textInput: null, // {x, y, text}
+    // Selection state
+    selectedElementId: null,
+    selectedElementIndex: -1,
+    selectedElementIds: [], // Multi-selection support
+    isResizing: false,
+    isRotating: false,
+    resizeHandle: null,
+    isMultiSelecting: false, // For drag selection box
+    selectionBoxStart: null, // For drag selection
+    selectionBoxEnd: null,
     // Peer collaboration state
     peer: null,
     dataConnections: new Map(), // Map<peerId, DataConnection>
