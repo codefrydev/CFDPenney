@@ -9,11 +9,17 @@
 
 .annotate-toolbar ::-webkit-scrollbar-track {
     background: var(--bg-secondary);
+    border-radius: 3px;
 }
 
 .annotate-toolbar ::-webkit-scrollbar-thumb {
-    background: var(--border-primary);
+    background: var(--border-secondary);
     border-radius: 3px;
+    transition: background var(--transition-base);
+}
+
+.annotate-toolbar ::-webkit-scrollbar-thumb:hover {
+    background: var(--border-tertiary);
 }
 
 /* Cursor logic */
@@ -29,25 +35,44 @@
 input[type=range] {
     -webkit-appearance: none;
     appearance: none;
-    background: transparent; 
+    background: transparent;
+    transition: all var(--transition-base);
+}
+
+input[type=range]:hover::-webkit-slider-thumb {
+    transform: scale(1.2);
+    box-shadow: var(--shadow-md);
 }
 
 input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    height: 16px;
-    width: 16px;
+    height: 18px;
+    width: 18px;
     border-radius: 50%;
-    background: var(--accent-primary);
-    margin-top: -6px; 
+    background: var(--gradient-primary);
+    margin-top: -7px;
     cursor: pointer;
+    border: 2px solid var(--bg-primary);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-base);
+}
+
+input[type=range]::-webkit-slider-thumb:active {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-lg);
 }
 
 input[type=range]::-webkit-slider-runnable-track {
     width: 100%;
-    height: 4px;
+    height: 6px;
     cursor: pointer;
     background: var(--border-primary);
-    border-radius: 2px;
+    border-radius: 3px;
+    transition: background var(--transition-base);
+}
+
+input[type=range]:hover::-webkit-slider-runnable-track {
+    background: var(--border-secondary);
 }
 
 /* Theme-aware colors */
@@ -59,58 +84,145 @@ input[type=range]::-webkit-slider-runnable-track {
 .annotate-toolbar {
     background-color: var(--bg-secondary);
     border-color: var(--border-primary);
-}
-
-.annotate-tool-btn-active {
-    background: var(--button-primary-bg);
-    color: var(--text-inverse);
+    transition: background-color var(--transition-base), border-color var(--transition-base);
 }
 
 .annotate-tool-btn {
     color: var(--text-secondary);
+    transition: all var(--transition-base);
+    position: relative;
+    overflow: hidden;
+}
+
+.annotate-tool-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gradient-primary);
+    opacity: 0;
+    transition: opacity var(--transition-base);
+    border-radius: inherit;
 }
 
 .annotate-tool-btn:hover {
     background-color: var(--bg-tertiary);
     color: var(--text-primary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.annotate-tool-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.annotate-tool-btn-active {
+    background: var(--button-primary-bg);
+    color: var(--text-inverse);
+    box-shadow: var(--shadow-colored);
+    transform: scale(1.05);
+}
+
+.annotate-tool-btn-active::before {
+    opacity: 0.1;
+}
+
+.annotate-tool-btn-active:hover {
+    background: var(--button-primary-hover);
+    box-shadow: var(--shadow-colored-lg);
+    transform: scale(1.08) translateY(-1px);
+}
+
+.annotate-mode-btn {
+    color: var(--text-secondary);
+    transition: all var(--transition-base);
+    position: relative;
+    overflow: hidden;
+}
+
+.annotate-mode-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gradient-primary);
+    opacity: 0;
+    transition: opacity var(--transition-base);
+    border-radius: inherit;
+}
+
+.annotate-mode-btn:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.annotate-mode-btn:active {
+    transform: translateY(0) scale(0.98);
 }
 
 .annotate-mode-btn-active {
     background: var(--button-primary-bg);
     color: var(--text-inverse);
+    box-shadow: var(--shadow-colored);
+    transform: scale(1.02);
 }
 
-.annotate-mode-btn {
-    color: var(--text-secondary);
+.annotate-mode-btn-active::before {
+    opacity: 0.1;
 }
 
-.annotate-mode-btn:hover {
-    background-color: var(--bg-tertiary);
+.annotate-mode-btn-active:hover {
+    background: var(--button-primary-hover);
+    box-shadow: var(--shadow-colored-lg);
+    transform: scale(1.05) translateY(-1px);
 }
 
 .annotate-canvas-wrapper {
     background-color: var(--bg-primary);
+    transition: background-color var(--transition-base);
 }
 
 .annotate-bg-whiteboard {
     background-color: var(--bg-primary);
+    transition: background-color var(--transition-base);
 }
 
 .annotate-bg-screen {
     background-color: var(--bg-primary);
+    transition: background-color var(--transition-base);
 }
 
 .annotate-bg-image {
     background-color: var(--bg-primary);
+    transition: background-color var(--transition-base);
 }
 
 .annotate-placeholder {
     color: var(--text-secondary);
+    transition: color var(--transition-base);
+}
+
+.annotate-placeholder i {
+    transition: all var(--transition-base);
+    opacity: 0.5;
+}
+
+.annotate-placeholder:hover i {
+    opacity: 0.7;
+    transform: scale(1.1);
 }
 
 .annotate-controls {
-    background-color: var(--bg-secondary);
-    border-color: var(--border-primary);
+    background: var(--glass-bg);
+    backdrop-filter: var(--backdrop-blur);
+    -webkit-backdrop-filter: var(--backdrop-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow), var(--shadow-lg);
+    transition: all var(--transition-base);
+}
+
+.annotate-controls:hover {
+    box-shadow: var(--glass-shadow), var(--shadow-xl);
 }
 
 .annotate-footer {
@@ -122,24 +234,230 @@ input[type=range]::-webkit-slider-runnable-track {
 /* Mode Switcher Container */
 .mode-switcher-container {
     background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-base);
+}
+
+.mode-switcher-container:hover {
+    box-shadow: var(--shadow-md);
 }
 
 /* Text Input Tool */
 .text-tool-input {
     border-color: var(--accent-primary);
     color: var(--accent-primary);
+    background: var(--glass-bg);
+    backdrop-filter: var(--backdrop-blur);
+    -webkit-backdrop-filter: var(--backdrop-blur);
+    box-shadow: var(--shadow-lg), 0 0 0 2px var(--accent-primary-light);
+    transition: all var(--transition-base);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-weight: 500;
+}
+
+.text-tool-input:focus {
+    outline: none;
+    box-shadow: var(--shadow-xl), 0 0 0 3px var(--input-border-focus-glow);
+    transform: scale(1.02);
 }
 
 /* Connection Status Dot Colors */
 #connection-dot[style*="green"] {
-    background-color: #10b981 !important;
+    background-color: var(--status-online) !important;
+    box-shadow: 0 0 0 2px var(--bg-secondary), 0 0 8px var(--status-online) !important;
 }
 
 #connection-dot[style*="yellow"] {
-    background-color: #f59e0b !important;
+    background-color: var(--status-warning) !important;
+    box-shadow: 0 0 0 2px var(--bg-secondary), 0 0 8px var(--status-warning) !important;
 }
 
 #connection-dot[style*="blue"] {
-    background-color: #3b82f6 !important;
+    background-color: var(--status-info) !important;
+    box-shadow: 0 0 0 2px var(--bg-secondary), 0 0 8px var(--status-info) !important;
+}
+
+/* Video Controls Enhancement */
+#screen-controls button {
+    transition: all var(--transition-base);
+}
+
+#screen-controls button:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-md);
+}
+
+#screen-controls button:active {
+    transform: scale(0.95);
+}
+
+#video-frozen-badge {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.8;
+    }
+}
+
+/* Sticker Picker Styles */
+.sticker-tab {
+    color: var(--text-secondary);
+    border-bottom: 2px solid transparent;
+}
+
+.sticker-tab:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-tertiary);
+}
+
+.sticker-tab-active {
+    color: var(--accent-primary);
+    border-bottom-color: var(--accent-primary);
+}
+
+#sticker-picker-content {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-primary) var(--bg-secondary);
+}
+
+#sticker-picker-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+#sticker-picker-content::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+#sticker-picker-content::-webkit-scrollbar-thumb {
+    background: var(--border-primary);
+    border-radius: 3px;
+}
+
+/* Fill Controls */
+#fill-controls button {
+    color: var(--text-secondary);
+    transition: all var(--transition-base);
+}
+
+#fill-controls button:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+#fill-controls button:active {
+    transform: translateY(0) scale(0.98);
+}
+
+#fill-toggle.bg-indigo-600 {
+    background: var(--button-primary-bg) !important;
+    color: var(--text-inverse) !important;
+    box-shadow: var(--shadow-colored) !important;
+    transform: scale(1.05) !important;
+}
+
+#fill-toggle.bg-indigo-600:hover {
+    background: var(--button-primary-hover) !important;
+    box-shadow: var(--shadow-colored-lg) !important;
+    transform: scale(1.08) translateY(-1px) !important;
+}
+
+/* Shape Picker Styles */
+.shape-tab {
+    color: var(--text-secondary);
+    border-bottom: 2px solid transparent;
+    transition: all var(--transition-base);
+    position: relative;
+}
+
+.shape-tab:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-tertiary);
+}
+
+.shape-tab-active {
+    color: var(--accent-primary);
+    border-bottom-color: var(--accent-primary);
+    background-color: var(--bg-tertiary);
+}
+
+.shape-option {
+    min-height: 80px;
+    transition: all var(--transition-base);
+}
+
+.shape-option:hover {
+    transform: translateY(-2px);
+}
+
+.shape-option-active {
+    background: var(--accent-primary-light) !important;
+    border-color: var(--accent-primary) !important;
+}
+
+.shape-option i {
+    transition: all var(--transition-base);
+}
+
+.shape-option:hover i {
+    transform: scale(1.1);
+}
+
+#shape-picker-content {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-primary) var(--bg-secondary);
+}
+
+#shape-picker-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+#shape-picker-content::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+#shape-picker-content::-webkit-scrollbar-thumb {
+    background: var(--border-primary);
+    border-radius: 3px;
+}
+
+/* Color Swatches Enhancement */
+.color-btn {
+    transition: all var(--transition-base);
+    border-width: 2px;
+}
+
+.color-btn:hover {
+    transform: scale(1.15);
+    box-shadow: var(--shadow-md);
+    z-index: 10;
+    position: relative;
+}
+
+.color-btn.border-white {
+    box-shadow: var(--shadow-lg);
+    transform: scale(1.2);
+}
+
+/* Stroke Indicator Enhancement */
+#stroke-indicator {
+    transition: all var(--transition-base);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Divider Enhancement */
+.divider-horizontal {
+    background: linear-gradient(to right, transparent, var(--border-primary), transparent);
+    opacity: 0.6;
 }
 

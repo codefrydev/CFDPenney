@@ -1,8 +1,9 @@
 // Drawing Logic
 import { state } from './state.js';
-import { getMousePos, getCanvas, redrawCanvas } from './canvas.js';
+import { getMousePos, getCanvas, redrawCanvas, normalizeCoordinates } from './canvas.js';
 import { setTool, confirmText, startText } from './tools.js';
 import { sendToAllPeers } from './collaboration.js';
+import { handleShapeStart, handleShapeMove, handleShapeEnd, isShapeTool } from './shapes/shapeHandlers.js';
 
 let canvas = null;
 
@@ -26,6 +27,13 @@ export function handleStart(e) {
         return;
     }
 
+    // Handle shape tools
+    if (isShapeTool(state.tool)) {
+        state.isDrawing = true;
+        handleShapeStart(x, y);
+        return;
+    }
+
     // If text input is open and we switch tools/click, confirm it first
     if (state.textInput) {
         const newElement = confirmText();
@@ -34,9 +42,14 @@ export function handleStart(e) {
             if (!newElement.id) {
                 newElement.id = `local-${Date.now()}-${Math.random()}`;
             }
+            // Normalize coordinates for cross-resolution compatibility
+            const normalizedElement = {
+                ...newElement,
+                start: normalizeCoordinates(newElement.start.x, newElement.start.y)
+            };
             sendToAllPeers({
                 type: 'ANNOTATION_ELEMENT',
-                element: newElement
+                element: normalizedElement
             });
         }
         redrawCanvas();
@@ -62,16 +75,19 @@ export function handleStart(e) {
     state.elements.push(newElement);
     state.historyStep++;
 
-    // Send to all peers
+    // Send to all peers (normalize coordinates for cross-resolution compatibility)
     if (state.isCollaborating) {
+        const normalized = normalizeCoordinates(x, y);
         sendToAllPeers({
             type: 'ANNOTATION_START',
             id: elementId,
             tool: state.tool,
             color: newElement.color,
+            fillColor: newElement.fillColor,
+            filled: newElement.filled,
             width: newElement.width,
-            x: x,
-            y: y
+            x: normalized.x,
+            y: normalized.y
         });
     }
 
@@ -81,6 +97,13 @@ export function handleStart(e) {
 export function handleMove(e) {
     if (!state.isDrawing) return;
     const { x, y } = getMousePos(e);
+    
+    // Handle shape tools
+    if (isShapeTool(state.tool)) {
+        handleShapeMove(x, y);
+        return;
+    }
+    
     const currentElement = state.elements[state.historyStep];
 
     if (state.tool === 'pencil' || state.tool === 'eraser') {
@@ -89,15 +112,16 @@ export function handleMove(e) {
         currentElement.end = { x, y };
     }
 
-    // Send to all peers
+    // Send to all peers (normalize coordinates for cross-resolution compatibility)
     if (state.isCollaborating) {
         const currentElement = state.elements[state.historyStep];
+        const normalized = normalizeCoordinates(x, y);
         sendToAllPeers({
             type: 'ANNOTATION_MOVE',
             id: currentElement ? currentElement.id : null,
             tool: state.tool,
-            x: x,
-            y: y
+            x: normalized.x,
+            y: normalized.y
         });
     }
 
@@ -105,6 +129,13 @@ export function handleMove(e) {
 }
 
 export function handleEnd(e) {
+    // Handle shape tools
+    if (isShapeTool(state.tool) && state.isDrawing) {
+        handleShapeEnd();
+        state.isDrawing = false;
+        return;
+    }
+    
     if (state.isDrawing && state.isCollaborating) {
         const currentElement = state.elements[state.historyStep];
         if (currentElement) {

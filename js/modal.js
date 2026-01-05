@@ -1,5 +1,6 @@
 // Collaboration Modal Management
 import { startCollaboration, joinCollaborationWithCode } from './collaboration.js';
+import { showAlert } from './popupModal.js';
 
 export function showCollaborationModal() {
     const modal = document.getElementById('collaboration-modal-overlay');
@@ -36,7 +37,7 @@ export function handleJoinSession() {
     const code = joinInput ? joinInput.value.trim().toUpperCase() : '';
     
     if (!code || code.length !== 5) {
-        alert('Please enter a valid 5-character code');
+        showAlert('Please enter a valid 5-character code');
         if (joinInput) joinInput.focus();
         return;
     }

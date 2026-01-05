@@ -5,11 +5,13 @@
 .header-main {
     background-color: var(--bg-primary);
     border-color: var(--border-primary);
-    transition: background-color 0.3s ease, border-color 0.3s ease;
+    transition: background-color var(--transition-base), border-color var(--transition-base);
+    box-shadow: var(--shadow-sm);
 }
 
 .header-logo-text {
     color: var(--text-primary);
+    transition: color var(--transition-base);
 }
 
 .header-online-text {
@@ -25,10 +27,47 @@
     background-color: transparent;
     border: none;
     cursor: pointer;
+    transition: all var(--transition-base);
+    border-radius: 0.5rem;
 }
 
 .theme-toggle-btn:hover {
     background-color: var(--bg-tertiary);
+    transform: scale(1.05);
+    box-shadow: var(--shadow-sm);
+}
+
+.theme-toggle-btn:active {
+    transform: scale(0.95);
+}
+
+.github-link-btn {
+    color: var(--text-secondary);
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all var(--transition-base);
+    border-radius: 0.5rem;
+}
+
+.github-link-btn:hover {
+    background-color: var(--bg-tertiary);
+    transform: scale(1.05);
+    box-shadow: var(--shadow-sm);
+}
+
+.github-link-btn:active {
+    transform: scale(0.95);
+}
+
+.github-link-btn i {
+    color: var(--text-secondary);
+    transition: color var(--transition-base);
+}
+
+.github-link-btn:hover i {
+    color: var(--text-primary);
 }
 
 .theme-icon-light,
@@ -53,6 +92,44 @@
 [data-theme="light"] .theme-icon-light,
 :root:not([data-theme]) .theme-icon-light {
     display: block;
+}
+
+/* ============================================
+   COPY CODE BUTTON
+   ============================================ */
+
+.copy-code-btn {
+    color: var(--text-secondary);
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    transition: all var(--transition-base);
+    border-radius: 0.375rem;
+}
+
+.copy-code-btn:hover {
+    opacity: 1;
+    background-color: var(--bg-tertiary);
+    transform: scale(1.1);
+    box-shadow: var(--shadow-sm);
+}
+
+.copy-code-btn:active {
+    opacity: 0.8;
+    transform: scale(0.95);
+}
+
+.copy-code-btn i {
+    color: var(--text-secondary);
+    transition: color var(--transition-base);
+}
+
+.copy-code-btn:hover i {
+    color: var(--text-primary);
 }
 
 /* ============================================
@@ -86,5 +163,96 @@
     .header-responsive {
         min-height: 56px;
     }
+}
+
+/* ============================================
+   HEADER BUTTON ENHANCEMENTS
+   ============================================ */
+
+/* Action Buttons (Undo/Redo) */
+.btn-action {
+    transition: all var(--transition-base);
+    border-radius: 0.5rem;
+}
+
+.btn-action:hover:not(:disabled) {
+    background-color: var(--bg-tertiary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-action:active:not(:disabled) {
+    transform: translateY(0) scale(0.98);
+}
+
+.btn-action:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Snapshot Button */
+#btn-snapshot {
+    background: var(--button-primary-bg);
+    transition: all var(--transition-base);
+    box-shadow: var(--shadow-sm);
+}
+
+#btn-snapshot:hover {
+    background: var(--button-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-colored);
+}
+
+#btn-snapshot:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* Collaboration Button */
+#btn-collaborate {
+    transition: all var(--transition-base);
+}
+
+#btn-collaborate:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--accent-primary);
+}
+
+#btn-collaborate:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* Connection Status Badge */
+.status-badge {
+    transition: all var(--transition-base);
+    border: 1px solid var(--border-primary);
+}
+
+.status-badge:hover {
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
+}
+
+.status-dot {
+    transition: all var(--transition-base);
+    box-shadow: 0 0 0 2px var(--bg-secondary);
+}
+
+/* Logo Enhancement */
+.header-main h1 {
+    transition: transform var(--transition-base);
+}
+
+.header-main h1:hover {
+    transform: scale(1.02);
+}
+
+.header-main h1 span:last-child {
+    transition: all var(--transition-base);
+}
+
+.header-main h1:hover span:last-child {
+    transform: rotate(-2deg) scale(1.05);
+    box-shadow: var(--shadow-lg);
 }
 

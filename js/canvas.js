@@ -1,5 +1,8 @@
 // Canvas Utilities
 import { state } from './state.js';
+import { renderShape } from './shapes/shapeRenderer.js';
+import { renderSticker } from './stickers/stickerRenderer.js';
+import { renderSelection } from './selection/selectionUI.js';
 
 let canvas = null;
 let ctx = null;
@@ -22,9 +25,22 @@ export function resizeCanvas() {
 export function getMousePos(e) {
     if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
+    
+    // Calculate scale factors to convert from display coordinates to canvas internal coordinates
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    // Handle edge cases (division by zero)
+    if (!isFinite(scaleX) || !isFinite(scaleY)) {
+        return {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+    }
+    
     return {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY
     };
 }
 
@@ -78,12 +94,53 @@ export function drawElements(elements, isPeer = false) {
             ctx.stroke();
         } else if (el.type === 'arrow') {
             drawArrow(ctx, el.start.x, el.start.y, el.end.x, el.end.y);
-        } else if (el.type === 'rect') {
-            ctx.strokeRect(el.start.x, el.start.y, el.end.x - el.start.x, el.end.y - el.start.y);
         } else if (el.type === 'text_rendered') {
             ctx.font = `${el.width * 6}px sans-serif`;
             ctx.fillStyle = el.color;
             ctx.fillText(el.text, el.start.x, el.start.y);
+        } else if (['line', 'rect', 'circle', 'ellipse', 'triangle', 'diamond', 'star', 'pentagon', 'hexagon', 'octagon'].includes(el.type)) {
+            // Render shapes using shape renderer
+            // Shape renderer functions are self-contained and set their own context properties
+            renderShape(ctx, el);
+        } else if (el.type === 'sticker') {
+            // Render stickers
+            renderSticker(ctx, el);
+        } else if (el.type === 'group') {
+            // Render group - draw all children
+            if (el.children) {
+                el.children.forEach(child => {
+                    const childElement = { ...child.element };
+                    // Convert relative positions to absolute
+                    childElement.start = {
+                        x: el.start.x + child.relativeStart.x,
+                        y: el.start.y + child.relativeStart.y
+                    };
+                    childElement.end = {
+                        x: el.start.x + child.relativeEnd.x,
+                        y: el.start.y + child.relativeEnd.y
+                    };
+                    // Recursively render child element
+                    if (['line', 'rect', 'circle', 'ellipse', 'triangle', 'diamond', 'star', 'pentagon', 'hexagon', 'octagon'].includes(childElement.type)) {
+                        renderShape(ctx, childElement);
+                    } else if (childElement.type === 'sticker') {
+                        renderSticker(ctx, childElement);
+                    } else if (childElement.type === 'text_rendered') {
+                        ctx.font = `${childElement.width * 6}px sans-serif`;
+                        ctx.fillStyle = childElement.color;
+                        ctx.fillText(childElement.text, childElement.start.x, childElement.start.y);
+                    } else if (childElement.type === 'pencil' || childElement.type === 'eraser') {
+                        if (childElement.points && childElement.points.length >= 2) {
+                            ctx.moveTo(childElement.points[0].x, childElement.points[0].y);
+                            for (let i = 1; i < childElement.points.length; i++) {
+                                ctx.lineTo(childElement.points[i].x, childElement.points[i].y);
+                            }
+                            ctx.stroke();
+                        }
+                    } else if (childElement.type === 'arrow') {
+                        drawArrow(ctx, childElement.start.x, childElement.start.y, childElement.end.x, childElement.end.y);
+                    }
+                });
+            }
         }
 
         if (isPeer) {
@@ -105,6 +162,9 @@ export function redrawCanvas() {
         drawElements(state.peerElements, true);
     }
 
+    // Draw selection UI
+    renderSelection();
+
     ctx.globalCompositeOperation = 'source-over';
 }
 
@@ -114,5 +174,23 @@ export function getCanvas() {
 
 export function getCtx() {
     return ctx;
+}
+
+// Normalize coordinates to 0.0-1.0 range for cross-resolution collaboration
+export function normalizeCoordinates(x, y) {
+    if (!canvas) return { x: 0, y: 0 };
+    return {
+        x: canvas.width > 0 ? x / canvas.width : 0,
+        y: canvas.height > 0 ? y / canvas.height : 0
+    };
+}
+
+// Denormalize coordinates from 0.0-1.0 range to pixel coordinates
+export function denormalizeCoordinates(normX, normY) {
+    if (!canvas) return { x: 0, y: 0 };
+    return {
+        x: normX * canvas.width,
+        y: normY * canvas.height
+    };
 }
 
