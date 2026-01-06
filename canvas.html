@@ -40,6 +40,26 @@
     <link rel="stylesheet" href="styles/main.css">
     
     <!-- JSON-LD Structured Data -->
+    <!-- Organization Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "@id": "https://codefrydev.in/#organization",
+      "name": "CodeFryDev",
+      "url": "https://codefrydev.in/",
+      "logo": "https://codefrydev.in/CFDPenney/og-image.jpg",
+      "sameAs": [
+        "https://github.com/codefrydev/CFDPenney"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "support"
+      }
+    }
+    </script>
+    
+    <!-- WebApplication Schema -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -47,13 +67,17 @@
       "@id": "https://codefrydev.in/CFDPenney/#webapp",
       "name": "CFD Penney",
       "description": "Collaborative annotation tool for real-time drawing, screen sharing, and image annotation. Draw on whiteboards, annotate screens, and collaborate with others instantly.",
-      "url": "https://codefrydev.in/CFDPenney/",
+      "url": "https://codefrydev.in/CFDPenney/canvas.html",
       "applicationCategory": "DrawingApplication",
       "operatingSystem": "Web Browser",
+      "author": {
+        "@id": "https://codefrydev.in/#organization"
+      },
       "offers": {
         "@type": "Offer",
         "price": "0",
-        "priceCurrency": "USD"
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock"
       },
       "browserRequirements": "Requires JavaScript. Requires HTML5.",
       "softwareVersion": "1.0",
@@ -78,6 +102,29 @@
         "bestRating": 5,
         "worstRating": 1
       }
+    }
+    </script>
+    
+    <!-- BreadcrumbList Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "@id": "https://codefrydev.in/CFDPenney/canvas.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://codefrydev.in/CFDPenney/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Web App",
+          "item": "https://codefrydev.in/CFDPenney/canvas.html"
+        }
+      ]
     }
     </script>
     
