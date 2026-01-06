@@ -1,0 +1,138 @@
+name: Build Desktop Application
+
+# This workflow automatically builds the desktop application for Windows, macOS, and Linux
+# when changes are pushed to the main branch in the DeskTopApp directory.
+#
+# To enable code signing for production releases:
+# 1. Add secrets in GitHub repository settings:
+#    - CSC_LINK: Base64-encoded certificate file
+#    - CSC_KEY_PASSWORD: Certificate password
+# 2. Uncomment the env section in the build steps below
+#
+# For macOS signing, you'll also need:
+# - APPLE_ID: Your Apple ID email
+# - APPLE_APP_SPECIFIC_PASSWORD: App-specific password
+# - APPLE_TEAM_ID: Your Apple Developer Team ID
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'DeskTopApp/**'
+      - '.github/workflows/build-desktop.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'DeskTopApp/**'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            artifact-name: linux
+          - os: windows-latest
+            platform: win
+            artifact-name: windows
+          - os: macos-latest
+            platform: mac
+            artifact-name: macos
+
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: DeskTopApp/package-lock.json
+
+      - name: Install dependencies
+        working-directory: DeskTopApp
+        run: npm ci
+
+      - name: Build application (Linux)
+        if: matrix.platform == 'linux'
+        working-directory: DeskTopApp
+        run: npm run build:linux
+
+      - name: Build application (Windows)
+        if: matrix.platform == 'win'
+        working-directory: DeskTopApp
+        run: npm run build:win
+
+      - name: Build application (macOS)
+        if: matrix.platform == 'mac'
+        working-directory: DeskTopApp
+        run: npm run build:mac
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}-builds
+          path: |
+            DeskTopApp/dist/**
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: List build artifacts
+        working-directory: DeskTopApp
+        shell: bash
+        run: |
+          echo "Build artifacts:"
+          if [ -d "dist" ]; then
+            find dist -type f -exec ls -lh {} \;
+          else
+            echo "No dist directory found"
+          fi
+
+  create-release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: desktop-v${{ github.run_number }}
+          name: Desktop App Build ${{ github.run_number }}
+          body: |
+            ## Desktop Application Build
+            
+            Automated build from commit: ${{ github.sha }}
+            
+            ### Downloads
+            
+            - **Windows**: Installer (.exe) and Portable (.zip)
+            - **macOS**: Disk Image (.dmg) and Archive (.zip)
+            - **Linux**: AppImage and Debian Package (.deb)
+            
+            ### Installation
+            
+            See [README.md](README.md#desktop-application) for installation instructions.
+          files: |
+            artifacts/**/*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

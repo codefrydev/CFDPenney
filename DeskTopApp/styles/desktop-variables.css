@@ -1,0 +1,228 @@
+/* ============================================
+   DESKTOP APP - CSS CUSTOM PROPERTIES
+   Design tokens adapted from main web app
+   ============================================ */
+
+:root {
+    /* Landing Page Brand Colors */
+    --brand-50: #f0f9ff;
+    --brand-100: #e0f2fe;
+    --brand-500: #0ea5e9;
+    --brand-600: #0284c7;
+    --secondary-500: #6366f1;
+    
+    /* CFD Penney Brand Colors */
+    --cfd-orange: #f97316;
+    --cfd-orange-dark: #ea580c;
+    --cfd-gradient: linear-gradient(to right, #f97316, #ea580c);
+    
+    /* Slate Colors */
+    --slate-50: #f8fafc;
+    --slate-100: #f1f5f9;
+    --slate-200: #e2e8f0;
+    --slate-400: #94a3b8;
+    --slate-500: #64748b;
+    --slate-600: #475569;
+    --slate-700: #334155;
+    --slate-800: #1e293b;
+    --slate-900: #0f172a;
+    --white: #ffffff;
+    
+    /* Layout */
+    --max-width: 1280px;
+    
+    /* Light Theme Colors */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f9fafb;
+    --bg-tertiary: #f3f4f6;
+    --bg-gradient-start: #fafbfc;
+    --bg-gradient-end: #f9fafb;
+    
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-tertiary: #94a3b8;
+    --text-inverse: #ffffff;
+    
+    --border-primary: #e2e8f0;
+    --border-secondary: #cbd5e1;
+    --border-tertiary: #94a3b8;
+    
+    /* Enhanced Accent Colors */
+    --accent-primary: #3b82f6;
+    --accent-primary-hover: #2563eb;
+    --accent-primary-light: #dbeafe;
+    --accent-primary-dark: #1e40af;
+    --accent-secondary: #10b981;
+    --accent-secondary-hover: #059669;
+    --accent-indigo: #6366f1;
+    --accent-purple: #8b5cf6;
+    --accent-pink: #ec4899;
+    
+    /* Modern Gradients */
+    --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+    --gradient-primary-subtle: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    --gradient-secondary: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    --gradient-warm: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+    --gradient-cool: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+    
+    /* Enhanced Shadow System */
+    --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+    --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.08), 0 1px 2px -1px rgba(15, 23, 42, 0.08);
+    --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.1), 0 2px 4px -2px rgba(15, 23, 42, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.12), 0 4px 6px -4px rgba(15, 23, 42, 0.08);
+    --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.08);
+    --shadow-2xl: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+    --shadow-colored: 0 10px 15px -3px rgba(99, 102, 241, 0.25), 0 4px 6px -4px rgba(99, 102, 241, 0.15);
+    --shadow-colored-lg: 0 20px 25px -5px rgba(99, 102, 241, 0.3), 0 8px 10px -6px rgba(99, 102, 241, 0.2);
+    
+    /* Glassmorphism */
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.18);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    --backdrop-blur: blur(12px);
+    
+    /* Modal */
+    --modal-overlay: rgba(0, 0, 0, 0.6);
+    --modal-bg: #ffffff;
+    --modal-backdrop: rgba(255, 255, 255, 0.8);
+    
+    /* Input */
+    --input-bg: #ffffff;
+    --input-border: #cbd5e1;
+    --input-border-focus: #6366f1;
+    --input-border-focus-glow: rgba(99, 102, 241, 0.2);
+    --input-disabled-bg: #f3f4f6;
+    --input-disabled-text: #94a3b8;
+    
+    /* Buttons */
+    --button-primary-bg: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    --button-primary-hover: linear-gradient(135deg, #5558e3 0%, #7c3aed 100%);
+    --button-secondary-bg: #ffffff;
+    --button-secondary-border: #cbd5e1;
+    --button-secondary-hover: #f8fafc;
+    --button-secondary-hover-border: #94a3b8;
+    --button-danger-bg: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    --button-danger-hover: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+    
+    /* Status Colors */
+    --status-online: #10b981;
+    --status-online-bg: rgba(16, 185, 129, 0.1);
+    --status-warning: #f59e0b;
+    --status-warning-bg: rgba(245, 158, 11, 0.1);
+    --status-error: #ef4444;
+    --status-error-bg: rgba(239, 68, 68, 0.1);
+    --status-info: #3b82f6;
+    --status-info-bg: rgba(59, 130, 246, 0.1);
+    
+    /* Video */
+    --video-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    --video-overlay: rgba(0, 0, 0, 0.7);
+    
+    /* Animation Timing */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slower: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --ease-in: cubic-bezier(0.4, 0, 1, 1);
+    
+    /* Spacing Scale (4px base unit) */
+    --spacing-xs: 0.25rem;  /* 4px */
+    --spacing-sm: 0.5rem;   /* 8px */
+    --spacing-md: 0.75rem;  /* 12px */
+    --spacing-base: 1rem;   /* 16px */
+    --spacing-lg: 1.5rem;   /* 24px */
+    --spacing-xl: 2rem;     /* 32px */
+    --spacing-2xl: 3rem;    /* 48px */
+}
+
+[data-theme="dark"] {
+    /* Dark Theme Colors */
+    --bg-primary: #111827;
+    --bg-secondary: #1f2937;
+    --bg-tertiary: #374151;
+    --bg-gradient-start: #1f2937;
+    --bg-gradient-end: #111827;
+    
+    --text-primary: #f9fafb;
+    --text-secondary: #d1d5db;
+    --text-tertiary: #9ca3af;
+    --text-inverse: #111827;
+    
+    --border-primary: #374151;
+    --border-secondary: #4b5563;
+    --border-tertiary: #6b7280;
+    
+    /* Enhanced Accent Colors */
+    --accent-primary: #60a5fa;
+    --accent-primary-hover: #3b82f6;
+    --accent-primary-light: #1e3a8a;
+    --accent-primary-dark: #1e40af;
+    --accent-secondary: #34d399;
+    --accent-secondary-hover: #10b981;
+    --accent-indigo: #818cf8;
+    --accent-purple: #a78bfa;
+    --accent-pink: #f472b6;
+    
+    /* Modern Gradients */
+    --gradient-primary: linear-gradient(135deg, #818cf8 0%, #a78bfa 50%, #f472b6 100%);
+    --gradient-primary-subtle: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    --gradient-secondary: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+    --gradient-warm: linear-gradient(135deg, #fbbf24 0%, #f87171 100%);
+    --gradient-cool: linear-gradient(135deg, #22d3ee 0%, #60a5fa 100%);
+    
+    /* Enhanced Shadow System */
+    --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 1px 2px -1px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    --shadow-colored: 0 10px 15px -3px rgba(129, 140, 248, 0.4), 0 4px 6px -4px rgba(129, 140, 248, 0.3);
+    --shadow-colored-lg: 0 20px 25px -5px rgba(129, 140, 248, 0.5), 0 8px 10px -6px rgba(129, 140, 248, 0.4);
+    
+    /* Glassmorphism */
+    --glass-bg: rgba(31, 41, 55, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+    --backdrop-blur: blur(12px);
+    
+    /* Modal */
+    --modal-overlay: rgba(0, 0, 0, 0.8);
+    --modal-bg: #1f2937;
+    --modal-backdrop: rgba(31, 41, 55, 0.8);
+    
+    /* Input */
+    --input-bg: #374151;
+    --input-border: #4b5563;
+    --input-border-focus: #60a5fa;
+    --input-border-focus-glow: rgba(96, 165, 250, 0.4);
+    --input-disabled-bg: #1f2937;
+    --input-disabled-text: #6b7280;
+    
+    /* Buttons */
+    --button-primary-bg: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    --button-primary-hover: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    --button-secondary-bg: #374151;
+    --button-secondary-border: #4b5563;
+    --button-secondary-hover: #4b5563;
+    --button-secondary-hover-border: #6b7280;
+    --button-danger-bg: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    --button-danger-hover: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    
+    /* Status Colors */
+    --status-online: #10b981;
+    --status-online-bg: rgba(16, 185, 129, 0.15);
+    --status-warning: #f59e0b;
+    --status-warning-bg: rgba(245, 158, 11, 0.15);
+    --status-error: #ef4444;
+    --status-error-bg: rgba(239, 68, 68, 0.15);
+    --status-info: #60a5fa;
+    --status-info-bg: rgba(96, 165, 250, 0.15);
+    
+    /* Video */
+    --video-bg: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
+    --video-overlay: rgba(0, 0, 0, 0.85);
+}
+
