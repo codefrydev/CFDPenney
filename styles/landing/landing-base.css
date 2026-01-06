@@ -1,0 +1,63 @@
+/* ============================================
+   LANDING PAGE - BASE STYLES
+   Font imports, resets, and container utilities
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Reset & Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    color: var(--slate-800);
+    background-color: var(--slate-50);
+    line-height: 1.5;
+    overflow-x: hidden;
+    font-size: 16px;
+}
+
+@media (max-width: 640px) {
+    body {
+        font-size: 14px;
+    }
+}
+
+a { text-decoration: none; color: inherit; }
+ul { list-style: none; }
+
+/* Utility Classes */
+.container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.flex { display: flex; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+.flex-col { flex-direction: column; }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 0.75rem; }
+.gap-4 { gap: 1rem; }
+.text-center { text-align: center; }
+.hidden { display: none; }
+
+@media (min-width: 768px) {
+    .md-flex { display: flex; }
+    .md-hidden { display: none; }
+    .md-grid-2 { grid-template-columns: 1fr 1fr; }
+    .md-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .flex-row-md { flex-direction: row; }
+    .text-left-md { text-align: left; }
+}
+

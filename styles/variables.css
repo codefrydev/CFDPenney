@@ -3,6 +3,28 @@
    ============================================ */
 
 :root {
+    /* Landing Page Brand Colors */
+    --brand-50: #f0f9ff;
+    --brand-100: #e0f2fe;
+    --brand-500: #0ea5e9;
+    --brand-600: #0284c7;
+    --secondary-500: #6366f1;
+    
+    /* Landing Page Slate Colors */
+    --slate-50: #f8fafc;
+    --slate-100: #f1f5f9;
+    --slate-200: #e2e8f0;
+    --slate-400: #94a3b8;
+    --slate-500: #64748b;
+    --slate-600: #475569;
+    --slate-700: #334155;
+    --slate-800: #1e293b;
+    --slate-900: #0f172a;
+    --white: #ffffff;
+    
+    /* Layout */
+    --max-width: 1280px;
+    
     /* Light Theme Colors */
     --bg-primary: #ffffff;
     --bg-secondary: #f8fafc;

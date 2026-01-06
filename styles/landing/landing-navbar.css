@@ -1,0 +1,158 @@
+/* ============================================
+   LANDING PAGE - NAVBAR COMPONENT
+   Fixed navigation bar with logo and responsive layout
+   ============================================ */
+
+/* Navbar */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+    background-color: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--slate-200);
+    transition: all 0.3s ease;
+    padding: 0.625rem 1rem;
+}
+
+@media(min-width: 640px) {
+    .navbar {
+        padding: 0.75rem 1.5rem;
+    }
+}
+
+@media(min-width: 768px) {
+    .navbar {
+        padding: 1rem 2rem;
+    }
+}
+
+.nav-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: var(--max-width);
+    margin: 0 auto;
+}
+
+.nav-logo {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    margin: 0;
+    gap: 0.125rem;
+}
+
+@media(min-width: 640px) {
+    .nav-logo {
+        gap: 0.25rem;
+    }
+}
+
+.nav-logo-cfd {
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: var(--slate-900);
+    transition: color 0.2s;
+}
+
+@media(min-width: 640px) {
+    .nav-logo-cfd {
+        font-size: 1.5rem;
+    }
+}
+
+@media(min-width: 768px) {
+    .nav-logo-cfd {
+        font-size: 1.875rem;
+    }
+}
+
+.nav-logo:hover .nav-logo-cfd {
+    color: #2563eb;
+}
+
+.nav-logo-penney {
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: white;
+    background: linear-gradient(to right, #f97316, #ea580c);
+    padding: 0.125rem 0.25rem;
+    transform: rotate(-2deg);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    display: inline-block;
+    border-radius: 0.375rem;
+    transition: box-shadow 0.2s;
+}
+
+@media(min-width: 640px) {
+    .nav-logo-penney {
+        font-size: 1.5rem;
+        padding: 0.125rem 0.375rem;
+    }
+}
+
+@media(min-width: 768px) {
+    .nav-logo-penney {
+        font-size: 1.875rem;
+        padding: 0.125rem 0.5rem;
+    }
+}
+
+.nav-logo:hover .nav-logo-penney {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+@media(min-width: 640px) {
+    .nav-right {
+        gap: 0.625rem;
+    }
+}
+
+@media(min-width: 768px) {
+    .nav-right {
+        gap: 0.75rem;
+    }
+}
+
+.nav-icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.5rem;
+    background-color: var(--slate-100);
+    color: var(--slate-700);
+    transition: all 0.2s;
+    cursor: pointer;
+    border: none;
+}
+
+@media(min-width: 640px) {
+    .nav-icon-btn {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+}
+
+.nav-icon-btn:hover {
+    background-color: var(--slate-200);
+    transform: scale(0.95);
+}
+
+.nav-icon-btn:active {
+    transform: scale(0.9);
+}
+
