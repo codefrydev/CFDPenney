@@ -3,10 +3,25 @@
    ============================================ */
 
 .header-main {
-    background-color: var(--bg-primary);
-    border-color: var(--border-primary);
-    transition: background-color var(--transition-base), border-color var(--transition-base);
-    box-shadow: var(--shadow-sm);
+    background: var(--glass-bg);
+    backdrop-filter: var(--backdrop-blur);
+    -webkit-backdrop-filter: var(--backdrop-blur);
+    border-color: var(--glass-border);
+    border-bottom: 1px solid var(--glass-border);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.header-main::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--border-primary);
+    opacity: 0.3;
 }
 
 .header-logo-text {
@@ -133,7 +148,7 @@
 }
 
 /* ============================================
-   HEADER RESPONSIVENESS
+   HEADER RESPONSIVENESS - ENHANCED
    ============================================ */
 
 .header-responsive {
@@ -141,25 +156,99 @@
     height: auto;
 }
 
-@media (max-width: 639px) {
+/* Mobile Portrait (< 480px) - Ultra Compact */
+@media (max-width: 479px) {
     .header-responsive {
-        min-height: 44px;
+        min-height: 48px;
         padding: 0.5rem 0.75rem;
     }
     
-    .header-online-count {
+    /* Compact logo */
+    .header-main h1 {
+        font-size: 0.875rem;
+    }
+    
+    .header-main h1 span:first-child {
+        font-size: 1rem;
+    }
+    
+    .header-main h1 span:last-child {
+        font-size: 1rem;
+        padding: 0.125rem 0.375rem;
+    }
+    
+    /* Hide all center controls on mobile - they go in toolbar */
+    .header-main > div.flex-1 {
+        display: none !important;
+    }
+    
+    /* Make right side buttons compact */
+    .header-responsive .btn-secondary,
+    .header-responsive .btn-primary,
+    #btn-collaborate,
+    #theme-toggle {
+        min-width: 36px;
+        min-height: 36px;
+        padding: 0.5rem;
+    }
+    
+    .header-responsive .btn-secondary span,
+    .header-responsive .btn-primary span,
+    #btn-collaborate span {
+        display: none;
+    }
+    
+    /* Hide snapshot button on mobile */
+    #btn-snapshot {
+        display: none !important;
+    }
+    
+    /* Make undo/redo more compact */
+    #btn-undo,
+    #btn-redo {
+        padding: 0.5rem;
+        min-width: 36px;
+        min-height: 36px;
+    }
+    
+    /* Compact status badge */
+    #connection-status {
+        padding: 0.375rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    #share-code-display {
         font-size: 0.625rem;
-        padding: 0.25rem 0.5rem;
     }
 }
 
-@media (min-width: 640px) and (max-width: 767px) {
+/* Mobile Landscape / Small Tablets (480px - 767px) */
+@media (min-width: 480px) and (max-width: 767px) {
+    .header-responsive {
+        min-height: 52px;
+        padding: 0.625rem 1rem;
+    }
+    
+    /* Hide center controls, move to toolbar */
+    .header-main > div.flex-1 {
+        display: none !important;
+    }
+    
+    /* Compact buttons */
+    #btn-snapshot {
+        display: none !important;
+    }
+}
+
+/* Tablets (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
     .header-responsive {
         min-height: 52px;
     }
 }
 
-@media (min-width: 768px) {
+/* Desktop (1024px+) */
+@media (min-width: 1024px) {
     .header-responsive {
         min-height: 56px;
     }
@@ -190,21 +279,40 @@
     cursor: not-allowed;
 }
 
-/* Snapshot Button */
+/* Snapshot Button - Primary Theme Color */
 #btn-snapshot {
-    background: var(--button-primary-bg);
-    transition: all var(--transition-base);
-    box-shadow: var(--shadow-sm);
+    background: var(--accent-blue);
+    color: white;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#btn-snapshot::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.15);
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 #btn-snapshot:hover {
-    background: var(--button-primary-hover);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-colored);
+    background: var(--accent-primary-hover);
+    filter: brightness(1.05);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+}
+
+#btn-snapshot:hover::before {
+    opacity: 1;
 }
 
 #btn-snapshot:active {
-    transform: translateY(0) scale(0.98);
+    transform: translateY(0) scale(0.96);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
 }
 
 /* Collaboration Button */
@@ -222,37 +330,68 @@
     transform: translateY(0) scale(0.98);
 }
 
-/* Connection Status Badge */
+/* Connection Status Badge - Enhanced */
 .status-badge {
-    transition: all var(--transition-base);
-    border: 1px solid var(--border-primary);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 .status-badge:hover {
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-md);
     transform: translateY(-1px);
 }
 
 .status-dot {
-    transition: all var(--transition-base);
-    box-shadow: 0 0 0 2px var(--bg-secondary);
+    transition: all 0.3s ease;
+    box-shadow: 0 0 0 2px var(--bg-secondary), 0 0 12px currentColor;
+    position: relative;
 }
 
-/* Logo Enhancement */
+.status-dot::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.3;
+    animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-ring {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.3;
+    }
+    50% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+/* Logo Enhancement with Gradients */
 .header-main h1 {
-    transition: transform var(--transition-base);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .header-main h1:hover {
     transform: scale(1.02);
 }
 
+.header-main h1 span:first-child {
+    color: var(--accent-blue);
+    transition: all 0.3s ease;
+}
+
 .header-main h1 span:last-child {
-    transition: all var(--transition-base);
+    background: var(--accent-orange);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .header-main h1:hover span:last-child {
     transform: rotate(-2deg) scale(1.05);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-pink);
 }
 

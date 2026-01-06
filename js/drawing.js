@@ -14,7 +14,8 @@ export function initDrawing(canvasEl) {
 export function handleStart(e) {
     if (!canvas) return;
     // Don't start drawing if clicking on controls inside canvas (unlikely with Z-index but safety first)
-    if (e.target !== canvas) return;
+    // Note: Skip target check for touch events (synthetic MouseEvents don't have proper target)
+    if (e.target && e.target !== canvas && e.type !== 'mousedown') return;
 
     const { x, y } = getMousePos(e);
 

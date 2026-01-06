@@ -76,7 +76,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: var(--gradient-primary);
+    background: var(--accent-blue);
     opacity: 0;
     transition: opacity var(--transition-base);
     border-radius: inherit;
@@ -249,7 +249,7 @@
 
 /* Gradient Backgrounds */
 .gradient-primary {
-    background: var(--gradient-primary);
+    background: var(--accent-blue);
 }
 
 .gradient-button {
@@ -302,5 +302,187 @@ textarea {
     opacity: 0.5;
     cursor: not-allowed;
     pointer-events: none;
+}
+
+/* ============================================
+   GLASSMORPHISM UTILITIES
+   ============================================ */
+
+.glass {
+    background: var(--glass-bg);
+    backdrop-filter: var(--backdrop-blur);
+    -webkit-backdrop-filter: var(--backdrop-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+}
+
+.glass-light {
+    background: var(--glass-bg-light);
+    backdrop-filter: var(--backdrop-blur);
+    -webkit-backdrop-filter: var(--backdrop-blur);
+    border: 1px solid var(--glass-border-light);
+    box-shadow: var(--glass-shadow-light);
+}
+
+.glass-dark {
+    background: var(--glass-bg-dark);
+    backdrop-filter: var(--backdrop-blur);
+    -webkit-backdrop-filter: var(--backdrop-blur);
+    border: 1px solid var(--glass-border-dark);
+    box-shadow: var(--glass-shadow-dark);
+}
+
+.blur-sm {
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.blur-md {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.blur-lg {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+/* ============================================
+   GRADIENT UTILITIES
+   ============================================ */
+
+.gradient-text {
+    background: var(--accent-blue);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.gradient-text-blue {
+    color: var(--accent-blue);
+}
+
+.gradient-text-purple {
+    color: var(--accent-purple);
+}
+
+.gradient-border {
+    position: relative;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+.gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: var(--accent-blue);
+    z-index: -1;
+}
+
+/* ============================================
+   ANIMATION UTILITIES
+   ============================================ */
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-bounce {
+    animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(-25%);
+        animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+    }
+    50% {
+        transform: translateY(0);
+        animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+    }
+}
+
+.transition-fast {
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.transition-normal {
+    transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.transition-slow {
+    transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================
+   MOBILE UTILITIES
+   ============================================ */
+
+.touch-target {
+    min-width: 44px;
+    min-height: 44px;
+}
+
+.mobile-only {
+    display: none;
+}
+
+@media (max-width: 767px) {
+    .mobile-only {
+        display: block;
+    }
+    
+    .mobile-hidden {
+        display: none !important;
+    }
+    
+    .mobile-flex {
+        display: flex !important;
+    }
+}
+
+.desktop-only {
+    display: block;
+}
+
+@media (max-width: 767px) {
+    .desktop-only {
+        display: none !important;
+    }
+}
+
+/* Touch-specific styles */
+@media (hover: none) and (pointer: coarse) {
+    .hover-lift:active {
+        transform: translateY(-2px);
+    }
+    
+    .hover-scale:active {
+        transform: scale(0.95);
+    }
 }
 

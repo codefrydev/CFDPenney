@@ -195,30 +195,57 @@ function setupEventListeners() {
         }
     });
     
-    // Touch support
+    // Touch support - convert touch events to mouse events
     canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault(); // Prevent scrolling and default touch behavior
         const touch = e.touches[0];
+        
+        // Create synthetic mouse event (target will be set automatically)
         const mouseEvent = new MouseEvent('mousedown', {
             clientX: touch.clientX,
-            clientY: touch.clientY
+            clientY: touch.clientY,
+            bubbles: true
         });
-        handleStart(mouseEvent);
+        
+        if (state.tool === 'select') {
+            handleSelectionStart(mouseEvent);
+        } else {
+            handleStart(mouseEvent);
+        }
     }, { passive: false });
     
     canvas.addEventListener('touchmove', (e) => {
-        e.preventDefault(); 
+        e.preventDefault(); // Prevent scrolling while drawing
         const touch = e.touches[0];
+        
+        // Create synthetic mouse event
         const mouseEvent = new MouseEvent('mousemove', {
             clientX: touch.clientX,
-            clientY: touch.clientY
+            clientY: touch.clientY,
+            bubbles: true
         });
-        handleMove(mouseEvent);
+        
+        if (state.tool === 'select') {
+            handleSelectionMove(mouseEvent);
+        } else {
+            handleMove(mouseEvent);
+        }
     }, { passive: false });
 
-    canvas.addEventListener('touchend', () => {
-        const mouseEvent = new MouseEvent('mouseup', {});
-        handleEnd(mouseEvent);
-    });
+    canvas.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        
+        // Create synthetic mouse event
+        const mouseEvent = new MouseEvent('mouseup', {
+            bubbles: true
+        });
+        
+        if (state.tool === 'select') {
+            handleSelectionEnd(mouseEvent);
+        } else {
+            handleEnd(mouseEvent);
+        }
+    }, { passive: false });
 
     // Tools
     if (toolContainer) {

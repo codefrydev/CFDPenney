@@ -5,6 +5,7 @@ import { closeCollaborationModal, handleHostSession, handleJoinSession } from '.
 import { getCodeFromURL, joinCollaborationWithCode } from './collaboration.js';
 import { state } from './state.js';
 import './popupModal.js'; // Initialize popup modal system
+import './mobile.js'; // Initialize mobile-specific features
 
 // Initialize app
 function init() {

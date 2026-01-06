@@ -65,14 +65,42 @@ body {
 }
 
 /* ============================================
-   MOBILE OPTIMIZATIONS
+   FLUID TYPOGRAPHY
    ============================================ */
 
-@media (max-width: 639px) {
+/* Fluid font sizing that scales smoothly from mobile to desktop */
+html {
+    font-size: clamp(14px, 0.875rem + 0.25vw, 16px);
+}
+
+h1 {
+    font-size: clamp(1.75rem, 2vw + 1rem, 2.5rem);
+}
+
+h2 {
+    font-size: clamp(1.5rem, 1.5vw + 0.875rem, 2rem);
+}
+
+h3 {
+    font-size: clamp(1.25rem, 1.25vw + 0.75rem, 1.75rem);
+}
+
+h4 {
+    font-size: clamp(1.125rem, 1vw + 0.625rem, 1.5rem);
+}
+
+/* ============================================
+   MOBILE OPTIMIZATIONS - ENHANCED
+   ============================================ */
+
+/* All Mobile Devices */
+@media (max-width: 767px) {
     body {
         -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
     }
     
+    /* Prevent zoom on input focus (iOS) */
     input, textarea, select {
         font-size: 16px !important;
     }
@@ -81,15 +109,60 @@ body {
         font-size: 16px !important;
     }
     
-    .touch-target {
+    /* Touch-friendly targets */
+    .touch-target,
+    button,
+    a,
+    input[type="checkbox"],
+    input[type="radio"] {
         min-width: 44px;
         min-height: 44px;
     }
     
     /* Smaller scrollbar on mobile */
     ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
+        width: 6px;
+        height: 6px;
+    }
+    
+    /* Better spacing for touch */
+    button + button,
+    a + a {
+        margin-left: 8px;
+    }
+}
+
+/* Mobile Portrait Only */
+@media (max-width: 479px) {
+    body {
+        font-size: 14px;
+    }
+    
+    /* Tighter spacing on small screens */
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    /* Maximize canvas viewport on mobile */
+    #workspace-container {
+        height: calc(100vh - 48px) !important;
+    }
+}
+
+/* All Mobile */
+@media (max-width: 767px) {
+    /* Full height canvas on mobile */
+    #workspace-container {
+        height: calc(100vh - 52px) !important;
+    }
+    
+    /* Prevent overscroll bounce */
+    body {
+        overscroll-behavior-y: none;
+        position: fixed;
+        width: 100%;
+        height: 100vh;
     }
 }
 
