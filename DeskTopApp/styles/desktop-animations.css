@@ -1,0 +1,186 @@
+/* ============================================
+   DESKTOP APP - ADVANCED ANIMATIONS
+   Micro-interactions and polished animations
+   ============================================ */
+
+/* Staggered fade-in for controls */
+#controls > * {
+    animation: fadeInStagger 0.4s ease-out backwards;
+}
+
+#controls > *:nth-child(1) { animation-delay: 0.05s; }
+#controls > *:nth-child(2) { animation-delay: 0.08s; }
+#controls > *:nth-child(3) { animation-delay: 0.11s; }
+#controls > *:nth-child(4) { animation-delay: 0.14s; }
+#controls > *:nth-child(5) { animation-delay: 0.17s; }
+#controls > *:nth-child(6) { animation-delay: 0.2s; }
+#controls > *:nth-child(7) { animation-delay: 0.23s; }
+#controls > *:nth-child(8) { animation-delay: 0.26s; }
+#controls > *:nth-child(9) { animation-delay: 0.29s; }
+#controls > *:nth-child(10) { animation-delay: 0.32s; }
+
+@keyframes fadeInStagger {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Button press effect */
+button:active:not(:disabled) {
+    transform: scale(0.97);
+}
+
+/* Smooth color transitions */
+* {
+    transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+    transition-timing-function: var(--ease-in-out);
+}
+
+/* Ripple effect on buttons */
+@keyframes ripple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+button {
+    position: relative;
+    overflow: hidden;
+}
+
+button::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: none;
+}
+
+button:active:not(:disabled)::after {
+    animation: ripple 0.6s ease-out;
+}
+
+/* Smooth status transitions */
+#status {
+    animation: slideInFromTop 0.6s ease-out 0.4s backwards;
+}
+
+#status-dot {
+    transition: all var(--transition-base);
+}
+
+#status-dot.connected {
+    animation: statusPulse 2s ease-in-out infinite;
+}
+
+@keyframes statusPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 var(--status-online);
+    }
+    50% {
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+    }
+}
+
+/* Loader animation */
+.button-loader {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Smooth theme transition */
+[data-theme] {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Header entrance */
+#header {
+    animation: headerSlideDown 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes headerSlideDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Video container fade */
+#video-container {
+    animation: fadeIn 0.8s ease-out 0.2s backwards;
+}
+
+/* Modal backdrop animation */
+#source-picker::before {
+    animation: backdropFade 0.3s ease-out;
+}
+
+@keyframes backdropFade {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Source item hover lift */
+.source-item {
+    will-change: transform;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    button:hover {
+        transform: none !important;
+    }
+    
+    .source-item:hover {
+        transform: none !important;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    button {
+        border: 2px solid currentColor;
+    }
+    
+    .source-item {
+        border-width: 3px;
+    }
+}
+
