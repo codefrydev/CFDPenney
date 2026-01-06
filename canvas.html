@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="CFD Penney - Collaborative annotation tool for real-time drawing, screen sharing, and image annotation. Draw on whiteboards, annotate screens, and collaborate with others instantly.">
+    <meta name="keywords" content="collaborative annotation, whiteboard, screen sharing, real-time drawing, annotation tool, online whiteboard, collaborative drawing, screen annotation, image annotation, web annotation, drawing tool, collaboration tool">
+    <meta name="author" content="CFD Penney">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://codefrydev.in/CFDPenney/">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://codefrydev.in/CFDPenney/">
+    <meta property="og:title" content="CFD Penney - Collaborative Annotation Tool">
+    <meta property="og:description" content="Real-time collaborative annotation tool for drawing, screen sharing, and image annotation. Work together seamlessly with instant collaboration.">
+    <meta property="og:image" content="https://codefrydev.in/CFDPenney/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:site_name" content="CFD Penney">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://codefrydev.in/CFDPenney/">
+    <meta name="twitter:title" content="CFD Penney - Collaborative Annotation Tool">
+    <meta name="twitter:description" content="Real-time collaborative annotation tool for drawing, screen sharing, and image annotation. Work together seamlessly with instant collaboration.">
+    <meta name="twitter:image" content="https://codefrydev.in/CFDPenney/og-image.jpg">
+    <meta name="twitter:image:alt" content="CFD Penney - Collaborative Annotation Tool">
+    
+    <title>CFD Penney - Collaborative Annotation Tool</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" href="favicon-32x32.png">
+    <link rel="shortcut icon" href="favicon-32x32.png">
+    
+    <link rel="stylesheet" href="styles/main.css">
+    
+    <!-- JSON-LD Structured Data -->
+    <!-- Organization Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "@id": "https://codefrydev.in/#organization",
+      "name": "CodeFryDev",
+      "url": "https://codefrydev.in/",
+      "logo": "https://codefrydev.in/CFDPenney/og-image.jpg",
+      "sameAs": [
+        "https://github.com/codefrydev/CFDPenney"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "support"
+      }
+    }
+    </script>
+    
+    <!-- WebApplication Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "@id": "https://codefrydev.in/CFDPenney/#webapp",
+      "name": "CFD Penney",
+      "description": "Collaborative annotation tool for real-time drawing, screen sharing, and image annotation. Draw on whiteboards, annotate screens, and collaborate with others instantly.",
+      "url": "https://codefrydev.in/CFDPenney/canvas.html",
+      "applicationCategory": "DrawingApplication",
+      "operatingSystem": "Web Browser",
+      "author": {
+        "@id": "https://codefrydev.in/#organization"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock"
+      },
+      "browserRequirements": "Requires JavaScript. Requires HTML5.",
+      "softwareVersion": "1.0",
+      "featureList": [
+        "Real-time collaborative drawing",
+        "Screen sharing and annotation",
+        "Image upload and annotation",
+        "Whiteboard drawing",
+        "Multiple drawing tools (pen, arrow, box, text, eraser)",
+        "Color customization",
+        "Stroke width adjustment",
+        "Undo/redo functionality",
+        "Snapshot capture",
+        "Dark/light theme support"
+      ],
+      "screenshot": "https://codefrydev.in/CFDPenney/og-image.jpg",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": 5,
+        "ratingCount": 1,
+        "reviewCount": 1,
+        "bestRating": 5,
+        "worstRating": 1
+      }
+    }
+    </script>
+    
+    <!-- BreadcrumbList Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "@id": "https://codefrydev.in/CFDPenney/canvas.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://codefrydev.in/CFDPenney/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Web App",
+          "item": "https://codefrydev.in/CFDPenney/canvas.html"
+        }
+      ]
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "@id": "https://codefrydev.in/CFDPenney/#softwareapp",
+      "name": "CFD Penney",
+      "applicationCategory": "CollaborationApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "description": "A free web-based collaborative annotation tool that enables real-time drawing, screen sharing, and image annotation. Perfect for teams, educators, and anyone who needs to collaborate visually.",
+      "url": "https://codefrydev.in/CFDPenney/",
+      "softwareVersion": "1.0",
+      "releaseNotes": "Initial release with collaborative annotation features",
+      "softwareRequirements": "Modern web browser with JavaScript enabled",
+      "permissions": "Screen sharing permissions required for screen annotation feature",
+      "featureList": [
+        "Collaborative whiteboard",
+        "Screen sharing with annotation",
+        "Image annotation",
+        "Real-time synchronization",
+        "Multiple drawing tools",
+        "Color picker",
+        "Adjustable stroke width",
+        "History management (undo/redo)",
+        "Snapshot export",
+        "Theme customization"
+      ]
+    }
+    </script>
+    
+    <!-- FAQ Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "@id": "https://codefrydev.in/CFDPenney/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is CFD Penney?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "CFD Penney is a free, web-based collaborative annotation tool that enables real-time drawing, screen sharing, and image annotation. It allows multiple users to collaborate visually on whiteboards, screens, or uploaded images."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I start collaborating with others?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Click the 'Collaborate' button in the header. You can either host a session (which creates a room code) or join an existing session by entering a 5-character room code. Share the room code with others to collaborate in real-time."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What drawing tools are available?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "CFD Penney offers several drawing tools: Pen for freehand drawing, Arrow for pointing, Box for rectangles, Text for annotations, and Eraser for removing parts of your drawing."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I annotate my screen?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes! Click the 'Screen' mode button and allow screen sharing permissions. You can then share your screen and annotate over it in real-time, which is perfect for presentations, tutorials, or collaborative reviews."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I upload and annotate images?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, you can upload images by clicking the 'Image' mode button and selecting an image file. Once uploaded, you can annotate over the image using all available drawing tools."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is CFD Penney free to use?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, CFD Penney is completely free to use. No registration or payment is required. Simply visit the website and start collaborating."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What browsers are supported?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "CFD Penney works on all modern web browsers that support JavaScript and HTML5, including Chrome, Firefox, Safari, and Edge. Screen sharing features require browser permissions."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I save my annotations?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, you can use the 'Snapshot' button to capture and save the current state of your canvas. This creates an image file that you can download and share."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does it work on mobile devices?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, CFD Penney is responsive and works on mobile devices. The interface adapts to different screen sizes, making it touch-friendly for tablets and smartphones."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I change colors or stroke width?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Use the sidebar on the left to select colors from the preset palette or use the custom color picker. Adjust stroke width using the slider that appears when you hover over the stroke indicator at the bottom of the sidebar."
+          }
+        }
+      ]
+    }
+    </script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+</head>
+<body class="h-screen flex flex-col overflow-hidden font-sans select-none body-theme">
+
+    <!-- Unified Header -->
+    <header class="header-main border-b p-2.5 sm:p-3 md:p-4 flex items-center justify-between shadow-md header-responsive shrink-0 z-20 backdrop-blur-sm annotate-header">
+        <!-- Left: Logo -->
+        <h1 class="flex items-center select-none cursor-pointer group m-0" onclick="window.location.href='index.html'">
+            <span class="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight header-logo-text group-hover:text-blue-600 transition-colors">CFD</span>
+            <span class="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-white bg-gradient-to-r from-orange-500 to-orange-600 px-1 sm:px-1.5 md:px-2 py-0.5 transform -rotate-2 shadow-lg inline-block ml-0.5 sm:ml-1 rounded-md group-hover:shadow-xl transition-shadow">Penney</span>
+        </h1>
+
+        <!-- Center: Annotation Controls -->
+        <div class="flex items-center space-x-2 flex-1 justify-center mx-4">
+            
+            
+            <!-- Mode Switchers -->
+            <div class="flex bg-gray-700 rounded-lg p-1 space-x-1 mode-switcher-container">
+                <button id="btn-mode-board" class="annotate-mode-btn px-3 py-1.5 rounded-md text-sm font-medium flex items-center space-x-1 transition-colors annotate-mode-btn-active">
+                    <i data-lucide="square" class="w-3.5 h-3.5"></i>
+                    <span>Board</span>
+                </button>
+                <button id="btn-mode-screen" class="annotate-mode-btn px-3 py-1.5 rounded-md text-sm font-medium flex items-center space-x-1 transition-colors">
+                    <i data-lucide="monitor" class="w-3.5 h-3.5"></i>
+                    <span>Screen</span>
+                </button>
+                <button id="btn-mode-image" class="annotate-mode-btn px-3 py-1.5 rounded-md text-sm font-medium flex items-center space-x-1 transition-colors">
+                    <i data-lucide="image" class="w-3.5 h-3.5"></i>
+                    <span>Image</span>
+                </button>
+                <input type="file" id="file-input" class="hidden" accept="image/*">
+            </div>
+
+            <div class="h-6 w-px mx-2 divider-vertical"></div>
+
+            <div class="flex items-center space-x-2">
+                <button id="btn-undo" class="p-2 rounded disabled:opacity-30 disabled:cursor-not-allowed btn-action" disabled>
+                    <i data-lucide="undo" class="w-4 h-4"></i>
+                </button>
+                <button id="btn-redo" class="p-2 rounded disabled:opacity-30 disabled:cursor-not-allowed btn-action" disabled>
+                    <i data-lucide="redo" class="w-4 h-4"></i>
+                </button>
+                <button id="btn-snapshot" class="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors">
+                    <i data-lucide="camera" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Snapshot</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Right: Collaboration & Theme -->
+        <div class="flex items-center gap-2 sm:gap-2.5 md:gap-3">
+            <!-- Connection Status -->
+            <div id="connection-status" class="hidden flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm status-badge">
+                <div id="connection-dot" class="h-2 w-2 rounded-full status-dot"></div>
+                <span id="connection-text" class="text-secondary">Disconnected</span>
+                <span id="share-code-display" class="hidden font-mono font-bold ml-2 text-accent"></span>
+                <button id="btn-copy-code" class="hidden copy-code-btn ml-1 p-1 rounded transition-colors" title="Copy code">
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                </button>
+            </div>
+            <button id="btn-collaborate" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all btn-secondary" title="Start/Stop Collaboration">
+                <i data-lucide="users" class="w-4 h-4 inline mr-1"></i>
+                <span class="hidden sm:inline">Collaborate</span>
+            </button>
+            <button id="theme-toggle" onclick="app.toggleTheme()" class="theme-toggle-btn flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg transition-all active:scale-95" title="Toggle theme">
+                <i data-lucide="sun" class="w-5 h-5 theme-icon-light"></i>
+                <i data-lucide="moon" class="w-5 h-5 theme-icon-dark hidden"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="flex-1 relative overflow-hidden flex bg-primary" id="workspace-container">
+        
+        <!-- Toolbar Sidebar -->
+        <div class="w-20 annotate-toolbar border-r flex flex-col items-center py-5 space-y-3 z-20 shadow-xl shrink-0 h-full overflow-y-auto">
+            
+            <!-- Tools -->
+            <div class="flex flex-col space-y-2.5 w-full px-2.5" id="tool-container">
+                <!-- Generated by JS -->
+            </div>
+
+            <div class="w-10 h-px my-3 shrink-0 divider-horizontal"></div>
+
+            <!-- Colors -->
+            <div class="flex flex-col space-y-2.5 px-2.5" id="color-container">
+                <!-- Generated by JS -->
+                <!-- Custom Color Picker Wrapper -->
+                <div class="relative group w-8 h-8 mx-auto">
+                    <div class="w-8 h-8 rounded-full border-2 border-gray-500 bg-gradient-to-br from-red-500 to-blue-500 cursor-pointer border-primary shadow-md transition-all duration-200 hover:scale-110 hover:shadow-lg"></div>
+                    <input type="color" id="custom-color-picker" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full rounded-full">
+                </div>
+            </div>
+
+            <div class="w-10 h-px my-3 shrink-0 divider-horizontal"></div>
+
+            <!-- Fill Controls (only visible for fillable tools) -->
+            <div id="fill-controls" class="flex flex-col space-y-2.5 px-2.5 hidden">
+                <!-- Fill Toggle -->
+                <button id="fill-toggle" class="p-3.5 rounded-xl transition-all duration-200 btn-clear hover:scale-105 hover:shadow-md" title="Toggle Fill">
+                    <i data-lucide="paint-bucket" class="w-5 h-5"></i>
+                </button>
+                <!-- Fill Color Picker -->
+                <div class="relative group w-8 h-8 mx-auto">
+                    <div class="w-8 h-8 rounded-full border-2 border-gray-500 bg-gradient-to-br from-red-500 to-blue-500 cursor-pointer border-primary shadow-md transition-all duration-200 hover:scale-110 hover:shadow-lg"></div>
+                    <input type="color" id="fill-color-picker" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full rounded-full">
+                </div>
+            </div>
+
+            <div class="w-10 h-px my-3 shrink-0 divider-horizontal"></div>
+
+            <!-- Clear Action -->
+            <button id="btn-clear" class="p-3.5 rounded-xl transition-all duration-200 btn-clear hover:scale-105 hover:shadow-md" title="Clear All">
+                <i data-lucide="trash-2" class="w-5 h-5"></i>
+            </button>
+
+            <!-- Stroke Width Slider -->
+            <div class="mt-auto mb-5 group relative px-2.5">
+                <div class="p-3 rounded-xl cursor-pointer bg-tertiary transition-all duration-200 hover:shadow-md hover:scale-105">
+                    <div id="stroke-indicator" class="w-5 bg-white rounded-full mx-auto stroke-indicator transition-all duration-200"></div>
+                </div>
+                <div class="absolute left-full ml-3 bottom-0 p-4 rounded-xl border hidden group-hover:flex flex-col space-y-3 w-36 shadow-2xl z-50 annotate-controls backdrop-blur-sm">
+                    <span class="text-xs font-semibold text-secondary uppercase tracking-wide">Stroke Width</span>
+                    <input type="range" id="stroke-slider" min="2" max="30" value="4" class="w-full accent-indigo-500">
+                </div>
+            </div>
+        </div>
+
+        <!-- Canvas Area -->
+        <div class="flex-1 relative overflow-hidden flex items-center justify-center canvas-container annotate-canvas-wrapper" id="canvas-wrapper">
+            
+            <!-- Background Layer -->
+            <div id="background-layer" class="absolute inset-0 flex items-center justify-center pointer-events-none w-full h-full">
+                <!-- Whiteboard BG -->
+                <div id="bg-whiteboard" class="w-full h-full annotate-bg-whiteboard transition-colors duration-500"></div>
+                
+                <!-- Screen/Video BG -->
+                <div id="bg-screen" class="hidden w-full h-full relative flex items-center justify-center">
+                    <video id="screen-video" autoplay playsinline muted class="max-w-full max-h-full object-contain"></video>
+                    
+                    <div id="screen-placeholder" class="absolute inset-0 flex flex-col items-center justify-center annotate-placeholder bg-primary">
+                        <i data-lucide="monitor" class="mb-4 opacity-50 w-16 h-16"></i>
+                        <p class="text-xl font-medium">Click "Screen" to start sharing</p>
+                    </div>
+
+                    <!-- Screen Controls -->
+                    <div id="screen-controls" class="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-2 pointer-events-auto backdrop-blur-sm p-2 rounded-full border shadow-2xl z-30 hidden annotate-controls">
+                        <button id="btn-pause-video" class="p-2 hover:bg-white/10 rounded-full text-white transition-colors">
+                            <i id="icon-pause" data-lucide="pause" class="w-5 h-5"></i>
+                            <i id="icon-play" data-lucide="play" class="w-5 h-5 hidden"></i>
+                        </button>
+                        <div class="w-px my-1 divider-vertical"></div>
+                        <button id="btn-stop-share" class="p-2 hover:bg-red-500/20 text-red-400 rounded-full transition-colors">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+
+                    <div id="video-frozen-badge" class="absolute top-4 left-1/2 -translate-x-1/2 bg-yellow-500/90 text-black px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg hidden">
+                        Video Frozen
+                    </div>
+                </div>
+
+                <!-- Image BG -->
+                <div id="bg-image" class="hidden w-full h-full relative flex items-center justify-center">
+                    <img id="uploaded-image" src="" class="max-w-full max-h-full object-contain select-none hidden" alt="Annotation Background">
+                    <div id="image-placeholder" class="annotate-placeholder flex flex-col items-center">
+                        <i data-lucide="image" class="mb-2 opacity-50 w-12 h-12"></i>
+                        <span>No image selected</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Drawing Canvas -->
+            <canvas id="main-canvas" class="absolute inset-0 w-full h-full cursor-crosshair z-10"></canvas>
+
+            <!-- Text Input Overlay (Hidden by default) -->
+            <input type="text" id="text-tool-input" class="absolute z-20 bg-transparent border outline-none p-1 rounded shadow-lg min-w-[100px] hidden text-tool-input" placeholder="Type..." autocomplete="off">
+
+        </div>
+    </div>
+    <!-- Collaboration Modal -->
+    <div id="collaboration-modal-overlay" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onclick="closeCollaborationModal(event)">
+        <div id="collaboration-modal" class="relative bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full border border-gray-700 modal-bg" onclick="event.stopPropagation()">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-6 border-b modal-header-border">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center modal-icon-container">
+                        <i data-lucide="users" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold modal-title">Collaboration</h2>
+                </div>
+                <button id="close-collaboration-modal" class="w-8 h-8 flex items-center justify-center rounded-lg transition-colors modal-close-btn" onclick="closeCollaborationModal()">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6 space-y-4">
+                <!-- Host Session -->
+                <button id="btn-host-session" class="w-full p-5 rounded-xl border-2 transition-all hover:border-indigo-500 hover:shadow-lg text-left group modal-host-btn" onclick="handleHostSession()">
+                    <div class="font-bold text-lg mb-1 modal-host-title">Host Session</div>
+                    <div class="text-sm modal-host-description">Create a room and share your screen</div>
+                </button>
+
+                <!-- OR Separator -->
+                <div class="flex items-center gap-4">
+                    <div class="flex-1 h-px modal-separator"></div>
+                    <span class="text-sm font-medium modal-separator-text">OR</span>
+                    <div class="flex-1 h-px modal-separator"></div>
+                </div>
+
+                <!-- Join Session -->
+                <div class="flex gap-3">
+                    <input 
+                        type="text" 
+                        id="join-code-input" 
+                        placeholder="ENTER CODE" 
+                        maxlength="5"
+                        class="flex-1 px-4 py-3 rounded-xl border-2 focus:outline-none focus:border-indigo-500 transition-all font-mono text-center text-lg tracking-widest uppercase modal-input"
+                        onkeydown="if(event.key === 'Enter') handleJoinSession()"
+                    >
+                    <button 
+                        id="btn-join-session" 
+                        class="px-6 py-3 rounded-xl font-semibold text-white transition-all hover:shadow-lg modal-join-btn"
+                        onclick="handleJoinSession()"
+                    >
+                        Join
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup Modal for Alerts and Confirmations -->
+    <div id="popup-modal-overlay" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onclick="handlePopupModalOverlayClick(event)">
+        <div id="popup-modal" class="hidden relative bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-auto border border-gray-700 modal-bg" onclick="event.stopPropagation()">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-6 border-b modal-header-border">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center modal-icon-container">
+                        <i data-lucide="alert-triangle" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <h2 id="popup-modal-title" class="text-2xl font-bold modal-title">Alert</h2>
+                </div>
+                <button id="popup-modal-close" class="w-8 h-8 flex items-center justify-center rounded-lg transition-colors modal-close-btn">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="p-6 pt-4">
+                <p id="popup-modal-message" class="modal-message-text"></p>
+            </div>
+
+            <!-- Footer -->
+            <div id="popup-modal-footer" class="flex items-center justify-end gap-3 p-6 border-t modal-header-border">
+                <!-- Buttons will be inserted here by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

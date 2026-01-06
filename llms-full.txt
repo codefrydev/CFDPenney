@@ -1,34 +1,49 @@
 # CFD Penney - Collaborative Annotation Tool
 
 ## Overview
-CFD Penney is a free, web-based collaborative annotation tool that enables real-time drawing, screen sharing, and image annotation. It's designed for teams, educators, and anyone who needs to collaborate visually.
+CFD Penney is a free, open-source collaborative annotation tool that enables real-time drawing, screen sharing, and image annotation. Available as both a web application and desktop application (Windows, macOS, Linux), it's designed for teams, educators, developers, and anyone who needs to collaborate visually.
 
-## URL
-https://codefrydev.in/CFDPenney/
+## URLs
+- **Production Website**: https://codefrydev.in/CFDPenney/
+- **Web Application**: https://codefrydev.in/CFDPenney/canvas.html
+- **Privacy Policy**: https://codefrydev.in/CFDPenney/privacy.html
+- **Terms & Conditions**: https://codefrydev.in/CFDPenney/terms.html
+- **GitHub Repository**: https://github.com/codefrydev/CFDPenney/
+- **Desktop Downloads**: https://github.com/codefrydev/CFDPenney/
 
 ## Description
-CFD Penney is a comprehensive annotation platform that allows multiple users to collaborate in real-time. Users can draw on whiteboards, annotate shared screens, or upload and annotate images. The tool supports various drawing modes and provides a seamless collaboration experience.
+CFD Penney is a comprehensive annotation platform that allows multiple users to collaborate in real-time using peer-to-peer WebRTC connections. Users can draw on whiteboards, annotate shared screens (desktop app), or upload and annotate images. The tool supports various drawing modes, advanced selection tools, shape drawing with fill options, stickers, and provides a seamless collaboration experience with no account required.
 
 ## Key Features
 
+### Two Distinct Modes
+1. **Screen Annotation Mode** (Desktop App): Turn your actual desktop into a canvas. Draw over any app (CAD, IDEs, browsers). Perfect for code reviews and tutorials. Remote peers see your screen + drawings.
+2. **Virtual Whiteboard Mode** (Web & Desktop): A clean slate for fresh ideas. Infinite canvas for brainstorming. Works locally even if server is offline. Works instantly in any web browser.
+
 ### Drawing Modes
-1. **Board Mode**: Draw on a blank whiteboard canvas
-2. **Screen Mode**: Share your screen and annotate over it in real-time
-3. **Image Mode**: Upload images and annotate them
+1. **Board Mode**: Draw on a blank whiteboard canvas with infinite possibilities
+2. **Screen Mode**: Share your screen and annotate over it in real-time (desktop app feature)
+3. **Image Mode**: Upload images and annotate them collaboratively
 
 ### Drawing Tools
-- **Pen**: Freehand drawing tool
-- **Arrow**: Draw arrows for pointing and directing attention
-- **Box**: Draw rectangular shapes
-- **Text**: Add text annotations
-- **Eraser**: Remove parts of drawings
+- **Pen**: Freehand drawing tool with customizable stroke width
+- **Eraser**: Remove parts of drawings precisely
+- **Text**: Add text annotations with custom positioning
+- **Shapes**: Line, Arrow, Rectangle, Circle, Ellipse, Triangle, Diamond, Star, Pentagon, Hexagon, Octagon
+- **Fill Support**: Fill shapes with custom colors
+- **Stickers**: Add fun stickers to your canvas
+- **Select Tool**: Select and manipulate drawn elements, with grouping support
 
 ### Collaboration Features
-- Real-time synchronization across all connected users
-- Host sessions to create collaboration rooms
-- Join sessions using 5-character room codes
-- Connection status indicators
-- Screen sharing with annotation overlay
+- **Real-Time Collaboration** via WebRTC peer-to-peer connections
+- **Room-Based System**: 6-character room codes for easy sharing
+- **Host & Join**: Host a session or join existing ones instantly
+- **Connection Status**: Visual indicators for connection state
+- **Session Discovery**: Find and join active sessions
+- **Peer-to-Peer**: Direct connections using WebRTC (no data stored on servers)
+- **Screen Sharing**: Desktop app allows screen annotation overlay
+- **No Account Required**: Jump in and collaborate immediately
+- **Cross-Platform**: Web users can join desktop host sessions and vice versa
 
 ### Customization Options
 - Color picker with preset colors and custom color selection
@@ -44,11 +59,14 @@ CFD Penney is a comprehensive annotation platform that allows multiple users to 
 
 ## Use Cases
 
-1. **Team Collaboration**: Brainstorming sessions, design reviews, and team meetings
-2. **Education**: Online teaching, presentations, and interactive learning
-3. **Design Feedback**: Annotating designs, mockups, and visual assets
-4. **Screen Tutorials**: Creating visual guides and tutorials with screen annotations
-5. **Visual Communication**: Expressing ideas visually in real-time
+1. **Team Collaboration**: Remote brainstorming, design reviews, agile ceremonies, and team meetings
+2. **Code Reviews**: Annotate code directly on screen, perfect for pair programming and technical discussions
+3. **Education**: Online teaching, presentations, interactive learning, and student collaboration
+4. **Design Feedback**: Annotating designs, mockups, visual assets, and prototypes in real-time
+5. **Screen Tutorials**: Creating visual guides, walkthroughs, and tutorials with screen annotations
+6. **Visual Communication**: Expressing ideas visually in real-time for remote teams
+7. **Technical Support**: Help users by annotating their screens during support sessions
+8. **Presentations**: Enhance presentations with live annotations and highlighting
 
 ## Technical Requirements
 
@@ -73,12 +91,110 @@ CFD Penney is a comprehensive annotation platform that allows multiple users to 
 3. **Customize**: Adjust colors and stroke width using the sidebar controls
 4. **Share**: Use snapshot feature to capture and share your annotations
 
+## SEO & Structured Data
+
+CFD Penney includes comprehensive SEO optimization:
+
+### JSON-LD Schemas
+- **Organization Schema**: Defines CodeFryDev as the publisher
+- **WebSite Schema**: Main website information and navigation
+- **SoftwareApplication Schema**: Desktop app details for Windows, macOS, Linux
+- **WebApplication Schema**: Web app features and capabilities
+- **Product Schema**: Product offering with free pricing
+- **HowTo Schema**: Structured 3-step collaboration guide
+- **BreadcrumbList Schema**: Navigation hierarchy on all pages
+- **FAQPage Schema**: Comprehensive FAQ with answers
+
+### Meta Tags
+- Complete SEO meta descriptions and keywords
+- Open Graph tags for Facebook/LinkedIn sharing
+- Twitter Card tags for enhanced Twitter sharing
+- Canonical URLs for all pages
+- Proper favicon references
+
+### Sitemap
+Complete sitemap.xml including:
+- Landing page (index.html)
+- Web application (canvas.html)
+- Privacy Policy (privacy.html)
+- Terms & Conditions (terms.html)
+
+## Legal Pages
+
+### Privacy Policy
+Comprehensive privacy policy explaining:
+- Peer-to-peer architecture (no data collection)
+- WebRTC technology usage
+- Third-party services (PeerJS, STUN/TURN servers)
+- Local storage usage
+- Security disclaimers
+- No account or personal information collection
+
+### Terms & Conditions
+Complete terms of service including:
+- AS-IS disclaimer with no warranties
+- Limitation of liability
+- User responsibilities
+- WebRTC connection disclaimers
+- Open source transparency
+- Usage prohibitions
+
 ## Pricing
-Free - No cost, no registration required
+**FREE** - No cost, no registration, no account required. Completely free forever.
 
 ## Version
-1.0 - Initial release with collaborative annotation features
+1.0 - Initial release with collaborative annotation features, comprehensive SEO, and legal documentation
+
+## Open Source
+The project is open source on GitHub. Users can:
+- Review the complete source code
+- Audit privacy and security practices
+- Contribute to development
+- Fork and modify for their own use
 
 ## Contact & Support
-For more information, visit: https://codefrydev.in/CFDPenney/
+- **Website**: https://codefrydev.in/CFDPenney/
+- **GitHub**: https://github.com/codefrydev/CFDPenney/
+- **Support**: Open issues on GitHub repository
+- **Privacy**: See privacy.html for detailed privacy practices
+- **Terms**: See terms.html for complete terms of service
+
+## How to Get Started
+
+### Quick Start (3 Steps)
+1. **Start Session**: Open the desktop app or web browser and click "Host"
+2. **Share Link**: Share the URL or 6-character code with your team
+3. **Annotate Together**: Everyone's cursor is visible. Draw, highlight, and collaborate
+
+### Time to Start
+Under 30 seconds from landing page to active collaboration
+
+## Technical Architecture
+
+### Modular Structure
+```
+js/
+├── main.js                 # Application entry point
+├── state.js                # Global state management
+├── config.js               # Configuration constants
+├── canvas.js               # Canvas rendering
+├── drawing.js              # Drawing logic
+├── tools.js                # Tool management
+├── collaboration/          # Collaboration modules
+│   ├── collaborationCore.js
+│   ├── dataConnection.js
+│   ├── videoCall.js
+│   ├── messageHandler.js
+│   └── ...
+├── shapes/                 # Shape tools
+├── stickers/               # Sticker system
+└── selection/              # Selection and manipulation
+```
+
+### Desktop App
+- Built with Electron
+- Screen capture capabilities
+- Overlay functionality
+- Same collaboration features as web app
+- Runs on Windows, macOS, and Linux
 
