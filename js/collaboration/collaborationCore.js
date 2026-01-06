@@ -7,6 +7,7 @@ import { updateConnectionStatus } from './connectionStatus.js';
 import { removeCodeFromURL } from './urlUtils.js';
 import { setupDataConnection, attemptConnection, clearOngoingConnections } from './dataConnection.js';
 import { setupCallHandlers } from './videoCall.js';
+import { updateParticipantsPanel } from './participantsPanel.js';
 
 export async function startCollaboration() {
 
@@ -162,31 +163,69 @@ export async function startCollaboration() {
         state.peer.on('call', (incomingCall) => {
             const peerId = incomingCall.peer;
             
-            // Check if we already have a call from this peer
-            if (state.calls.has(peerId)) {
-                console.log(`Call from peer ${peerId} already exists, closing duplicate`);
-                incomingCall.close();
-                return;
-            }
+            // Check if this is a camera call (using metadata)
+            const isCameraCall = incomingCall.metadata && incomingCall.metadata.isCameraCall;
             
-            // Answer with current screen share if available, otherwise dummy stream
-            let streamToShare = null;
-            if (state.mode === 'screen' && state.stream) {
-                streamToShare = state.stream;
+            if (isCameraCall) {
+                // Handle camera call separately
+                console.log(`Host received camera call from peer ${peerId}`);
+                
+                // Check if we already have a camera call from this peer
+                if (state.cameraCalls.has(peerId)) {
+                    console.log(`Camera call from peer ${peerId} already exists, closing duplicate`);
+                    incomingCall.close();
+                    return;
+                }
+                
+                // Answer with our camera stream if available, otherwise dummy stream
+                let streamToShare = null;
+                if (state.isCameraActive && state.cameraStream) {
+                    streamToShare = state.cameraStream;
+                } else {
+                    // Create dummy stream for camera calls when camera is off
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 1;
+                    canvas.height = 1;
+                    streamToShare = canvas.captureStream ? canvas.captureStream(1) : null;
+                }
+                
+                if (streamToShare) {
+                    incomingCall.answer(streamToShare);
+                    state.cameraCalls.set(peerId, incomingCall);
+                    // Mark as camera call for handler
+                    incomingCall._isCameraCall = true;
+                    setupCallHandlers(incomingCall, peerId);
+                } else {
+                    incomingCall.close();
+                }
             } else {
-                // Create dummy stream for non-screen modes
-                const canvas = document.createElement('canvas');
-                canvas.width = 1;
-                canvas.height = 1;
-                streamToShare = canvas.captureStream ? canvas.captureStream(1) : null;
-            }
-            
-            if (streamToShare) {
-                incomingCall.answer(streamToShare);
-                state.calls.set(peerId, incomingCall);
-                setupCallHandlers(incomingCall, peerId);
-            } else {
-                incomingCall.close();
+                // Handle screen share call
+                // Check if we already have a call from this peer
+                if (state.calls.has(peerId)) {
+                    console.log(`Call from peer ${peerId} already exists, closing duplicate`);
+                    incomingCall.close();
+                    return;
+                }
+                
+                // Answer with current screen share if available, otherwise dummy stream
+                let streamToShare = null;
+                if (state.mode === 'screen' && state.stream) {
+                    streamToShare = state.stream;
+                } else {
+                    // Create dummy stream for non-screen modes
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 1;
+                    canvas.height = 1;
+                    streamToShare = canvas.captureStream ? canvas.captureStream(1) : null;
+                }
+                
+                if (streamToShare) {
+                    incomingCall.answer(streamToShare);
+                    state.calls.set(peerId, incomingCall);
+                    setupCallHandlers(incomingCall, peerId);
+                } else {
+                    incomingCall.close();
+                }
             }
         });
 
@@ -287,40 +326,87 @@ export async function joinCollaborationWithCode(code) {
             const peerId = incomingCall.peer;
             console.log(`Peer received incoming call from host ${peerId}`, incomingCall);
             
-            // Check if we already have a call from this peer
-            if (state.calls.has(peerId)) {
-                console.log(`Call from host ${peerId} already exists, closing duplicate`);
-                incomingCall.close();
-                return;
-            }
+            // Check if this is a camera call (using metadata)
+            const isCameraCall = incomingCall.metadata && incomingCall.metadata.isCameraCall;
             
-            // Set up handlers FIRST before answering, so we can receive the stream
-            state.calls.set(peerId, incomingCall);
-            setupCallHandlers(incomingCall, peerId);
-            
-            // Answer the call - we'll receive the host's stream via the 'stream' event
-            // Create a dummy stream to send (or our own screen if sharing)
-            let streamToAnswer = null;
-            if (state.mode === 'screen' && state.stream) {
-                streamToAnswer = state.stream;
+            if (isCameraCall) {
+                // Handle camera call separately
+                console.log(`Joiner received camera call from host ${peerId}`);
+                
+                // Check if we already have a camera call from this peer
+                if (state.cameraCalls.has(peerId)) {
+                    console.log(`Camera call from host ${peerId} already exists, closing duplicate`);
+                    incomingCall.close();
+                    return;
+                }
+                
+                // Set up handlers FIRST before answering
+                state.cameraCalls.set(peerId, incomingCall);
+                // Mark as camera call for handler
+                incomingCall._isCameraCall = true;
+                setupCallHandlers(incomingCall, peerId);
+                
+                // Answer with our camera stream if available, otherwise dummy stream
+                let streamToAnswer = null;
+                if (state.isCameraActive && state.cameraStream) {
+                    streamToAnswer = state.cameraStream;
+                } else {
+                    // Create dummy stream for camera calls when camera is off
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 1;
+                    canvas.height = 1;
+                    streamToAnswer = canvas.captureStream ? canvas.captureStream(1) : null;
+                }
+                
+                if (streamToAnswer) {
+                    incomingCall.answer(streamToAnswer);
+                    console.log(`Joiner answered camera call from host ${peerId} with stream:`, streamToAnswer);
+                } else {
+                    console.error('Joiner: No camera stream available to answer call');
+                    // Still answer even without stream
+                    try {
+                        incomingCall.answer();
+                    } catch (e) {
+                        console.error('Error answering camera call:', e);
+                    }
+                }
             } else {
-                // Create dummy stream for non-screen modes
-                const canvas = document.createElement('canvas');
-                canvas.width = 1;
-                canvas.height = 1;
-                streamToAnswer = canvas.captureStream ? canvas.captureStream(1) : null;
-            }
-            
-            if (streamToAnswer) {
-                incomingCall.answer(streamToAnswer);
-                console.log(`Peer answered call from host ${peerId} with stream:`, streamToAnswer);
-            } else {
-                console.error('Peer: No stream available to answer call');
-                // Still answer even without stream
-                try {
-                    incomingCall.answer();
-                } catch (e) {
-                    console.error('Error answering call without stream:', e);
+                // Handle screen share call
+                // Check if we already have a call from this peer
+                if (state.calls.has(peerId)) {
+                    console.log(`Call from host ${peerId} already exists, closing duplicate`);
+                    incomingCall.close();
+                    return;
+                }
+                
+                // Set up handlers FIRST before answering, so we can receive the stream
+                state.calls.set(peerId, incomingCall);
+                setupCallHandlers(incomingCall, peerId);
+                
+                // Answer the call - we'll receive the host's stream via the 'stream' event
+                // Create a dummy stream to send (or our own screen if sharing)
+                let streamToAnswer = null;
+                if (state.mode === 'screen' && state.stream) {
+                    streamToAnswer = state.stream;
+                } else {
+                    // Create dummy stream for non-screen modes
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 1;
+                    canvas.height = 1;
+                    streamToAnswer = canvas.captureStream ? canvas.captureStream(1) : null;
+                }
+                
+                if (streamToAnswer) {
+                    incomingCall.answer(streamToAnswer);
+                    console.log(`Peer answered call from host ${peerId} with stream:`, streamToAnswer);
+                } else {
+                    console.error('Peer: No stream available to answer call');
+                    // Still answer even without stream
+                    try {
+                        incomingCall.answer();
+                    } catch (e) {
+                        console.error('Error answering call without stream:', e);
+                    }
                 }
             }
         });
@@ -383,13 +469,21 @@ export function stopCollaboration() {
     });
     state.dataConnections.clear();
     
-    // Close all calls
+    // Close all calls (screen share)
     state.calls.forEach((call, peerId) => {
         if (call) {
             call.close();
         }
     });
     state.calls.clear();
+    
+    // Close all camera calls
+    state.cameraCalls.forEach((call, peerId) => {
+        if (call) {
+            call.close();
+        }
+    });
+    state.cameraCalls.clear();
     
     // Clear peer tracking
     state.connectedPeers.clear();
@@ -405,6 +499,12 @@ export function stopCollaboration() {
     state.myPeerId = null;
     removeCodeFromURL();
     updateConnectionStatus(false);
+    
+    // Update participants panel
+    if (window.updateParticipantsPanel) {
+        window.updateParticipantsPanel();
+    }
+    
     redrawCanvas();
 }
 

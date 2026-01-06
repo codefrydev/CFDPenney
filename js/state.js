@@ -12,6 +12,15 @@ export const state = {
     stream: null,
     isVideoPaused: false,
     backgroundImageSrc: null,
+    // Camera state
+    cameraStream: null,
+    isCameraActive: false,
+    isAudioMuted: true, // Audio muted by default
+    cameraMode: false, // Distinguish camera from screen sharing
+    cameraWindowState: 'normal', // 'normal', 'minimized', 'maximized'
+    cameraWindowSize: { width: 240, height: 180 }, // Default size
+    cameraWindowPosition: { x: null, y: null }, // null means use CSS default (bottom-right)
+    isCameraHidden: false, // Whether video is hidden (camera still active)
     textInput: null, // {x, y, text}
     // Selection state
     selectedElementId: null,
@@ -29,7 +38,8 @@ export const state = {
     // Peer collaboration state
     peer: null,
     dataConnections: new Map(), // Map<peerId, DataConnection>
-    calls: new Map(), // Map<peerId, MediaConnection>
+    calls: new Map(), // Map<peerId, MediaConnection> - for screen share
+    cameraCalls: new Map(), // Map<peerId, MediaConnection> - for camera streams
     connectedPeers: new Map(), // Map<peerId, {id, connectedAt}>
     isCollaborating: false,
     isHosting: false,

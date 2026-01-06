@@ -1,0 +1,97 @@
+/* ============================================
+   SHAPE PICKER & STICKER PICKER STYLES
+   ============================================ */
+
+/* Sticker Picker Styles */
+.sticker-tab {
+    color: var(--text-secondary);
+    border-bottom: 2px solid transparent;
+}
+
+.sticker-tab:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-tertiary);
+}
+
+.sticker-tab-active {
+    color: var(--accent-primary);
+    border-bottom-color: var(--accent-primary);
+}
+
+#sticker-picker-content {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-primary) var(--bg-secondary);
+}
+
+#sticker-picker-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+#sticker-picker-content::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+#sticker-picker-content::-webkit-scrollbar-thumb {
+    background: var(--border-primary);
+    border-radius: 3px;
+}
+
+/* Shape Picker Styles */
+.shape-tab {
+    color: var(--text-secondary);
+    border-bottom: 2px solid transparent;
+    transition: all var(--transition-base);
+    position: relative;
+}
+
+.shape-tab:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-tertiary);
+}
+
+.shape-tab-active {
+    color: var(--accent-primary);
+    border-bottom-color: var(--accent-primary);
+    background-color: var(--bg-tertiary);
+}
+
+.shape-option {
+    min-height: 80px;
+    transition: all var(--transition-base);
+}
+
+.shape-option:hover {
+    transform: translateY(-2px);
+}
+
+.shape-option-active {
+    background: var(--accent-primary-light) !important;
+    border-color: var(--accent-primary) !important;
+}
+
+.shape-option i {
+    transition: all var(--transition-base);
+}
+
+.shape-option:hover i {
+    transform: scale(1.1);
+}
+
+#shape-picker-content {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-primary) var(--bg-secondary);
+}
+
+#shape-picker-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+#shape-picker-content::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+#shape-picker-content::-webkit-scrollbar-thumb {
+    background: var(--border-primary);
+    border-radius: 3px;
+}
+

@@ -83,6 +83,11 @@ export function setupDataConnection(dataConnection, peerId) {
             connectedAt: Date.now()
         });
         console.log(`[Connection Setup] ${connectionPeerId}: Initial setup, open=${dataConnection.open}, readyState=${dataConnection.readyState}`);
+        
+        // Update participants panel
+        if (window.updateParticipantsPanel) {
+            window.updateParticipantsPanel();
+        }
     } else {
         // Connection already exists - check if it's the same one or a different one
         const existingConn = state.dataConnections.get(connectionPeerId);
@@ -97,6 +102,11 @@ export function setupDataConnection(dataConnection, peerId) {
                     id: connectionPeerId,
                     connectedAt: Date.now()
                 });
+                
+                // Update participants panel
+                if (window.updateParticipantsPanel) {
+                    window.updateParticipantsPanel();
+                }
             } else {
                 // Existing connection is open, close this duplicate
                 console.log(`[Connection Duplicate] ${connectionPeerId}: Existing connection is open, closing duplicate`);
@@ -110,6 +120,13 @@ export function setupDataConnection(dataConnection, peerId) {
     const handleConnectionOpen = () => {
         state.isCollaborating = true;
         updateConnectionStatus(true, state.shareCode);
+        
+        // Initialize participants panel
+        if (window.updateParticipantsPanel) {
+            setTimeout(() => {
+                window.updateParticipantsPanel();
+            }, 100);
+        }
         
         // Mark session as connected in discovery service
         if (state.isHosting && state.shareCode) {
@@ -235,6 +252,11 @@ export function setupDataConnection(dataConnection, peerId) {
             state.dataConnections.delete(connectionPeerId);
             state.calls.delete(connectionPeerId);
             state.connectedPeers.delete(connectionPeerId);
+            
+            // Update participants panel
+            if (window.updateParticipantsPanel) {
+                window.updateParticipantsPanel();
+            }
         }
         
         // Mark session as available again (only host manages its own availability)
@@ -408,6 +430,11 @@ export function attemptConnection(code, retryCount = 0, stopCollaborationFn) {
                     if (state.dataConnections.get(hostPeerId) === dataConnection) {
                         state.dataConnections.delete(hostPeerId);
                         state.connectedPeers.delete(hostPeerId);
+                        
+                        // Update participants panel
+                        if (window.updateParticipantsPanel) {
+                            window.updateParticipantsPanel();
+                        }
                     }
                 }
                 
@@ -459,6 +486,11 @@ export function attemptConnection(code, retryCount = 0, stopCollaborationFn) {
                 connectedAt: Date.now()
             });
             
+            // Update participants panel
+            if (window.updateParticipantsPanel) {
+                window.updateParticipantsPanel();
+            }
+            
             // Store share code for status display
             state.shareCode = code;
             setupDataConnection(dataConnection, hostPeerId);
@@ -504,6 +536,11 @@ export function attemptConnection(code, retryCount = 0, stopCollaborationFn) {
             if (state.dataConnections.get(hostPeerId) === dataConnection) {
                 state.dataConnections.delete(hostPeerId);
                 state.connectedPeers.delete(hostPeerId);
+                
+                // Update participants panel
+                if (window.updateParticipantsPanel) {
+                    window.updateParticipantsPanel();
+                }
             }
             
                 if (retryCount < maxRetries) {
@@ -536,6 +573,11 @@ export function attemptConnection(code, retryCount = 0, stopCollaborationFn) {
             if (state.dataConnections.get(hostPeerId) === dataConnection) {
                 state.dataConnections.delete(hostPeerId);
                 state.connectedPeers.delete(hostPeerId);
+                
+                // Update participants panel
+                if (window.updateParticipantsPanel) {
+                    window.updateParticipantsPanel();
+                }
             }
             
             if (!state.isCollaborating) {

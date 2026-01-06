@@ -84,5 +84,12 @@ export function updateConnectionStatus(isConnected, shareCode = null, statusText
         btnEl.style.color = 'var(--text-primary)';
     }
     if (window.lucide) lucide.createIcons();
+    
+    // Update participants panel when connection status changes
+    if (window.updateParticipantsPanel) {
+        setTimeout(() => {
+            window.updateParticipantsPanel();
+        }, 100);
+    }
 }
 

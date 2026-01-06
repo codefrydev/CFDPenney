@@ -6,6 +6,7 @@ import { TOOLS } from './config.js';
 import { handleStart, handleMove, handleEnd, initDrawing } from './drawing.js';
 import { undo, redo, clearCanvas } from './history.js';
 import { startScreenShare, stopScreenShare, toggleVideoPause, setMode, initScreenShare } from './screenShare.js';
+import { startCamera, stopCamera, toggleAudio, toggleCameraMinimize, toggleCameraMaximize, toggleCameraHide, restoreFromMinimized, initCamera } from './camera.js';
 import { handleImageUpload, initImageUpload } from './imageUpload.js';
 import { downloadSnapshot, initExport } from './export.js';
 import { stopCollaboration, sendToAllPeers, sendToPeer } from './collaboration.js';
@@ -59,6 +60,14 @@ export function initUI() {
     const videoControls = document.getElementById('screen-controls');
     if (videoElem && videoPlaceholder && videoControls) {
         initScreenShare(videoElem, videoPlaceholder, videoControls);
+    }
+    
+    // Initialize camera
+    const cameraVideoElem = document.getElementById('camera-video');
+    const cameraContainer = document.getElementById('camera-container');
+    const cameraControls = document.getElementById('camera-controls');
+    if (cameraVideoElem && cameraContainer && cameraControls) {
+        initCamera(cameraVideoElem, cameraContainer, cameraControls);
     }
     
     // Initialize image upload
@@ -154,6 +163,39 @@ export function updateUI() {
     const btnRedo = document.getElementById('btn-redo');
     if (btnUndo) btnUndo.disabled = state.historyStep < 0;
     if (btnRedo) btnRedo.disabled = state.historyStep >= state.elements.length - 1;
+
+    // Camera Button State
+    const btnCamera = document.getElementById('btn-camera');
+    const cameraIconOff = document.getElementById('camera-btn-icon-off');
+    const cameraIconOn = document.getElementById('camera-btn-icon-on');
+    if (btnCamera) {
+        if (state.isCameraActive) {
+            btnCamera.classList.add('bg-red-600', 'hover:bg-red-700');
+            btnCamera.classList.remove('btn-secondary');
+            if (cameraIconOff) cameraIconOff.classList.add('hidden');
+            if (cameraIconOn) cameraIconOn.classList.remove('hidden');
+        } else {
+            btnCamera.classList.remove('bg-red-600', 'hover:bg-red-700');
+            btnCamera.classList.add('btn-secondary');
+            if (cameraIconOff) cameraIconOff.classList.remove('hidden');
+            if (cameraIconOn) cameraIconOn.classList.add('hidden');
+        }
+    }
+    
+    // Update restore button visibility
+    if (window.updateRestoreButtonVisibility) {
+        window.updateRestoreButtonVisibility();
+    }
+    
+    // Participants button visibility
+    const btnParticipants = document.getElementById('btn-participants');
+    if (btnParticipants) {
+        if (state.isCollaborating) {
+            btnParticipants.classList.remove('hidden');
+        } else {
+            btnParticipants.classList.add('hidden');
+        }
+    }
 }
 
 function setupEventListeners() {
@@ -322,6 +364,49 @@ function setupEventListeners() {
     if (btnPauseVideo) btnPauseVideo.addEventListener('click', toggleVideoPause);
     if (btnStopShare) btnStopShare.addEventListener('click', stopScreenShare);
 
+    // Camera Controls
+    const btnCamera = document.getElementById('btn-camera');
+    const btnCameraMute = document.getElementById('btn-camera-mute');
+    const btnCameraHide = document.getElementById('btn-camera-hide');
+    const btnCameraMinimize = document.getElementById('btn-camera-minimize');
+    const btnCameraMaximize = document.getElementById('btn-camera-maximize');
+    const btnCameraStop = document.getElementById('btn-camera-stop');
+    const btnCameraRestore = document.getElementById('btn-camera-restore');
+    const btnCameraStopMinimized = document.getElementById('btn-camera-stop-minimized');
+    
+    if (btnCamera) {
+        btnCamera.addEventListener('click', async () => {
+            try {
+                if (state.isCameraActive) {
+                    stopCamera();
+                } else {
+                    await startCamera();
+                }
+                updateUI();
+            } catch (err) {
+                console.error('Error in camera toggle:', err);
+                updateUI();
+            }
+        });
+    }
+    
+    if (btnCameraMute) btnCameraMute.addEventListener('click', () => { toggleAudio(); updateUI(); });
+    if (btnCameraHide) btnCameraHide.addEventListener('click', () => { toggleCameraHide(); updateUI(); });
+    if (btnCameraMinimize) btnCameraMinimize.addEventListener('click', () => { toggleCameraMinimize(); updateUI(); });
+    if (btnCameraMaximize) btnCameraMaximize.addEventListener('click', () => { toggleCameraMaximize(); updateUI(); });
+    if (btnCameraStop) btnCameraStop.addEventListener('click', () => { stopCamera(); updateUI(); });
+    if (btnCameraRestore) btnCameraRestore.addEventListener('click', () => { restoreFromMinimized(); updateUI(); });
+    if (btnCameraStopMinimized) btnCameraStopMinimized.addEventListener('click', () => { stopCamera(); updateUI(); });
+    
+    // Header restore button
+    const btnCameraRestoreHeader = document.getElementById('btn-camera-restore-header');
+    if (btnCameraRestoreHeader) {
+        btnCameraRestoreHeader.addEventListener('click', () => { 
+            restoreFromMinimized(); 
+            updateUI(); 
+        });
+    }
+
     // File Input
     if (fileInput) {
         fileInput.addEventListener('change', handleImageUpload);
@@ -382,6 +467,26 @@ function setupEventListeners() {
                 updateUI();
             } else {
                 showCollaborationModal();
+            }
+        });
+    }
+    
+    // Participants button
+    const btnParticipants = document.getElementById('btn-participants');
+    const btnCloseParticipants = document.getElementById('btn-close-participants');
+    if (btnParticipants) {
+        btnParticipants.addEventListener('click', () => {
+            const panel = document.getElementById('participants-panel');
+            if (panel) {
+                panel.classList.toggle('hidden');
+            }
+        });
+    }
+    if (btnCloseParticipants) {
+        btnCloseParticipants.addEventListener('click', () => {
+            const panel = document.getElementById('participants-panel');
+            if (panel) {
+                panel.classList.add('hidden');
             }
         });
     }
