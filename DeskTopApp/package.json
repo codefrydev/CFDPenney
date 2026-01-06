@@ -33,11 +33,19 @@
       "**/*",
       "!**/*.md",
       "!**/node_modules/*/{CHANGELOG.md,README.md,*.map}",
-      "!dist"
+      "!dist",
+      "!**/.git/**",
+      "!**/.gitignore",
+      "!**/package-lock.json"
     ],
+    "asar": true,
     "publish": null,
     "mac": {
       "target": [
+        {
+          "target": "zip",
+          "arch": ["x64", "arm64"]
+        },
         "dmg"
       ],
       "category": "public.app-category.productivity",
@@ -45,17 +53,31 @@
     },
     "win": {
       "target": [
-        "portable"
+        {
+          "target": "portable",
+          "arch": ["x64", "ia32"]
+        },
+        {
+          "target": "nsis",
+          "arch": ["x64", "ia32"]
+        }
       ],
       "icon": "build/icon.png"
     },
     "linux": {
       "target": [
-        "deb"
+        {
+          "target": "AppImage",
+          "arch": ["x64", "arm64"]
+        }
       ],
       "category": "Utility",
       "icon": "build/icon.png",
       "maintainer": "CodeFryDev <codefrydev@gmail.com>"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
     }
   }
 }

@@ -1,15 +1,45 @@
 // Electron Main Process
 const { app, BrowserWindow, ipcMain, desktopCapturer, screen } = require('electron');
 const path = require('path');
+const fs = require('fs');
 
 let mainWindow = null;
 let overlayWindow = null;
 let isOverlayInteractive = false;
 
+// Get the correct app path (works in both dev and packaged)
+function getAppPath() {
+    // In development, use __dirname
+    // In production, use app.getAppPath() which handles asar correctly
+    if (app.isPackaged) {
+        return app.getAppPath();
+    }
+    return __dirname;
+}
+
+// Get path to a file (handles asar unpacking if needed)
+function getFilePath(filename) {
+    const appPath = getAppPath();
+    const filePath = path.join(appPath, filename);
+    
+    // Check if file exists, if not and we're in asar, try unpacked location
+    if (app.isPackaged && !fs.existsSync(filePath)) {
+        // Try unpacked location (for files that can't be in asar)
+        const unpackedPath = filePath.replace('app.asar', 'app.asar.unpacked');
+        if (fs.existsSync(unpackedPath)) {
+            return unpackedPath;
+        }
+    }
+    
+    return filePath;
+}
+
 // Create main window
 function createMainWindow() {
     const primaryDisplay = screen.getPrimaryDisplay();
     const { width, height } = primaryDisplay.workAreaSize;
+    
+    const preloadPath = getFilePath('preload.js');
     
     mainWindow = new BrowserWindow({
         width: Math.floor(width * 0.8),
@@ -17,13 +47,14 @@ function createMainWindow() {
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
-            preload: path.join(__dirname, 'preload.js')
+            preload: preloadPath
         },
         title: 'Annonate - Screen Share',
         backgroundColor: '#1a1a1a'
     });
     
-    mainWindow.loadFile('screen.html');
+    const screenHtmlPath = getFilePath('screen.html');
+    mainWindow.loadFile(screenHtmlPath);
     
     // Open DevTools in development
     if (process.argv.includes('--inspect')) {
@@ -57,6 +88,9 @@ function createOverlayWindow() {
     
     const bounds = mainWindow.getBounds();
     
+    const preloadPath = getFilePath('preload.js');
+    const overlayHtmlPath = getFilePath('overlay.html');
+    
     overlayWindow = new BrowserWindow({
         width: bounds.width,
         height: bounds.height,
@@ -75,12 +109,12 @@ function createOverlayWindow() {
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
-            preload: path.join(__dirname, 'preload.js')
+            preload: preloadPath
         },
         hasShadow: false
     });
     
-    overlayWindow.loadFile('overlay.html');
+    overlayWindow.loadFile(overlayHtmlPath);
     
     // Start in view mode (click-through)
     overlayWindow.setIgnoreMouseEvents(true, { forward: true });

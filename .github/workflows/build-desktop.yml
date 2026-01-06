@@ -76,14 +76,38 @@ jobs:
         working-directory: DeskTopApp
         run: npm run build:mac
 
-      - name: Upload build artifacts
+      - name: Upload build artifacts (Linux)
+        if: matrix.platform == 'linux'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact-name }}-builds
           path: |
-            DeskTopApp/dist/**
+            DeskTopApp/dist/*.deb
+            DeskTopApp/dist/*.AppImage
           retention-days: 30
-          if-no-files-found: error
+          if-no-files-found: warn
+
+      - name: Upload build artifacts (Windows)
+        if: matrix.platform == 'win'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}-builds
+          path: |
+            DeskTopApp/dist/*.exe
+            DeskTopApp/dist/*.zip
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Upload build artifacts (macOS)
+        if: matrix.platform == 'mac'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}-builds
+          path: |
+            DeskTopApp/dist/*.dmg
+            DeskTopApp/dist/*.zip
+          retention-days: 30
+          if-no-files-found: warn
 
       - name: List build artifacts
         working-directory: DeskTopApp
@@ -122,15 +146,20 @@ jobs:
             
             ### Downloads
             
-            - **Windows**: Installer (.exe) and Portable (.zip)
-            - **macOS**: Disk Image (.dmg) and Archive (.zip)
-            - **Linux**: AppImage and Debian Package (.deb)
+            - **Windows**: Portable (.exe) and Installer (.exe)
+            - **macOS**: Standalone App (.zip) and Disk Image (.dmg)
+            - **Linux**: Standalone AppImage (single file, no installation needed)
             
             ### Installation
             
             See [README.md](README.md#desktop-application) for installation instructions.
           files: |
-            artifacts/**/*
+            artifacts/linux-builds/*.AppImage
+            artifacts/linux-builds/*.deb
+            artifacts/windows-builds/*.exe
+            artifacts/windows-builds/*.zip
+            artifacts/macos-builds/*.zip
+            artifacts/macos-builds/*.dmg
           draft: false
           prerelease: false
         env:

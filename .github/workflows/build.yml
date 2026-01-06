@@ -84,7 +84,11 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            artifacts/**/*
+            artifacts/linux-builds/*.deb
+            artifacts/linux-builds/*.AppImage
+            artifacts/windows-builds/*.exe
+            artifacts/macos-builds/*.dmg
+            artifacts/macos-builds/*.zip
           draft: false
           prerelease: false
           generate_release_notes: true
