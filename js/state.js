@@ -21,6 +21,10 @@ export const state = {
     cameraWindowSize: { width: 240, height: 180 }, // Default size
     cameraWindowPosition: { x: null, y: null }, // null means use CSS default (bottom-right)
     isCameraHidden: false, // Whether video is hidden (camera still active)
+    // Device preferences
+    selectedCameraId: null,
+    selectedMicrophoneId: null,
+    selectedSpeakerId: null,
     textInput: null, // {x, y, text}
     // Selection state
     selectedElementId: null,

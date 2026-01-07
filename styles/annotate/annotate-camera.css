@@ -198,6 +198,41 @@
     transform: scale(1.02);
 }
 
+/* Device Selection Modal */
+#device-selection-modal-overlay {
+    z-index: 60;
+}
+
+#device-selection-modal {
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+#device-selection-modal select {
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+#device-selection-modal select:focus {
+    border-color: rgb(59, 130, 246);
+}
+
+#device-selection-modal select option {
+    background-color: rgb(55, 65, 81);
+    color: white;
+}
+
+#device-selection-modal button {
+    transition: all 0.2s ease-in-out;
+}
+
+#device-selection-modal button:hover {
+    transform: translateY(-1px);
+}
+
+#device-selection-modal button:active {
+    transform: translateY(0);
+}
+
 /* Responsive Camera */
 @media (max-width: 640px) {
     .camera-window {
@@ -210,6 +245,10 @@
     .camera-window video {
         width: 180px !important;
         height: 135px !important;
+    }
+    
+    #device-selection-modal {
+        max-width: 95vw;
     }
 }
 

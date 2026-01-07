@@ -6,8 +6,10 @@ import { TOOLS } from './config.js';
 import { handleStart, handleMove, handleEnd, initDrawing } from './drawing.js';
 import { undo, redo, clearCanvas } from './history.js';
 import { startScreenShare, stopScreenShare, toggleVideoPause, setMode, initScreenShare } from './screenShare.js';
-import { startCamera, stopCamera, toggleAudio, toggleCameraMinimize, toggleCameraMaximize, toggleCameraHide, restoreFromMinimized, initCamera } from './camera.js';
+import { startCamera, stopCamera, toggleAudio, toggleCameraMinimize, toggleCameraMaximize, toggleCameraHide, restoreFromMinimized, initCamera, restartCameraWithNewDevices } from './camera.js';
 import { handleImageUpload, initImageUpload } from './imageUpload.js';
+import { populateDeviceSelects, getSelectedDeviceIds, saveDevicePreferences, initDeviceSelection } from './deviceSelection.js';
+import { showAlert } from './popupModal.js';
 import { downloadSnapshot, initExport } from './export.js';
 import { stopCollaboration, sendToAllPeers, sendToPeer } from './collaboration.js';
 import { showCollaborationModal } from './modal.js';
@@ -87,6 +89,9 @@ export function initUI() {
     
     // Initialize shape picker
     initShapePicker();
+    
+    // Initialize device selection
+    initDeviceSelection();
     
     // Render initial UI
     renderTools();
@@ -406,6 +411,101 @@ function setupEventListeners() {
             updateUI(); 
         });
     }
+    
+    // Device Selection Modal
+    const btnCameraSettings = document.getElementById('btn-camera-settings');
+    const deviceModalOverlay = document.getElementById('device-selection-modal-overlay');
+    const deviceModal = document.getElementById('device-selection-modal');
+    const btnCloseDeviceModal = document.getElementById('btn-close-device-modal');
+    const btnCancelDevices = document.getElementById('btn-cancel-devices');
+    const btnApplyDevices = document.getElementById('btn-apply-devices');
+    
+    // Open device selection modal
+    const openDeviceModal = async () => {
+        if (deviceModalOverlay) {
+            deviceModalOverlay.classList.remove('hidden');
+            // Populate device selects
+            await populateDeviceSelects();
+        }
+    };
+    
+    // Close device selection modal
+    const closeDeviceModal = () => {
+        if (deviceModalOverlay) {
+            deviceModalOverlay.classList.add('hidden');
+        }
+    };
+    
+    // Apply device selection
+    const applyDeviceSelection = async () => {
+        const deviceIds = getSelectedDeviceIds();
+        
+        // Update state
+        state.selectedCameraId = deviceIds.cameraId;
+        state.selectedMicrophoneId = deviceIds.microphoneId;
+        state.selectedSpeakerId = deviceIds.speakerId;
+        
+        // Save preferences
+        saveDevicePreferences();
+        
+        // If camera is active, restart with new devices
+        if (state.isCameraActive) {
+            try {
+                await restartCameraWithNewDevices(deviceIds.cameraId, deviceIds.microphoneId);
+                updateUI();
+            } catch (err) {
+                console.error('Error restarting camera with new devices:', err);
+                showAlert('Failed to apply device selection. Please try again.', 'Device Error');
+            }
+        }
+        
+        // Apply speaker selection to video element if camera is active
+        if (state.isCameraActive && state.selectedSpeakerId) {
+            const cameraVideo = document.getElementById('camera-video');
+            if (cameraVideo && cameraVideo.setSinkId) {
+                try {
+                    await cameraVideo.setSinkId(state.selectedSpeakerId);
+                    console.log('Applied speaker selection to camera video');
+                } catch (err) {
+                    console.warn('Failed to apply speaker selection:', err);
+                }
+            }
+        }
+        
+        closeDeviceModal();
+    };
+    
+    if (btnCameraSettings) {
+        btnCameraSettings.addEventListener('click', openDeviceModal);
+    }
+    
+    if (btnCloseDeviceModal) {
+        btnCloseDeviceModal.addEventListener('click', closeDeviceModal);
+    }
+    
+    if (btnCancelDevices) {
+        btnCancelDevices.addEventListener('click', closeDeviceModal);
+    }
+    
+    if (btnApplyDevices) {
+        btnApplyDevices.addEventListener('click', applyDeviceSelection);
+    }
+    
+    // Close modal when clicking overlay
+    if (deviceModalOverlay) {
+        deviceModalOverlay.addEventListener('click', (e) => {
+            if (e.target === deviceModalOverlay) {
+                closeDeviceModal();
+            }
+        });
+    }
+    
+    // Close modal with Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && deviceModalOverlay && !deviceModalOverlay.classList.contains('hidden')) {
+            closeDeviceModal();
+        }
+    });
 
     // File Input
     if (fileInput) {

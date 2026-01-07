@@ -1,6 +1,7 @@
 // Camera Functionality
 import { state } from './state.js';
 import { showAlert } from './popupModal.js';
+import { loadDevicePreferences, validateSelectedDevices, enumerateDevices } from './deviceSelection.js';
 
 let cameraVideoElem = null;
 let cameraContainer = null;
@@ -17,6 +18,12 @@ export function initCamera(videoEl, containerEl, controlsEl) {
         makeDraggable(cameraContainer);
         initCameraResize();
     }
+    
+    // Load device preferences and validate
+    loadDevicePreferences();
+    enumerateDevices().then(() => {
+        validateSelectedDevices();
+    });
 }
 
 // Make element draggable
@@ -178,8 +185,8 @@ function showCameraError(message) {
     showAlert(`Camera Error: ${message}\n\nPlease ensure:\n- You're using a modern browser (Chrome, Firefox, Edge, Safari)\n- The page is served over HTTPS or localhost\n- You grant camera permissions when prompted`, 'Camera Error');
 }
 
-export async function startCamera() {
-    console.log('startCamera called');
+export async function startCamera(cameraDeviceId = null, microphoneDeviceId = null) {
+    console.log('startCamera called', { cameraDeviceId, microphoneDeviceId });
     
     // Prevent multiple simultaneous attempts
     if (isStarting) {
@@ -216,10 +223,24 @@ export async function startCamera() {
             stopCameraLogic();
         }
 
-        console.log('Requesting user media...');
+        // Use provided device IDs or fall back to saved preferences
+        const cameraId = cameraDeviceId || state.selectedCameraId;
+        const micId = microphoneDeviceId || state.selectedMicrophoneId;
+
+        // Build video constraints
+        const videoConstraints = cameraId 
+            ? { deviceId: { exact: cameraId } }
+            : { facingMode: 'user' };
+
+        // Build audio constraints
+        const audioConstraints = micId
+            ? { deviceId: { exact: micId } }
+            : true;
+
+        console.log('Requesting user media with constraints:', { video: videoConstraints, audio: audioConstraints });
         const mediaStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: 'user' },
-            audio: true
+            video: videoConstraints,
+            audio: audioConstraints
         });
 
         console.log('User media obtained:', mediaStream);
@@ -247,6 +268,17 @@ export async function startCamera() {
             cameraVideoElem.srcObject = mediaStream;
             // Mute to prevent feedback (users shouldn't hear themselves)
             cameraVideoElem.muted = true;
+            
+            // Set speaker/audio output if selected
+            if (state.selectedSpeakerId && cameraVideoElem.setSinkId) {
+                try {
+                    await cameraVideoElem.setSinkId(state.selectedSpeakerId);
+                    console.log('Set audio output to selected speaker:', state.selectedSpeakerId);
+                } catch (err) {
+                    console.warn('Failed to set audio output device (may not be supported):', err);
+                }
+            }
+            
             // Ensure video plays
             cameraVideoElem.play().catch(err => {
                 console.warn('Camera video play error:', err);
@@ -418,6 +450,13 @@ export function toggleAudio() {
     
     updateMuteButton();
     console.log(`Audio ${state.isAudioMuted ? 'muted' : 'unmuted'}`);
+    
+    // If collaborating, update peer connections with new audio track state
+    // This ensures peers receive the updated audio track (enabled/disabled)
+    if (state.isCollaborating && window.shareCameraWithPeers) {
+        console.log(`Updating peer connections with ${state.isAudioMuted ? 'muted' : 'unmuted'} audio track`);
+        window.shareCameraWithPeers(state.cameraStream);
+    }
 }
 
 function updateMuteButton() {
@@ -671,4 +710,18 @@ export function initCameraResize() {
 
 // Make shareCameraWithPeers available globally for collaboration module
 window.shareCameraWithPeers = null;
+
+// Restart camera with new device selection
+export async function restartCameraWithNewDevices(cameraDeviceId, microphoneDeviceId) {
+    const wasActive = state.isCameraActive;
+    
+    if (wasActive) {
+        stopCameraLogic();
+        // Wait a bit for cleanup
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    // Start camera with new devices
+    await startCamera(cameraDeviceId, microphoneDeviceId);
+}
 

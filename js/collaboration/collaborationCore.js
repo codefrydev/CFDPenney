@@ -181,6 +181,15 @@ export async function startCollaboration() {
                 let streamToShare = null;
                 if (state.isCameraActive && state.cameraStream) {
                     streamToShare = state.cameraStream;
+                    // Log audio track state when answering call
+                    const audioTracks = streamToShare.getAudioTracks();
+                    if (audioTracks.length > 0) {
+                        audioTracks.forEach((track, index) => {
+                            console.log(`Host answering camera call: Audio track ${index} in stream, enabled: ${track.enabled}, id: ${track.id}`);
+                        });
+                    } else {
+                        console.warn(`Host answering camera call: No audio tracks in camera stream`);
+                    }
                 } else {
                     // Create dummy stream for camera calls when camera is off
                     const canvas = document.createElement('canvas');
@@ -195,6 +204,17 @@ export async function startCollaboration() {
                     // Mark as camera call for handler
                     incomingCall._isCameraCall = true;
                     setupCallHandlers(incomingCall, peerId);
+                    
+                    // If camera is active, ensure tracks are synchronized after connection is established
+                    // This handles cases where audio track state might need to be updated
+                    if (state.isCameraActive && state.cameraStream && window.shareCameraWithPeers) {
+                        setTimeout(() => {
+                            if (state.cameraCalls.has(peerId) && state.isCameraActive && state.cameraStream) {
+                                console.log(`Syncing camera tracks for newly answered call from peer ${peerId}`);
+                                window.shareCameraWithPeers(state.cameraStream);
+                            }
+                        }, 500);
+                    }
                 } else {
                     incomingCall.close();
                 }
@@ -350,6 +370,15 @@ export async function joinCollaborationWithCode(code) {
                 let streamToAnswer = null;
                 if (state.isCameraActive && state.cameraStream) {
                     streamToAnswer = state.cameraStream;
+                    // Log audio track state when answering call
+                    const audioTracks = streamToAnswer.getAudioTracks();
+                    if (audioTracks.length > 0) {
+                        audioTracks.forEach((track, index) => {
+                            console.log(`Joiner answering camera call: Audio track ${index} in stream, enabled: ${track.enabled}, id: ${track.id}`);
+                        });
+                    } else {
+                        console.warn(`Joiner answering camera call: No audio tracks in camera stream`);
+                    }
                 } else {
                     // Create dummy stream for camera calls when camera is off
                     const canvas = document.createElement('canvas');
@@ -361,6 +390,17 @@ export async function joinCollaborationWithCode(code) {
                 if (streamToAnswer) {
                     incomingCall.answer(streamToAnswer);
                     console.log(`Joiner answered camera call from host ${peerId} with stream:`, streamToAnswer);
+                    
+                    // If camera is active, ensure tracks are synchronized after connection is established
+                    // This handles cases where audio track state might need to be updated
+                    if (state.isCameraActive && state.cameraStream && window.shareCameraWithPeers) {
+                        setTimeout(() => {
+                            if (state.cameraCalls.has(peerId) && state.isCameraActive && state.cameraStream) {
+                                console.log(`Syncing camera tracks for newly answered call to host ${peerId}`);
+                                window.shareCameraWithPeers(state.cameraStream);
+                            }
+                        }, 500);
+                    }
                 } else {
                     console.error('Joiner: No camera stream available to answer call');
                     // Still answer even without stream
