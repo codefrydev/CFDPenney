@@ -32,6 +32,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Bounds changes
     onBoundsChanged: (callback) => ipcRenderer.on('bounds-changed', (event, data) => callback(data)),
     
+    // Screen dimensions (for coordinate mapping)
+    onScreenDimensions: (callback) => ipcRenderer.on('screen-dimensions', (event, data) => callback(data)),
+    
+    // Video dimensions (for coordinate mapping - actual shared screen resolution)
+    sendVideoDimensions: (width, height) => ipcRenderer.send('video-dimensions', { width, height }),
+    onVideoDimensions: (callback) => ipcRenderer.on('video-dimensions', (event, data) => callback(data)),
+    
     // Cleanup
     removeAllListeners: (channel) => ipcRenderer.removeAllListeners(channel)
 });

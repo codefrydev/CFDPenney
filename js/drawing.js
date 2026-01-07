@@ -11,11 +11,41 @@ export function initDrawing(canvasEl) {
     canvas = canvasEl;
 }
 
+// Check if coordinates are within the video element bounds when in screen mode
+function isWithinVideoBounds(clientX, clientY) {
+    // If not in screen mode, allow drawing anywhere
+    if (state.mode !== 'screen') {
+        return true;
+    }
+    
+    const videoElem = document.getElementById('screen-video');
+    if (!videoElem || !videoElem.srcObject) {
+        // No video active, allow drawing
+        return true;
+    }
+    
+    // Get video element's bounding rectangle
+    const videoRect = videoElem.getBoundingClientRect();
+    
+    // Check if coordinates are within video bounds
+    return (
+        clientX >= videoRect.left &&
+        clientX <= videoRect.right &&
+        clientY >= videoRect.top &&
+        clientY <= videoRect.bottom
+    );
+}
+
 export function handleStart(e) {
     if (!canvas) return;
     // Don't start drawing if clicking on controls inside canvas (unlikely with Z-index but safety first)
     // Note: Skip target check for touch events (synthetic MouseEvents don't have proper target)
     if (e.target && e.target !== canvas && e.type !== 'mousedown') return;
+
+    // In screen mode, only allow drawing within video bounds
+    if (!isWithinVideoBounds(e.clientX, e.clientY)) {
+        return;
+    }
 
     const { x, y } = getMousePos(e);
 
@@ -97,6 +127,16 @@ export function handleStart(e) {
 
 export function handleMove(e) {
     if (!state.isDrawing) return;
+    
+    // In screen mode, stop drawing if outside video bounds
+    if (!isWithinVideoBounds(e.clientX, e.clientY)) {
+        // End the current stroke if we move outside video bounds
+        if (state.isDrawing) {
+            handleEnd(e);
+        }
+        return;
+    }
+    
     const { x, y } = getMousePos(e);
     
     // Handle shape tools

@@ -355,7 +355,16 @@ window.handlePeerOverlayEvent = (message) => {
 
 // Update video dimensions when metadata loads
 videoElem.addEventListener('loadedmetadata', () => {
-    setCanvasDimensions(videoElem.videoWidth, videoElem.videoHeight);
+    const videoWidth = videoElem.videoWidth;
+    const videoHeight = videoElem.videoHeight;
+    setCanvasDimensions(videoWidth, videoHeight);
+    
+    // Send video dimensions to overlay for accurate coordinate mapping
+    // The overlay uses these dimensions to denormalize coordinates from viewers
+    // This ensures 1:1 pixel alignment with the actual shared screen
+    if (window.electronAPI) {
+        window.electronAPI.sendVideoDimensions(videoWidth, videoHeight);
+    }
 });
 
 // Camera button handler

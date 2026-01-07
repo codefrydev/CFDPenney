@@ -39,14 +39,22 @@ function initCanvas() {
 }
 
 // Resize canvas to match window
+// Note: canvasWidth and canvasHeight should be set to screen dimensions
+// for accurate coordinate mapping (1:1 pixel alignment)
 function resizeCanvas() {
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
     
-    canvasWidth = rect.width;
-    canvasHeight = rect.height;
+    // If canvasWidth/Height haven't been set to screen dimensions yet,
+    // use window dimensions as fallback
+    if (!canvasWidth || !canvasHeight) {
+        canvasWidth = rect.width;
+        canvasHeight = rect.height;
+    }
     
     // Set canvas size accounting for DPI
+    // Use logical dimensions (canvasWidth/canvasHeight) for coordinate calculations
+    // but render at DPI-scaled resolution for crisp rendering
     canvas.width = canvasWidth * dpr;
     canvas.height = canvasHeight * dpr;
     
@@ -377,6 +385,31 @@ if (window.electronAPI) {
         resizeCanvas();
     });
     
+    // Screen dimensions received from main process (fallback)
+    window.electronAPI.onScreenDimensions((data) => {
+        if (data && data.width && data.height) {
+            // Only use screen dimensions if video dimensions haven't been set yet
+            if (!canvasWidth || !canvasHeight) {
+                canvasWidth = data.width;
+                canvasHeight = data.height;
+                resizeCanvas();
+            }
+        }
+    });
+    
+    // Video dimensions received from main window
+    // These are the actual shared screen dimensions (videoWidth/videoHeight)
+    // Use these for coordinate denormalization to ensure 1:1 pixel alignment
+    // This is the correct reference for mapping viewer coordinates to the host screen
+    window.electronAPI.onVideoDimensions((data) => {
+        if (data && data.width && data.height) {
+            canvasWidth = data.width;
+            canvasHeight = data.height;
+            resizeCanvas();
+            console.log(`Overlay: Using video dimensions for coordinate mapping: ${canvasWidth}x${canvasHeight}`);
+        }
+    });
+    
     // Overlay mode changed
     window.electronAPI.onOverlayModeChanged((mode) => {
         overlayMode = mode;
@@ -385,8 +418,35 @@ if (window.electronAPI) {
 }
 
 // Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     initCanvas();
+    
+    // Get screen dimensions from main process to ensure accurate coordinate mapping
+    // The overlay is fullscreen, so canvas should match screen dimensions exactly
+    if (window.electronAPI) {
+        try {
+            const displayInfo = await window.electronAPI.getDisplayInfo();
+            if (displayInfo && displayInfo.bounds) {
+                // Set canvas to match screen dimensions exactly
+                // This ensures 1:1 pixel mapping for annotations
+                const screenWidth = displayInfo.bounds.width;
+                const screenHeight = displayInfo.bounds.height;
+                
+                // Update canvas dimensions to match screen
+                canvasWidth = screenWidth;
+                canvasHeight = screenHeight;
+                
+                // Resize canvas with correct dimensions
+                resizeCanvas();
+            }
+        } catch (err) {
+            console.error('Error getting display info:', err);
+            // Fallback to window dimensions
+            resizeCanvas();
+        }
+    } else {
+        resizeCanvas();
+    }
     
     // Add event listeners
     canvas.addEventListener('mousedown', handleMouseDown);
