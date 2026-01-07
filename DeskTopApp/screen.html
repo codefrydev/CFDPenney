@@ -14,9 +14,11 @@
     <link rel="stylesheet" href="styles/desktop-theme.css">
     <link rel="stylesheet" href="styles/desktop-screen.css">
     <link rel="stylesheet" href="styles/desktop-animations.css">
+    <link rel="stylesheet" href="styles/desktop-participants.css">
+    <link rel="stylesheet" href="styles/desktop-chat.css">
 </head>
 <body>
-    <div id="container">
+    <div id="container" style="display: flex; flex-direction: column; height: 100vh; position: relative;">
         <div id="header">
             <div class="brand-logo">
                 <span class="brand-cfd">CFD</span>
@@ -48,6 +50,19 @@
                 
                 <div class="divider"></div>
                 
+                <!-- Camera button -->
+                <button class="icon-btn" id="btn-camera" title="Start/Stop Camera">
+                    <i class="fas fa-video" id="camera-btn-icon-off"></i>
+                    <i class="fas fa-video-slash" id="camera-btn-icon-on" style="display: none;"></i>
+                </button>
+                
+                <!-- Participants panel button -->
+                <button class="icon-btn" id="btn-participants" title="Show Participants" style="display: none;">
+                    <i class="fas fa-users"></i>
+                </button>
+                
+                <div class="divider"></div>
+                
                 <!-- Status indicator -->
                 <div id="status">
                     <div class="ping-container" style="display: none;" id="status-ping">
@@ -66,7 +81,7 @@
             </div>
         </div>
         
-        <div id="video-container">
+        <div id="video-container" style="flex: 1; display: flex; position: relative; overflow: hidden;">
             <video id="screen-video" autoplay playsinline></video>
             <div id="placeholder">
                 <h2>No Screen Shared</h2>
@@ -88,9 +103,100 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Participants Panel Backdrop (Mobile) -->
+        <div id="participants-panel-backdrop" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-20 transition-opacity duration-300"></div>
+        
+        <!-- Participants Panel (Teams-style, right side) -->
+        <div id="participants-panel" class="hidden bg-gray-800 border-l border-gray-700 z-30 flex flex-col shadow-2xl participants-panel" style="width: 320px; position: absolute; right: 0; top: 0; bottom: 0; height: 100%;">
+            <!-- Resize Handle -->
+            <div id="participants-panel-resize-handle" class="participants-panel-resize-handle"></div>
+            
+            <!-- Tabs -->
+            <div class="flex border-b border-gray-700 relative">
+                <button id="tab-participants" class="flex-1 px-4 py-3 text-sm font-medium text-gray-300 hover:text-white border-b-2 border-blue-500 transition-colors tab-active">
+                    <i class="fas fa-users" style="margin-right: 8px;"></i>
+                    Participants
+                </button>
+                <button id="tab-chat" class="flex-1 px-4 py-3 text-sm font-medium text-gray-400 hover:text-white border-b-2 border-transparent transition-colors relative">
+                    <i class="fas fa-comment" style="margin-right: 8px;"></i>
+                    Chat
+                    <span id="chat-unread-badge" class="hidden absolute top-1 right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+                </button>
+                <!-- Close Button (visible on mobile) -->
+                <button id="btn-close-participants" class="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-white transition-colors mobile-close-btn" title="Close panel">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <!-- Participants View -->
+            <div id="participants-view" class="flex-1 flex flex-col min-h-0">
+                <div id="participants-list" class="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
+                    <!-- Participants will be dynamically added here -->
+                </div>
+            </div>
+            
+            <!-- Chat View -->
+            <div id="chat-view" class="hidden flex-1 flex flex-col">
+                <!-- Chat Messages -->
+                <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3">
+                    <!-- Messages will be dynamically added here -->
+                </div>
+                
+                <!-- Chat Input Area -->
+                <div class="border-t border-gray-700 p-3 bg-gray-800">
+                    <!-- File Preview (hidden by default) -->
+                    <div id="chat-file-preview" class="hidden mb-2 p-2 bg-gray-700 rounded-lg">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-file" style="color: #9ca3af;"></i>
+                                <span id="chat-file-name" class="text-sm text-gray-300"></span>
+                                <span id="chat-file-size" class="text-xs text-gray-500"></span>
+                            </div>
+                            <button id="chat-file-remove" class="p-1 hover:bg-gray-600 rounded">
+                                <i class="fas fa-times" style="color: #9ca3af; font-size: 12px;"></i>
+                            </button>
+                        </div>
+                        <img id="chat-file-preview-img" class="hidden mt-2 max-w-full max-h-32 rounded" alt="Preview">
+                    </div>
+                    
+                    <!-- Input Container -->
+                    <div class="flex items-end gap-2">
+                        <!-- Emoji Picker Button -->
+                        <button id="chat-emoji-btn" class="p-2 hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0" title="Add emoji">
+                            <i class="fas fa-smile" style="color: #9ca3af;"></i>
+                        </button>
+                        
+                        <!-- File Attachment Button -->
+                        <button id="chat-file-btn" class="p-2 hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0" title="Attach file">
+                            <i class="fas fa-paperclip" style="color: #9ca3af;"></i>
+                        </button>
+                        <input type="file" id="chat-file-input" class="hidden" accept="image/*,application/pdf,.doc,.docx,.txt">
+                        
+                        <!-- Message Input -->
+                        <div class="flex-1 relative">
+                            <textarea id="chat-input" rows="1" placeholder="Type a message..." class="w-full px-3 py-2 bg-gray-700 text-white rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" style="max-height: 120px;"></textarea>
+                        </div>
+                        
+                        <!-- Send Button -->
+                        <button id="chat-send-btn" class="p-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex-shrink-0" title="Send message">
+                            <i class="fas fa-paper-plane" style="color: white;"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Emoji Picker (hidden by default) -->
+                <div id="emoji-picker" class="hidden absolute bottom-16 left-3 bg-gray-700 border border-gray-600 rounded-lg shadow-xl p-3 z-50" style="width: 280px; max-height: 300px; overflow-y: auto;">
+                    <div class="grid grid-cols-8 gap-1">
+                        <!-- Emojis will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script type="module" src="screen.js"></script>
     
     <!-- Theme Toggle Script -->

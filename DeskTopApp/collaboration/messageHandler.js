@@ -137,6 +137,20 @@ export function handlePeerMessage(message, peerId) {
                 window.electronAPI.sendClearOverlay();
             }
             break;
+            
+        case 'CHAT_MESSAGE':
+            // Handle chat message
+            if (window.handleChatMessage) {
+                window.handleChatMessage(message, senderPeerId);
+            }
+            break;
+            
+        case 'CHAT_REACTION':
+            // Handle chat reaction
+            if (window.handleChatReaction) {
+                window.handleChatReaction(message);
+            }
+            break;
     }
 }
 

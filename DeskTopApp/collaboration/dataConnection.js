@@ -3,30 +3,8 @@ import { state } from '../state.js';
 import { handlePeerMessage } from './messageHandler.js';
 import { sendToPeer } from './messageSender.js';
 
-// Forward declare setupCallHandlers (will be defined below or imported)
-function setupCallHandlers(call, peerId) {
-    if (!call) return;
-
-    call.on('stream', (remoteStream) => {
-        // Display stream in video element
-        const videoElem = document.getElementById('screen-video');
-        if (videoElem) {
-            videoElem.srcObject = remoteStream;
-            videoElem.play().catch(err => {
-                if (err.name !== 'AbortError') {
-                }
-            });
-        }
-    });
-
-    call.on('close', () => {
-        state.calls.delete(peerId);
-    });
-
-    call.on('error', (err) => {
-        console.error(`[Call] Error for peer ${peerId}:`, err);
-    });
-}
+// Import setupCallHandlers from videoCall module
+import { setupCallHandlers } from './videoCall.js';
 
 export function setupDataConnection(dataConnection, peerId) {
     if (!dataConnection) {
@@ -81,6 +59,23 @@ export function setupDataConnection(dataConnection, peerId) {
                     }
                 }
             }
+            
+            // Share camera stream with the new peer if available
+            if (state.cameraStream && state.isCameraActive && state.peer) {
+                // Check if camera call already exists
+                if (!state.cameraCalls.has(connectionPeerId)) {
+                    try {
+                        const cameraCall = state.peer.call(connectionPeerId, state.cameraStream, { metadata: { isCameraCall: true } });
+                        if (cameraCall) {
+                            state.cameraCalls.set(connectionPeerId, cameraCall);
+                            cameraCall._isCameraCall = true;
+                            setupCallHandlers(cameraCall, connectionPeerId);
+                        }
+                    } catch (err) {
+                        console.error(`[Host] Error initiating camera call to ${connectionPeerId}:`, err);
+                    }
+                }
+            }
         }
     };
 
@@ -109,6 +104,7 @@ export function setupDataConnection(dataConnection, peerId) {
         if (connectionPeerId) {
             state.dataConnections.delete(connectionPeerId);
             state.calls.delete(connectionPeerId);
+            state.cameraCalls.delete(connectionPeerId);
             state.connectedPeers.delete(connectionPeerId);
             state.pointers.delete(connectionPeerId);
         }

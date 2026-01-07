@@ -3,6 +3,9 @@ import { state, getPeerColor } from './state.js';
 import { startCollaboration, stopCollaboration, initPeerJS } from './collaboration/collaborationCore.js';
 import { sendToAllPeers } from './collaboration/messageSender.js';
 import { setCanvasDimensions } from './collaboration/messageHandler.js';
+import { shareCameraWithPeers } from './collaboration/videoCall.js';
+import './collaboration/chat.js';
+import './collaboration/participantsPanel.js';
 
 // Initialize PeerJS when available
 window.addEventListener('load', () => {
@@ -23,6 +26,9 @@ const sourcePicker = document.getElementById('source-picker');
 const sourceList = document.getElementById('source-list');
 const btnConfirmSource = document.getElementById('btn-confirm-source');
 const btnCancelSource = document.getElementById('btn-cancel-source');
+const btnCamera = document.getElementById('btn-camera');
+const btnParticipants = document.getElementById('btn-participants');
+const btnCloseParticipants = document.getElementById('btn-close-participants');
 
 let selectedSource = null;
 let sources = [];
@@ -289,4 +295,102 @@ window.handlePeerOverlayEvent = (message) => {
 videoElem.addEventListener('loadedmetadata', () => {
     setCanvasDimensions(videoElem.videoWidth, videoElem.videoHeight);
 });
+
+// Camera button handler
+if (btnCamera) {
+    btnCamera.addEventListener('click', async () => {
+        if (!state.isCameraActive) {
+            // Start camera
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: true,
+                    audio: true
+                });
+                
+                state.cameraStream = stream;
+                state.isCameraActive = true;
+                
+                // Update button icon
+                const iconOff = document.getElementById('camera-btn-icon-off');
+                const iconOn = document.getElementById('camera-btn-icon-on');
+                if (iconOff) iconOff.style.display = 'none';
+                if (iconOn) iconOn.style.display = 'inline';
+                
+                // Share camera with peers if collaborating
+                if (state.isCollaborating) {
+                    shareCameraWithPeers(stream);
+                }
+                
+                // Update participants panel
+                if (window.updateParticipantsPanel) {
+                    window.updateParticipantsPanel();
+                }
+            } catch (err) {
+                console.error('Error starting camera:', err);
+                alert('Failed to start camera: ' + err.message);
+            }
+        } else {
+            // Stop camera
+            if (state.cameraStream) {
+                state.cameraStream.getTracks().forEach(track => track.stop());
+                state.cameraStream = null;
+            }
+            state.isCameraActive = false;
+            
+            // Update button icon
+            const iconOff = document.getElementById('camera-btn-icon-off');
+            const iconOn = document.getElementById('camera-btn-icon-on');
+            if (iconOff) iconOff.style.display = 'inline';
+            if (iconOn) iconOn.style.display = 'none';
+            
+            // Stop sharing camera with peers
+            if (state.isCollaborating) {
+                shareCameraWithPeers(null);
+            }
+            
+            // Update participants panel
+            if (window.updateParticipantsPanel) {
+                window.updateParticipantsPanel();
+            }
+        }
+    });
+}
+
+// Participants panel button handler
+if (btnParticipants) {
+    btnParticipants.addEventListener('click', () => {
+        const panel = document.getElementById('participants-panel');
+        if (panel) {
+            const isVisible = !panel.classList.contains('hidden');
+            if (isVisible) {
+                state.participantsPanelVisible = false;
+                panel.classList.add('hidden');
+            } else {
+                state.participantsPanelVisible = true;
+                panel.classList.remove('hidden');
+            }
+            
+            // Update participants panel to refresh state
+            if (window.updateParticipantsPanel) {
+                window.updateParticipantsPanel();
+            }
+        }
+    });
+}
+
+// Close participants panel button handler
+if (btnCloseParticipants) {
+    btnCloseParticipants.addEventListener('click', () => {
+        const panel = document.getElementById('participants-panel');
+        if (panel) {
+            state.participantsPanelVisible = false;
+            panel.classList.add('hidden');
+            
+            // Update participants panel to refresh state
+            if (window.updateParticipantsPanel) {
+                window.updateParticipantsPanel();
+            }
+        }
+    });
+}
 

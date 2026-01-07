@@ -1,6 +1,7 @@
 // Main Collaboration Lifecycle (Adapted for Electron)
 import { state } from '../state.js';
 import { setupDataConnection, attemptConnection, clearOngoingConnections } from './dataConnection.js';
+import { setupCallHandlers } from './videoCall.js';
 
 // PeerJS will be loaded from CDN or installed via npm
 let Peer = null;
@@ -65,6 +66,14 @@ export async function startCollaboration() {
             if (window.updateConnectionStatus) {
                 window.updateConnectionStatus(false, shareCode);
             }
+            
+            // Initialize chat and participants panel
+            if (window.initChat) {
+                window.initChat();
+            }
+            if (window.updateParticipantsPanel) {
+                window.updateParticipantsPanel();
+            }
         });
 
         state.peer.on('connection', (dataConnection) => {
@@ -83,19 +92,36 @@ export async function startCollaboration() {
         state.peer.on('call', (incomingCall) => {
             const peerId = incomingCall.peer;
             
-            // Check for existing call
-            if (state.calls.has(peerId)) {
-                incomingCall.close();
-                return;
-            }
+            // Check if this is a camera call
+            const isCameraCall = incomingCall.metadata && incomingCall.metadata.isCameraCall;
             
-            // Answer with screen stream if available
-            if (state.stream) {
-                incomingCall.answer(state.stream);
-                state.calls.set(peerId, incomingCall);
+            if (isCameraCall) {
+                // Handle camera call
+                if (state.cameraCalls.has(peerId)) {
+                    incomingCall.close();
+                    return;
+                }
+                
+                // Answer camera call (with or without our own camera stream)
+                incomingCall.answer(state.cameraStream || null);
+                state.cameraCalls.set(peerId, incomingCall);
+                incomingCall._isCameraCall = true;
                 setupCallHandlers(incomingCall, peerId);
             } else {
-                incomingCall.close();
+                // Handle screen share call
+                if (state.calls.has(peerId)) {
+                    incomingCall.close();
+                    return;
+                }
+                
+                // Answer with screen stream if available
+                if (state.stream) {
+                    incomingCall.answer(state.stream);
+                    state.calls.set(peerId, incomingCall);
+                    setupCallHandlers(incomingCall, peerId);
+                } else {
+                    incomingCall.close();
+                }
             }
         });
 
@@ -164,6 +190,14 @@ export async function joinCollaborationWithCode(code) {
         state.peer.on('open', (id) => {
             state.myPeerId = id;
             
+            // Initialize chat and participants panel
+            if (window.initChat) {
+                window.initChat();
+            }
+            if (window.updateParticipantsPanel) {
+                window.updateParticipantsPanel();
+            }
+            
             setTimeout(() => {
                 if (connectionAttempted) return;
                 connectionAttempted = true;
@@ -174,15 +208,33 @@ export async function joinCollaborationWithCode(code) {
         state.peer.on('call', (incomingCall) => {
             const peerId = incomingCall.peer;
             
-            if (state.calls.has(peerId)) {
-                incomingCall.close();
-                return;
-            }
+            // Check if this is a camera call
+            const isCameraCall = incomingCall.metadata && incomingCall.metadata.isCameraCall;
             
-            // Answer and set up handlers
-            state.calls.set(peerId, incomingCall);
-            setupCallHandlers(incomingCall, peerId);
-            incomingCall.answer(); // Answer without sending a stream
+            if (isCameraCall) {
+                // Handle camera call
+                if (state.cameraCalls.has(peerId)) {
+                    incomingCall.close();
+                    return;
+                }
+                
+                // Answer camera call (with or without our own camera stream)
+                incomingCall.answer(state.cameraStream || null);
+                state.cameraCalls.set(peerId, incomingCall);
+                incomingCall._isCameraCall = true;
+                setupCallHandlers(incomingCall, peerId);
+            } else {
+                // Handle screen share call
+                if (state.calls.has(peerId)) {
+                    incomingCall.close();
+                    return;
+                }
+                
+                // Answer and set up handlers
+                state.calls.set(peerId, incomingCall);
+                setupCallHandlers(incomingCall, peerId);
+                incomingCall.answer(); // Answer without sending a stream
+            }
         });
 
         state.peer.on('error', (err) => {
@@ -217,9 +269,26 @@ export function stopCollaboration() {
     });
     state.calls.clear();
     
+    // Close all camera calls
+    state.cameraCalls.forEach((call) => {
+        if (call) call.close();
+    });
+    state.cameraCalls.clear();
+    
+    // Stop camera stream if active
+    if (state.cameraStream) {
+        state.cameraStream.getTracks().forEach(track => track.stop());
+        state.cameraStream = null;
+        state.isCameraActive = false;
+    }
+    
     // Clear peer tracking
     state.connectedPeers.clear();
     state.pointers.clear();
+    
+    // Clear chat messages (optional - you might want to keep them)
+    // state.chatMessages = [];
+    state.unreadChatCount = 0;
     
     if (state.peer) {
         state.peer.destroy();
@@ -234,29 +303,11 @@ export function stopCollaboration() {
     if (window.updateConnectionStatus) {
         window.updateConnectionStatus(false);
     }
+    
+    // Update participants panel
+    if (window.updateParticipantsPanel) {
+        window.updateParticipantsPanel();
+    }
 }
 
-function setupCallHandlers(call, peerId) {
-    if (!call) return;
-
-    call.on('stream', (remoteStream) => {
-        // Display stream in video element
-        const videoElem = document.getElementById('screen-video');
-        if (videoElem) {
-            videoElem.srcObject = remoteStream;
-            videoElem.play().catch(err => {
-                if (err.name !== 'AbortError') {
-                }
-            });
-        }
-    });
-
-    call.on('close', () => {
-        state.calls.delete(peerId);
-    });
-
-    call.on('error', (err) => {
-        console.error(`[Call] Error for peer ${peerId}:`, err);
-    });
-}
 
