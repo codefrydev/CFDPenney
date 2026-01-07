@@ -58,3 +58,50 @@ export function sendToPeer(message, peerId = null) {
     }
 }
 
+// Send chat message to all connected peers
+export function sendChatMessage(message) {
+    if (!state.isCollaborating) {
+        return false;
+    }
+    
+    // Ensure message has required fields
+    if (!message.type) {
+        message.type = 'CHAT_MESSAGE';
+    }
+    
+    // Add our peer ID to the message for identification
+    if (state.myPeerId && !message.peerId) {
+        message.peerId = state.myPeerId;
+    }
+    
+    // Add timestamp if not present
+    if (!message.timestamp) {
+        message.timestamp = Date.now();
+    }
+    
+    // Send to all peers
+    return sendToAllPeers(message) > 0;
+}
+
+// Send chat reaction to a message
+export function sendChatReaction(messageId, emoji) {
+    if (!state.isCollaborating) {
+        return false;
+    }
+    
+    const message = {
+        type: 'CHAT_REACTION',
+        messageId: messageId,
+        emoji: emoji,
+        timestamp: Date.now()
+    };
+    
+    // Add our peer ID to the message for identification
+    if (state.myPeerId && !message.peerId) {
+        message.peerId = state.myPeerId;
+    }
+    
+    // Send to all peers
+    return sendToAllPeers(message) > 0;
+}
+

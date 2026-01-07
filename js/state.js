@@ -49,6 +49,13 @@ export const state = {
     isHosting: false,
     shareCode: null,
     peerElements: [], // Elements from peers (each element has peerId)
-    myPeerId: null // Our own peer ID for identification
+    myPeerId: null, // Our own peer ID for identification
+    // Chat state
+    chatMessages: [], // Array of chat messages
+    unreadChatCount: 0, // Unread message count
+    isTyping: false, // Typing indicator state
+    // Panel state
+    participantsPanelWidth: 320, // Default width in pixels
+    participantsPanelVisible: false // Whether panel is visible (user preference)
 };
 

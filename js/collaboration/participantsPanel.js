@@ -32,7 +32,10 @@ function getInitials(peerId) {
 }
 
 // Get display name for peer
-function getDisplayName(peerId) {
+export function getDisplayName(peerId) {
+    if (peerId === 'local' || peerId === state.myPeerId) {
+        return 'You';
+    }
     const peerInfo = state.connectedPeers.get(peerId);
     if (peerInfo && peerInfo.name) {
         return peerInfo.name;
@@ -146,18 +149,102 @@ export function updateParticipantCamera(peerId, stream) {
 
 // Update participants panel
 export function updateParticipantsPanel() {
+    console.log('[updateParticipantsPanel] Function called');
     const panel = document.getElementById('participants-panel');
     const list = document.getElementById('participants-list');
+    const btnParticipants = document.getElementById('btn-participants');
     
-    if (!panel || !list) return;
+    console.log('[updateParticipantsPanel] Panel found:', !!panel);
+    console.log('[updateParticipantsPanel] List found:', !!list);
+    console.log('[updateParticipantsPanel] Button found:', !!btnParticipants);
     
-    if (!state.isCollaborating) {
-        panel.classList.add('hidden');
+    if (!panel || !list) {
+        console.warn('[updateParticipantsPanel] Panel or list not found, returning');
         return;
     }
     
-    // Auto-show panel when collaborating (like Teams)
-    panel.classList.remove('hidden');
+    console.log('[updateParticipantsPanel] state.isCollaborating:', state.isCollaborating);
+    console.log('[updateParticipantsPanel] state.participantsPanelVisible:', state.participantsPanelVisible);
+    console.log('[updateParticipantsPanel] Panel classes before update:', panel.className);
+    
+    // Only show panel button and allow panel when collaborating
+    if (!state.isCollaborating) {
+        console.log('[updateParticipantsPanel] Not collaborating, hiding panel');
+        panel.classList.add('hidden');
+        if (btnParticipants) {
+            btnParticipants.classList.add('hidden');
+        }
+        return;
+    }
+    
+    // Update button visibility
+    updateParticipantsButton();
+    
+    // Show or hide panel based on user preference (default to visible on first collaboration)
+    if (state.participantsPanelVisible === undefined) {
+        console.log('[updateParticipantsPanel] participantsPanelVisible is undefined, setting to true (default)');
+        state.participantsPanelVisible = true; // Default to visible
+    }
+    
+    console.log('[updateParticipantsPanel] Final state.participantsPanelVisible:', state.participantsPanelVisible);
+    
+    if (state.participantsPanelVisible) {
+        console.log('[updateParticipantsPanel] Showing panel (removing hidden class)');
+        panel.classList.remove('hidden');
+    } else {
+        console.log('[updateParticipantsPanel] Hiding panel (adding hidden class)');
+        panel.classList.add('hidden');
+    }
+    
+    console.log('[updateParticipantsPanel] Panel classes after update:', panel.className);
+    console.log('[updateParticipantsPanel] Panel has hidden class:', panel.classList.contains('hidden'));
+    const computedStyle = window.getComputedStyle(panel);
+    console.log('[updateParticipantsPanel] Panel computed display:', computedStyle.display);
+    console.log('[updateParticipantsPanel] Panel computed visibility:', computedStyle.visibility);
+    
+    // Setup tabs if not already done
+    setupTabs();
+    
+    // Setup panel resize if not already done
+    setupPanelResize();
+    
+    // Ensure correct view is shown based on active tab
+    const tabParticipants = document.getElementById('tab-participants');
+    const tabChat = document.getElementById('tab-chat');
+    const participantsView = document.getElementById('participants-view');
+    const chatView = document.getElementById('chat-view');
+    
+    if (tabParticipants && tabChat && participantsView && chatView) {
+        // Check which tab is active (default to participants if neither is explicitly active)
+        const isParticipantsActive = tabParticipants.classList.contains('tab-active') || 
+                                     (!tabChat.classList.contains('tab-active') && !tabParticipants.classList.contains('tab-active'));
+        
+        if (isParticipantsActive) {
+            // Show participants, hide chat
+            participantsView.classList.remove('hidden');
+            chatView.classList.add('hidden');
+            // Ensure tab styling is correct
+            tabParticipants.classList.add('tab-active', 'text-white');
+            tabParticipants.classList.remove('text-gray-400', 'text-gray-300');
+            tabChat.classList.remove('tab-active', 'text-white');
+            tabChat.classList.add('text-gray-400');
+        } else {
+            // Show chat, hide participants
+            chatView.classList.remove('hidden');
+            participantsView.classList.add('hidden');
+            // Ensure tab styling is correct
+            tabChat.classList.add('tab-active', 'text-white');
+            tabChat.classList.remove('text-gray-400');
+            tabParticipants.classList.remove('tab-active', 'text-white');
+            tabParticipants.classList.add('text-gray-300');
+        }
+    }
+    
+    // Initialize chat if not already done
+    if (window.initChat && !window.chatInitialized) {
+        window.initChat();
+        window.chatInitialized = true;
+    }
     
     // Clear existing list
     list.innerHTML = '';
@@ -204,12 +291,196 @@ export function updateParticipantsPanel() {
     }
 }
 
+// Setup tab switching
+function setupTabs() {
+    const tabParticipants = document.getElementById('tab-participants');
+    const tabChat = document.getElementById('tab-chat');
+    const participantsView = document.getElementById('participants-view');
+    const chatView = document.getElementById('chat-view');
+    
+    if (!tabParticipants || !tabChat || !participantsView || !chatView) {
+        console.warn('Tab elements not found, retrying...');
+        // Retry after a short delay if elements aren't ready
+        setTimeout(setupTabs, 100);
+        return;
+    }
+    
+    // Check if already set up
+    if (tabParticipants.dataset.setup === 'true') {
+        return;
+    }
+    
+    // Participants tab click
+    tabParticipants.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Update tab styles
+        tabParticipants.classList.add('tab-active');
+        tabParticipants.classList.remove('text-gray-400');
+        tabParticipants.classList.add('text-white');
+        tabChat.classList.remove('tab-active');
+        tabChat.classList.remove('text-white');
+        tabChat.classList.add('text-gray-400');
+        
+        // Show participants view, hide chat view
+        if (participantsView) {
+            participantsView.classList.remove('hidden');
+        }
+        if (chatView) {
+            chatView.classList.add('hidden');
+        }
+        
+        // Update unread badge visibility
+        if (window.updateUnreadBadge) {
+            window.updateUnreadBadge();
+        }
+    });
+    
+    // Chat tab click
+    tabChat.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Update tab styles
+        tabChat.classList.add('tab-active');
+        tabChat.classList.remove('text-gray-400');
+        tabChat.classList.add('text-white');
+        tabParticipants.classList.remove('tab-active');
+        tabParticipants.classList.remove('text-white');
+        tabParticipants.classList.add('text-gray-300');
+        
+        // Show chat view, hide participants view
+        if (chatView) {
+            chatView.classList.remove('hidden');
+        }
+        if (participantsView) {
+            participantsView.classList.add('hidden');
+        }
+        
+        // Clear unread count when switching to chat
+        if (window.clearUnreadCount) {
+            window.clearUnreadCount();
+        }
+        
+        // Scroll to bottom
+        setTimeout(() => {
+            const chatMessages = document.getElementById('chat-messages');
+            if (chatMessages) {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }, 100);
+    });
+    
+    // Mark as set up
+    tabParticipants.dataset.setup = 'true';
+    console.log('Tabs setup complete');
+}
+
 // Get remote camera streams from window (set by videoCall.js)
 function getRemoteCameraStreams() {
     return window.remoteCameraStreams || new Map();
 }
 
+// Setup panel resize functionality
+function setupPanelResize() {
+    const panel = document.getElementById('participants-panel');
+    const resizeHandle = document.getElementById('participants-panel-resize-handle');
+    
+    if (!panel || !resizeHandle) {
+        // Retry if elements aren't ready
+        setTimeout(setupPanelResize, 100);
+        return;
+    }
+    
+    // Check if already set up
+    if (resizeHandle.dataset.setup === 'true') {
+        return;
+    }
+    
+    // Restore saved width if available
+    if (state.participantsPanelWidth) {
+        panel.style.width = `${state.participantsPanelWidth}px`;
+    }
+    
+    let isResizing = false;
+    let startX = 0;
+    let startWidth = 0;
+    
+    // Minimum and maximum widths
+    const MIN_WIDTH = 240; // Minimum width
+    const MAX_WIDTH = 800; // Maximum width
+    
+    const handleMouseDown = (e) => {
+        isResizing = true;
+        startX = e.clientX;
+        startWidth = panel.offsetWidth;
+        resizeHandle.classList.add('resizing');
+        document.body.classList.add('resizing-panel');
+        
+        e.preventDefault();
+        e.stopPropagation();
+    };
+    
+    const handleMouseMove = (e) => {
+        if (!isResizing) return;
+        
+        const diff = startX - e.clientX; // Inverted because panel is on the right
+        let newWidth = startWidth + diff;
+        
+        // Constrain width
+        newWidth = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, newWidth));
+        
+        // Update panel width
+        panel.style.width = `${newWidth}px`;
+        
+        // Update state
+        state.participantsPanelWidth = newWidth;
+    };
+    
+    const handleMouseUp = () => {
+        if (!isResizing) return;
+        
+        isResizing = false;
+        resizeHandle.classList.remove('resizing');
+        document.body.classList.remove('resizing-panel');
+    };
+    
+    // Add event listeners
+    resizeHandle.addEventListener('mousedown', handleMouseDown);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    
+    // Also handle mouse leave to stop resizing if mouse leaves window
+    document.addEventListener('mouseleave', handleMouseUp);
+    
+    // Mark as set up
+    resizeHandle.dataset.setup = 'true';
+}
+
+// Update participants button visibility
+function updateParticipantsButton() {
+    const btnParticipants = document.getElementById('btn-participants');
+    if (!btnParticipants) return;
+    
+    // Only show button when collaborating
+    if (state.isCollaborating) {
+        btnParticipants.classList.remove('hidden');
+        // Update title based on panel visibility
+        const panel = document.getElementById('participants-panel');
+        if (panel) {
+            const isVisible = !panel.classList.contains('hidden');
+            btnParticipants.title = isVisible ? 'Hide Participants' : 'Show Participants';
+        }
+    } else {
+        btnParticipants.classList.add('hidden');
+    }
+}
+
 // Make functions available globally
 window.updateParticipantsPanel = updateParticipantsPanel;
 window.updateParticipantCamera = updateParticipantCamera;
+window.setupTabs = setupTabs;
+window.setupPanelResize = setupPanelResize;
+window.updateParticipantsButton = updateParticipantsButton;
 

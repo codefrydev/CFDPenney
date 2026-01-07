@@ -3,6 +3,7 @@ import { state } from '../state.js';
 import { redrawCanvas, denormalizeCoordinates } from '../canvas.js';
 import { denormalizeElement } from './coordinateUtils.js';
 import { sendToPeer } from './messageSender.js';
+import { handleChatMessage, handleChatReaction } from './chat.js';
 
 export function handlePeerMessage(message, peerId) {
     const senderPeerId = message.peerId || peerId || 'unknown';
@@ -179,6 +180,24 @@ export function handlePeerMessage(message, peerId) {
             });
             state.peerElements = syncedElements;
             redrawCanvas();
+            break;
+        case 'CHAT_MESSAGE':
+            // Handle chat message
+            if (window.handleChatMessage) {
+                window.handleChatMessage(message, senderPeerId);
+            }
+            break;
+        case 'CHAT_REACTION':
+            // Handle chat reaction
+            if (window.handleChatReaction) {
+                window.handleChatReaction(message);
+            }
+            break;
+        case 'CHAT_FILE':
+            // Handle file attachment (same as CHAT_MESSAGE but for backwards compatibility)
+            if (window.handleChatMessage) {
+                window.handleChatMessage(message, senderPeerId);
+            }
             break;
     }
 }

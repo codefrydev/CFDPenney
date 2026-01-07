@@ -25,6 +25,130 @@ import { getBoundingBox } from './shapes/shapeUtils.js';
 // Make updateUI available globally for collaboration module
 window.updateUI = null;
 
+// Setup participants button handlers
+function setupParticipantsButtonHandlers() {
+    console.log('[setupParticipantsButtonHandlers] Setting up handlers');
+    const btnParticipants = document.getElementById('btn-participants');
+    const btnCloseParticipants = document.getElementById('btn-close-participants');
+    console.log('[setupParticipantsButtonHandlers] btnParticipants found:', !!btnParticipants);
+    console.log('[setupParticipantsButtonHandlers] btnCloseParticipants found:', !!btnCloseParticipants);
+    
+    // Remove existing listeners to prevent duplicates
+    if (btnParticipants && btnParticipants._clickHandler) {
+        btnParticipants.removeEventListener('click', btnParticipants._clickHandler);
+    }
+    if (btnCloseParticipants && btnCloseParticipants._clickHandler) {
+        btnCloseParticipants.removeEventListener('click', btnCloseParticipants._clickHandler);
+    }
+    
+    // Toggle participants panel
+    if (btnParticipants) {
+        const clickHandler = (e) => {
+            console.log('[Participants Button] Click handler triggered');
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const panel = document.getElementById('participants-panel');
+            if (!panel) {
+                console.warn('[Participants Button] Participants panel not found');
+                return;
+            }
+            
+            console.log('[Participants Button] Panel found:', panel);
+            console.log('[Participants Button] Current state.isCollaborating:', state.isCollaborating);
+            console.log('[Participants Button] Current state.participantsPanelVisible:', state.participantsPanelVisible);
+            
+            // Only allow toggle if collaborating
+            if (!state.isCollaborating) {
+                console.log('[Participants Button] Not collaborating, cannot toggle panel');
+                return;
+            }
+            
+            // Toggle the visibility state
+            const wasHidden = panel.classList.contains('hidden');
+            console.log('[Participants Button] Panel wasHidden:', wasHidden);
+            console.log('[Participants Button] Panel classes before toggle:', panel.className);
+            
+            // If panel is hidden, show it (set to true). If visible, hide it (set to false).
+            state.participantsPanelVisible = wasHidden;
+            console.log('[Participants Button] Setting state.participantsPanelVisible to:', state.participantsPanelVisible);
+            
+            // Update the panel visibility through updateParticipantsPanel to ensure everything stays in sync
+            if (window.updateParticipantsPanel) {
+                console.log('[Participants Button] Calling updateParticipantsPanel()');
+                window.updateParticipantsPanel();
+                console.log('[Participants Button] After updateParticipantsPanel(), panel classes:', panel.className);
+                console.log('[Participants Button] After updateParticipantsPanel(), panel has hidden class:', panel.classList.contains('hidden'));
+            } else {
+                console.warn('[Participants Button] updateParticipantsPanel() not available, using fallback');
+                // Fallback: directly update if updateParticipantsPanel is not available
+                if (state.participantsPanelVisible) {
+                    panel.classList.remove('hidden');
+                    console.log('[Participants Button] Fallback: Removed hidden class');
+                    // Setup tabs and resize if not already done
+                    setTimeout(() => {
+                        if (window.setupTabs) window.setupTabs();
+                        if (window.setupPanelResize) window.setupPanelResize();
+                    }, 50);
+                } else {
+                    panel.classList.add('hidden');
+                    console.log('[Participants Button] Fallback: Added hidden class');
+                }
+            }
+            
+            // Update button state
+            if (window.updateParticipantsButton) {
+                console.log('[Participants Button] Calling updateParticipantsButton()');
+                window.updateParticipantsButton();
+            }
+            
+            console.log('[Participants Button] Click handler completed');
+        };
+        
+        btnParticipants._clickHandler = clickHandler;
+        btnParticipants.addEventListener('click', clickHandler);
+        console.log('[Participants Button] Handler attached to button');
+    } else {
+        console.warn('[Participants Button] Participants button not found when setting up handlers');
+    }
+    
+    // Close button in panel header
+    if (btnCloseParticipants) {
+        const closeHandler = (e) => {
+            console.log('[Close Participants Button] Click handler triggered');
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const panel = document.getElementById('participants-panel');
+            if (panel) {
+                console.log('[Close Participants Button] Setting state.participantsPanelVisible to false');
+                state.participantsPanelVisible = false;
+                
+                // Update the panel visibility through updateParticipantsPanel to ensure everything stays in sync
+                if (window.updateParticipantsPanel) {
+                    console.log('[Close Participants Button] Calling updateParticipantsPanel()');
+                    window.updateParticipantsPanel();
+                } else {
+                    console.warn('[Close Participants Button] updateParticipantsPanel() not available, using fallback');
+                    // Fallback: directly update if updateParticipantsPanel is not available
+                    panel.classList.add('hidden');
+                }
+                
+                // Update button state
+                if (window.updateParticipantsButton) {
+                    window.updateParticipantsButton();
+                }
+            } else {
+                console.warn('[Close Participants Button] Panel not found');
+            }
+        };
+        
+        btnCloseParticipants._clickHandler = closeHandler;
+        btnCloseParticipants.addEventListener('click', closeHandler);
+        console.log('[Close Participants Button] Handler attached to button');
+    }
+}
+
 let canvas = null;
 let container = null;
 let toolContainer = null;
@@ -201,6 +325,9 @@ export function updateUI() {
             btnParticipants.classList.add('hidden');
         }
     }
+    
+    // Ensure button handlers are set up
+    setupParticipantsButtonHandlers();
 }
 
 function setupEventListeners() {
@@ -571,25 +698,8 @@ function setupEventListeners() {
         });
     }
     
-    // Participants button
-    const btnParticipants = document.getElementById('btn-participants');
-    const btnCloseParticipants = document.getElementById('btn-close-participants');
-    if (btnParticipants) {
-        btnParticipants.addEventListener('click', () => {
-            const panel = document.getElementById('participants-panel');
-            if (panel) {
-                panel.classList.toggle('hidden');
-            }
-        });
-    }
-    if (btnCloseParticipants) {
-        btnCloseParticipants.addEventListener('click', () => {
-            const panel = document.getElementById('participants-panel');
-            if (panel) {
-                panel.classList.add('hidden');
-            }
-        });
-    }
+    // Participants button - use event delegation to ensure it works
+    setupParticipantsButtonHandlers();
     
     // Fill color picker
     const fillColorPicker = document.getElementById('fill-color-picker');

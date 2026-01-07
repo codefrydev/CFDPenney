@@ -4,10 +4,52 @@
 
 #participants-panel {
     position: relative !important;
-    width: 320px !important; /* w-80 = 320px */
+    width: 320px; /* Default width, can be changed via inline style */
+    min-width: 240px; /* Minimum width */
+    max-width: 800px; /* Maximum width */
     height: 100% !important;
     flex-shrink: 0 !important;
     z-index: 30 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important; /* Important for flex children to respect overflow */
+}
+
+/* Resize Handle */
+.participants-panel-resize-handle {
+    position: absolute;
+    left: -2px;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    cursor: col-resize;
+    z-index: 31;
+    background: transparent;
+    transition: background-color 0.2s, width 0.2s;
+    user-select: none;
+}
+
+.participants-panel-resize-handle:hover {
+    background-color: rgba(59, 130, 246, 0.5);
+    width: 6px;
+    left: -3px;
+}
+
+.participants-panel-resize-handle:active,
+.participants-panel-resize-handle.resizing {
+    background-color: rgba(59, 130, 246, 0.8);
+    width: 6px;
+    left: -3px;
+}
+
+/* Prevent text selection during resize */
+body.resizing-panel {
+    user-select: none;
+    cursor: col-resize !important;
+}
+
+body.resizing-panel * {
+    cursor: col-resize !important;
 }
 
 .participants-panel {
@@ -35,7 +77,18 @@
     border-radius: 8px;
 }
 
+#participants-view {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
 #participants-list {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
@@ -55,6 +108,54 @@
 
 #participants-list::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.3);
+}
+
+/* Panel Header and Tabs - Fixed height */
+#participants-panel > div:first-of-type {
+    flex-shrink: 0;
+}
+
+#participants-panel .flex.border-b {
+    flex-shrink: 0;
+}
+
+/* Tab buttons - ensure they're clickable */
+#tab-participants,
+#tab-chat {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    z-index: 1;
+}
+
+#tab-participants:hover,
+#tab-chat:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+#tab-participants:active,
+#tab-chat:active {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Participants and Chat Views */
+#participants-view,
+#chat-view {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Ensure hidden class works properly - override any display properties */
+#participants-panel.hidden {
+    display: none !important;
+}
+
+#participants-view.hidden,
+#chat-view.hidden {
+    display: none !important;
 }
 
 /* Responsive participants panel */
