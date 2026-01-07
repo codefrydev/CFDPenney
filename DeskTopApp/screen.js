@@ -189,6 +189,8 @@ btnStartShare.addEventListener('click', async () => {
         
         state.stream = stream;
         videoElem.srcObject = stream;
+        // Mute local stream to prevent feedback/echo
+        videoElem.muted = true;
         videoElem.classList.add('active');
         placeholder.classList.add('hidden');
         

@@ -128,6 +128,8 @@ export function setupCallHandlers(call, peerId) {
             
             // Set the remote stream to the video element
             videoElem.srcObject = remoteStream;
+            // Explicitly enable audio so users can hear remote person
+            videoElem.muted = false;
             
             // Ensure video plays - handle AbortError gracefully (happens when stream changes quickly)
             videoElem.play().catch(err => {

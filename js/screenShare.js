@@ -90,6 +90,8 @@ export async function startScreenShare() {
         
         if (videoElem) {
             videoElem.srcObject = mediaStream;
+            // Mute local stream to prevent feedback/echo
+            videoElem.muted = true;
             // Ensure video plays
             videoElem.play().catch(err => {
             });
