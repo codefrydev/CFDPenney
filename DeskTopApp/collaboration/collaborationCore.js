@@ -95,7 +95,6 @@ export async function startCollaboration() {
                 state.calls.set(peerId, incomingCall);
                 setupCallHandlers(incomingCall, peerId);
             } else {
-                console.warn('[Host Call] No stream available to answer');
                 incomingCall.close();
             }
         });
@@ -247,7 +246,6 @@ function setupCallHandlers(call, peerId) {
             videoElem.srcObject = remoteStream;
             videoElem.play().catch(err => {
                 if (err.name !== 'AbortError') {
-                    console.warn('Error playing remote stream:', err);
                 }
             });
         }

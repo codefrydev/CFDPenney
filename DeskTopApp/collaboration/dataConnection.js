@@ -14,7 +14,6 @@ function setupCallHandlers(call, peerId) {
             videoElem.srcObject = remoteStream;
             videoElem.play().catch(err => {
                 if (err.name !== 'AbortError') {
-                    console.warn('Error playing remote stream:', err);
                 }
             });
         }

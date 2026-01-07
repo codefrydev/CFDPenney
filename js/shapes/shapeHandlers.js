@@ -63,7 +63,9 @@ export function handleShapeStart(x, y) {
  */
 export function handleShapeMove(x, y) {
     const currentElement = state.elements[state.historyStep];
-    if (!currentElement) return;
+    if (!currentElement) {
+        return;
+    }
     
     currentElement.end = { x, y };
     

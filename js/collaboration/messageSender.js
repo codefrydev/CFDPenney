@@ -20,7 +20,7 @@ export function sendToAllPeers(message) {
                 conn.send(messageStr);
                 sentCount++;
             } catch (err) {
-                console.error(`Error sending to peer ${peerId}:`, err);
+                console.error(`[messageSender] Error sending to peer ${peerId}:`, err);
             }
         }
     });

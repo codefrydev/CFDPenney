@@ -186,17 +186,14 @@ function showCameraError(message) {
 }
 
 export async function startCamera(cameraDeviceId = null, microphoneDeviceId = null) {
-    console.log('startCamera called', { cameraDeviceId, microphoneDeviceId });
     
     // Prevent multiple simultaneous attempts
     if (isStarting) {
-        console.warn('Camera start already in progress');
         return;
     }
 
     // Check if camera is already active
     if (state.isCameraActive && state.cameraStream) {
-        console.warn('Camera is already active');
         return;
     }
 
@@ -215,7 +212,6 @@ export async function startCamera(cameraDeviceId = null, microphoneDeviceId = nu
     }
 
     isStarting = true;
-    console.log('Starting camera...');
 
     try {
         // Clean up any existing camera stream before starting new one
@@ -237,13 +233,11 @@ export async function startCamera(cameraDeviceId = null, microphoneDeviceId = nu
             ? { deviceId: { exact: micId } }
             : true;
 
-        console.log('Requesting user media with constraints:', { video: videoConstraints, audio: audioConstraints });
         const mediaStream = await navigator.mediaDevices.getUserMedia({
             video: videoConstraints,
             audio: audioConstraints
         });
 
-        console.log('User media obtained:', mediaStream);
 
         // Check if stream has video tracks
         if (!mediaStream || !mediaStream.getVideoTracks().length) {
@@ -261,10 +255,8 @@ export async function startCamera(cameraDeviceId = null, microphoneDeviceId = nu
 
         state.cameraStream = mediaStream;
         state.isCameraActive = true;
-        console.log('Camera stream stored in state');
         
         if (cameraVideoElem) {
-            console.log('Setting camera video element srcObject');
             cameraVideoElem.srcObject = mediaStream;
             // Mute to prevent feedback (users shouldn't hear themselves)
             cameraVideoElem.muted = true;
@@ -273,15 +265,12 @@ export async function startCamera(cameraDeviceId = null, microphoneDeviceId = nu
             if (state.selectedSpeakerId && cameraVideoElem.setSinkId) {
                 try {
                     await cameraVideoElem.setSinkId(state.selectedSpeakerId);
-                    console.log('Set audio output to selected speaker:', state.selectedSpeakerId);
                 } catch (err) {
-                    console.warn('Failed to set audio output device (may not be supported):', err);
                 }
             }
             
             // Ensure video plays
             cameraVideoElem.play().catch(err => {
-                console.warn('Camera video play error:', err);
             });
         } else {
             console.error('Camera video element not found!');
@@ -293,18 +282,14 @@ export async function startCamera(cameraDeviceId = null, microphoneDeviceId = nu
             restoreCameraSize();
             // Update restore button visibility
             updateRestoreButtonVisibility();
-            console.log('Camera container shown');
         } else {
-            console.warn('Camera container not found');
         }
         
         if (cameraControls) {
             cameraControls.classList.remove('hidden');
             // Show controls initially, they'll fade on hover
             cameraControls.style.opacity = '1';
-            console.log('Camera controls shown');
         } else {
-            console.warn('Camera controls not found');
         }
 
         // Update mute button state
@@ -318,7 +303,6 @@ export async function startCamera(cameraDeviceId = null, microphoneDeviceId = nu
             }, 100);
         }
 
-        console.log('Camera started successfully');
 
         // If collaborating, share the camera stream with connected peers
         setTimeout(() => {
@@ -449,12 +433,10 @@ export function toggleAudio() {
     });
     
     updateMuteButton();
-    console.log(`Audio ${state.isAudioMuted ? 'muted' : 'unmuted'}`);
     
     // If collaborating, update peer connections with new audio track state
     // This ensures peers receive the updated audio track (enabled/disabled)
     if (state.isCollaborating && window.shareCameraWithPeers) {
-        console.log(`Updating peer connections with ${state.isAudioMuted ? 'muted' : 'unmuted'} audio track`);
         window.shareCameraWithPeers(state.cameraStream);
     }
 }
