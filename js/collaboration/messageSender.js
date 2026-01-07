@@ -3,7 +3,10 @@ import { state } from '../state.js';
 
 // Send message to all connected peers
 export function sendToAllPeers(message) {
+    console.log('[messageSender] sendToAllPeers - type:', message.type, 'isCollaborating:', state.isCollaborating, 'dataConnections:', state.dataConnections.size);
+    
     if (!state.isCollaborating) {
+        console.log('[messageSender] sendToAllPeers - NOT collaborating, returning 0');
         return 0;
     }
     
@@ -14,16 +17,21 @@ export function sendToAllPeers(message) {
     
     let sentCount = 0;
     state.dataConnections.forEach((conn, peerId) => {
+        console.log('[messageSender] sendToAllPeers - checking connection to', peerId, 'open:', conn?.open, 'readyState:', conn?.readyState);
         if (conn && conn.open) {
             try {
                 const messageStr = JSON.stringify(message);
                 conn.send(messageStr);
                 sentCount++;
+                console.log('[messageSender] sendToAllPeers - sent to peer', peerId);
             } catch (err) {
-                console.error(`Error sending to peer ${peerId}:`, err);
+                console.error(`[messageSender] Error sending to peer ${peerId}:`, err);
             }
+        } else {
+            console.log('[messageSender] sendToAllPeers - connection to', peerId, 'not open, skipping');
         }
     });
+    console.log('[messageSender] sendToAllPeers - total sent:', sentCount, 'out of', state.dataConnections.size, 'connections');
     return sentCount;
 }
 

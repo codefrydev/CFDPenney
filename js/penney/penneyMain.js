@@ -8,6 +8,8 @@ import { state as penneyState } from './penneyState.js';
 import { state as regularState } from '../state.js';
 import '../popupModal.js'; // Initialize popup modal system
 import '../mobile.js'; // Initialize mobile-specific features
+// Import penney canvas functions to register them globally for messageHandler
+import * as penneyCanvas from './penneyCanvas.js';
 
 // Sync penneyState properties to regularState for collaboration and selection compatibility
 // This ensures collaboration modules and selection modules (which import from '../state.js') can work with penney
@@ -36,28 +38,71 @@ function syncStateForCollaboration() {
     regularState.filled = penneyState.filled;
     regularState.mode = penneyState.mode;
     
-    // Sync collaboration-related properties
+    // Sync collaboration-related properties (CRITICAL for collaboration to work)
     // For peer property, use bidirectional sync to prevent overwriting non-null regularState.peer with null
     // If regularState.peer is set (by collaboration functions), sync it to penneyState.peer
     // Otherwise, sync from penneyState.peer to regularState.peer
     if (regularState.peer && !penneyState.peer) {
         // regularState.peer was set by collaboration functions, sync to penneyState
+        console.log('[penneyMain] syncStateForCollaboration - syncing regularState.peer to penneyState');
         penneyState.peer = regularState.peer;
     } else if (penneyState.peer) {
         // penneyState.peer exists, sync to regularState
+        console.log('[penneyMain] syncStateForCollaboration - syncing penneyState.peer to regularState');
         regularState.peer = penneyState.peer;
     }
     // If both are null, no sync needed
     
-    regularState.dataConnections = penneyState.dataConnections;
-    regularState.connectedPeers = penneyState.connectedPeers;
-    regularState.isCollaborating = penneyState.isCollaborating;
-    regularState.isHosting = penneyState.isHosting;
-    regularState.shareCode = penneyState.shareCode;
-    regularState.peerElements = penneyState.peerElements;
-    regularState.myPeerId = penneyState.myPeerId;
-    regularState.calls = penneyState.calls;
-    regularState.cameraCalls = penneyState.cameraCalls;
+    // Sync collaboration state properties (BIDIRECTIONAL - but prefer regularState when it's true)
+    // Collaboration modules set regularState, so we should sync FROM regularState TO penneyState when regularState changes
+    
+    // For isCollaborating: ALWAYS sync FROM regularState TO penneyState (collaboration modules control regularState)
+    // This ensures penneyState reflects the actual collaboration state
+    if (regularState.isCollaborating !== penneyState.isCollaborating) {
+        const wasCollaborating = penneyState.isCollaborating;
+        penneyState.isCollaborating = regularState.isCollaborating;
+        if (wasCollaborating !== penneyState.isCollaborating) {
+            console.log('[penneyMain] syncStateForCollaboration - isCollaborating changed:', wasCollaborating, '->', penneyState.isCollaborating, '(from regularState)');
+        }
+    }
+    
+    // For dataConnections and connectedPeers: sync FROM regularState TO penneyState (collaboration modules control these)
+    // But also ensure they're the same object reference
+    if (regularState.dataConnections !== penneyState.dataConnections) {
+        penneyState.dataConnections = regularState.dataConnections;
+        penneyState.connectedPeers = regularState.connectedPeers;
+    }
+    
+    // For peerElements: sync FROM regularState TO penneyState (messageHandler writes to regularState.peerElements)
+    // But also sync back if penneyState has more (shouldn't happen, but safety)
+    if (regularState.peerElements !== penneyState.peerElements) {
+        // Prefer regularState if it has elements or is longer
+        if (regularState.peerElements.length > 0 || regularState.peerElements.length >= penneyState.peerElements.length) {
+            penneyState.peerElements = regularState.peerElements;
+        } else {
+            regularState.peerElements = penneyState.peerElements;
+        }
+    }
+    
+    // For isHosting, shareCode, myPeerId: sync FROM regularState TO penneyState
+    if (regularState.isHosting !== penneyState.isHosting) {
+        penneyState.isHosting = regularState.isHosting;
+    }
+    if (regularState.shareCode !== penneyState.shareCode) {
+        penneyState.shareCode = regularState.shareCode;
+    }
+    if (regularState.myPeerId !== penneyState.myPeerId) {
+        penneyState.myPeerId = regularState.myPeerId;
+    }
+    
+    // For calls and cameraCalls: sync FROM regularState TO penneyState
+    penneyState.calls = regularState.calls;
+    penneyState.cameraCalls = regularState.cameraCalls;
+    
+    // Log collaboration state
+    if (regularState.isCollaborating || penneyState.isCollaborating) {
+        console.log('[penneyMain] syncStateForCollaboration - isCollaborating:', regularState.isCollaborating, 'penneyIsCollaborating:', penneyState.isCollaborating, 'dataConnections:', regularState.dataConnections.size, 'peerElements:', regularState.peerElements.length, 'penneyPeerElements:', penneyState.peerElements.length);
+    }
 }
 
 // Sync penneyState to regularState (needed before selection operations)
@@ -177,8 +222,26 @@ window.closeCollaborationModal = closeCollaborationModal;
 window.handleHostSession = handleHostSession;
 window.handleJoinSession = handleJoinSession;
 
-// Make sync function available globally for shapePicker
+// Make sync function available globally for shapePicker and dataConnection
 window.syncRegularStateToPenney = syncRegularStateToPenney;
+window.syncStateForCollaboration = syncStateForCollaboration;
+
+// Set global marker to indicate we're on penney page (for messageHandler detection)
+window.isPenneyPage = true;
+console.log('[penneyMain] Set window.isPenneyPage = true');
+
+// Register penney canvas functions globally so messageHandler can access them synchronously
+// This ensures messageHandler uses penney-specific functions instead of regular canvas functions
+window.penneyCanvasFunctions = {
+    redrawCanvas: penneyCanvas.redrawCanvas,
+    denormalizeCoordinates: penneyCanvas.denormalizeCoordinates,
+    normalizeCoordinates: penneyCanvas.normalizeCoordinates
+};
+console.log('[penneyMain] Registered penney canvas functions globally:', {
+    hasRedrawCanvas: !!window.penneyCanvasFunctions.redrawCanvas,
+    hasDenormalizeCoordinates: !!window.penneyCanvasFunctions.denormalizeCoordinates,
+    hasNormalizeCoordinates: !!window.penneyCanvasFunctions.normalizeCoordinates
+});
 
 // Start App
 init();

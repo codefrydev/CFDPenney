@@ -119,6 +119,10 @@ export function setupDataConnection(dataConnection, peerId) {
     // Helper function to handle connection open
     const handleConnectionOpen = () => {
         state.isCollaborating = true;
+        // If on penney page, sync immediately to penneyState
+        if (typeof window !== 'undefined' && window.isPenneyPage && window.syncStateForCollaboration) {
+            window.syncStateForCollaboration();
+        }
         updateConnectionStatus(true, state.shareCode);
         
         // Initialize participants panel
