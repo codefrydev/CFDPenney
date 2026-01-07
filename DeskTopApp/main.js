@@ -72,11 +72,8 @@ function createMainWindow() {
         createOverlayWindow();
     });
     
-    // Sync overlay on window move/resize
-    mainWindow.on('move', syncOverlayBounds);
-    mainWindow.on('resize', syncOverlayBounds);
-    mainWindow.on('moved', syncOverlayBounds);
-    mainWindow.on('resized', syncOverlayBounds);
+    // Note: Overlay is now fullscreen and static, no longer synced with main window
+    // This ensures annotations align 1:1 with the actual shared screen
     
     // Handle main window close
     mainWindow.on('closed', () => {
@@ -92,7 +89,10 @@ function createMainWindow() {
 function createOverlayWindow() {
     if (!mainWindow || mainWindow.isDestroyed()) return;
     
-    const bounds = mainWindow.getBounds();
+    // Use primary display bounds for fullscreen overlay
+    // This ensures annotations align 1:1 with the actual screen
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const bounds = primaryDisplay.bounds;
     
     const preloadPath = getFilePath('preload.js');
     const overlayHtmlPath = getFilePath('overlay.html');
@@ -121,6 +121,17 @@ function createOverlayWindow() {
     });
     
     overlayWindow.loadFile(overlayHtmlPath);
+    
+    // Send screen dimensions to overlay when ready
+    // This ensures the overlay uses correct dimensions for coordinate mapping
+    overlayWindow.webContents.on('did-finish-load', () => {
+        const primaryDisplay = screen.getPrimaryDisplay();
+        overlayWindow.webContents.send('screen-dimensions', {
+            width: primaryDisplay.bounds.width,
+            height: primaryDisplay.bounds.height,
+            scaleFactor: primaryDisplay.scaleFactor
+        });
+    });
     
     // Start in view mode (click-through)
     overlayWindow.setIgnoreMouseEvents(true, { forward: true });
@@ -242,6 +253,15 @@ ipcMain.handle('get-display-info', () => {
 ipcMain.on('overlay-event', (event, data) => {
     if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send('overlay-event', data);
+    }
+});
+
+// Forward video dimensions from main window to overlay
+// These are the actual shared screen dimensions (videoWidth/videoHeight)
+// The overlay uses these for coordinate denormalization to ensure 1:1 pixel alignment
+ipcMain.on('video-dimensions', (event, data) => {
+    if (overlayWindow && !overlayWindow.isDestroyed()) {
+        overlayWindow.webContents.send('video-dimensions', data);
     }
 });
 
