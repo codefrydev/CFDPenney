@@ -9,6 +9,8 @@ import { sendToAllPeers } from '../collaboration.js';
  * Handle shape tool start event
  */
 export function handleShapeStart(x, y) {
+    console.log('[shapeHandlers] handleShapeStart - tool:', state.tool, 'x:', x, 'y:', y);
+    console.log('[shapeHandlers] handleShapeStart - state.elements.length before:', state.elements.length, 'historyStep:', state.historyStep);
     const elementId = `local-${Date.now()}-${Math.random()}`;
     const newElement = {
         id: elementId,
@@ -32,10 +34,13 @@ export function handleShapeStart(x, y) {
         newElement.sides = sidesMap[state.tool];
     }
     
+    console.log('[shapeHandlers] handleShapeStart - newElement:', newElement);
+    
     // Slice history for redo path
     state.elements = state.elements.slice(0, state.historyStep + 1);
     state.elements.push(newElement);
     state.historyStep++;
+    console.log('[shapeHandlers] handleShapeStart - state.elements.length after:', state.elements.length, 'historyStep:', state.historyStep);
     
     // Send to all peers
     if (state.isCollaborating) {
@@ -63,8 +68,12 @@ export function handleShapeStart(x, y) {
  */
 export function handleShapeMove(x, y) {
     const currentElement = state.elements[state.historyStep];
-    if (!currentElement) return;
+    if (!currentElement) {
+        console.log('[shapeHandlers] handleShapeMove - no current element at historyStep:', state.historyStep);
+        return;
+    }
     
+    console.log('[shapeHandlers] handleShapeMove - updating element:', currentElement.id, 'end to:', { x, y });
     currentElement.end = { x, y };
     
     // Update shape-specific properties
@@ -92,8 +101,10 @@ export function handleShapeMove(x, y) {
  */
 export function handleShapeEnd() {
     const currentElement = state.elements[state.historyStep];
+    console.log('[shapeHandlers] handleShapeEnd - currentElement:', currentElement ? currentElement.id : 'null');
     if (currentElement) {
         currentElement.isActive = false;
+        console.log('[shapeHandlers] handleShapeEnd - final element:', currentElement);
         
         if (state.isCollaborating) {
             sendToAllPeers({

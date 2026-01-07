@@ -166,11 +166,20 @@ function renderShapeContent(category) {
  * Select a shape and set it as the active tool
  */
 function selectShape(shapeId) {
+    console.log('[shapePicker] selectShape - selecting shape:', shapeId, 'current tool:', state.tool);
     // Close picker first
     closeShapePicker();
     
     // Set the tool directly (bypass setTool to avoid opening picker again)
     state.tool = shapeId;
+    console.log('[shapePicker] selectShape - tool set to:', state.tool);
+    
+    // If we're in penney mode, sync the tool to penneyState
+    // Check if penneyMain sync function exists (we're in penney mode)
+    if (window.syncRegularStateToPenney) {
+        console.log('[shapePicker] selectShape - syncing to penneyState');
+        window.syncRegularStateToPenney();
+    }
     
     // Update UI to reflect the change
     updateUI();

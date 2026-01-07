@@ -93,6 +93,7 @@ export function renderColors() {
 }
 
 export function setTool(toolId) {
+    console.log('[tools] setTool - setting tool to:', toolId, 'current tool:', state.tool);
     confirmText(); // Finish any active text
     
     // Handle sticker tool - open picker
@@ -108,6 +109,7 @@ export function setTool(toolId) {
     }
     
     state.tool = toolId;
+    console.log('[tools] setTool - tool set to:', state.tool);
 }
 
 export function setColor(colorHex) {

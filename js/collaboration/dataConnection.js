@@ -369,6 +369,21 @@ export function attemptConnection(code, retryCount = 0, stopCollaborationFn) {
         ongoingConnections.add(code);
         console.log(`[Connection Attempt] ${code}: Starting attempt ${retryCount + 1}/${maxRetries + 1}`);
         
+        // Check if peer is initialized before attempting connection
+        if (!state.peer) {
+            ongoingConnections.delete(code);
+            console.error(`[Connection Attempt] ${code}: Peer is not initialized, cannot connect`);
+            if (retryCount < maxRetries) {
+                console.log(`[Connection Retry] ${code}: Retrying after peer initialization check (${retryCount + 1}/${maxRetries})...`);
+                setTimeout(() => attemptConnection(code, retryCount + 1, stopCollaborationFn), retryDelay);
+            } else {
+                console.error(`[Connection Failed] ${code}: Peer not initialized after ${maxRetries} retries`);
+                showAlert('Connection failed: Peer not initialized. Please try again.');
+                if (stopCollaborationFn) stopCollaborationFn();
+            }
+            return;
+        }
+        
         // Connect data channel
         const dataConnection = state.peer.connect(code, {
             reliable: true
