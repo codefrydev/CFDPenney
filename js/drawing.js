@@ -11,7 +11,8 @@ export function initDrawing(canvasEl) {
     canvas = canvasEl;
 }
 
-// Check if coordinates are within the video element bounds when in screen mode
+// Check if coordinates are within the actual video content bounds when in screen mode
+// Accounts for object-fit: contain which may add letterboxing/pillarboxing
 function isWithinVideoBounds(clientX, clientY) {
     // If not in screen mode, allow drawing anywhere
     if (state.mode !== 'screen') {
@@ -24,15 +25,57 @@ function isWithinVideoBounds(clientX, clientY) {
         return true;
     }
     
+    // Check if video is visible
+    const computedStyle = window.getComputedStyle(videoElem);
+    if (computedStyle.display === 'none' || computedStyle.visibility === 'hidden' || videoElem.offsetWidth === 0 || videoElem.offsetHeight === 0) {
+        // Video not visible, allow drawing
+        return true;
+    }
+    
     // Get video element's bounding rectangle
     const videoRect = videoElem.getBoundingClientRect();
     
-    // Check if coordinates are within video bounds
+    // Get video's intrinsic dimensions
+    const videoWidth = videoElem.videoWidth;
+    const videoHeight = videoElem.videoHeight;
+    
+    // If video dimensions aren't available yet, use element bounds as fallback
+    if (!videoWidth || !videoHeight) {
+        return (
+            clientX >= videoRect.left &&
+            clientX <= videoRect.right &&
+            clientY >= videoRect.top &&
+            clientY <= videoRect.bottom
+        );
+    }
+    
+    // Calculate aspect ratios
+    const videoAspect = videoWidth / videoHeight;
+    const containerAspect = videoRect.width / videoRect.height;
+    
+    // Calculate actual video content bounds (accounting for object-fit: contain)
+    let contentWidth, contentHeight, contentLeft, contentTop;
+    
+    if (videoAspect > containerAspect) {
+        // Video is wider - letterboxing (black bars top/bottom)
+        contentWidth = videoRect.width;
+        contentHeight = videoRect.width / videoAspect;
+        contentLeft = videoRect.left;
+        contentTop = videoRect.top + (videoRect.height - contentHeight) / 2;
+    } else {
+        // Video is taller - pillarboxing (black bars left/right)
+        contentHeight = videoRect.height;
+        contentWidth = videoRect.height * videoAspect;
+        contentTop = videoRect.top;
+        contentLeft = videoRect.left + (videoRect.width - contentWidth) / 2;
+    }
+    
+    // Check if coordinates are within the actual video content area
     return (
-        clientX >= videoRect.left &&
-        clientX <= videoRect.right &&
-        clientY >= videoRect.top &&
-        clientY <= videoRect.bottom
+        clientX >= contentLeft &&
+        clientX <= contentLeft + contentWidth &&
+        clientY >= contentTop &&
+        clientY <= contentTop + contentHeight
     );
 }
 
