@@ -13,6 +13,9 @@
     display: flex !important;
     flex-direction: column !important;
     min-height: 0 !important; /* Important for flex children to respect overflow */
+    background: #1f2937 !important;
+    border-left: 1px solid #374151 !important;
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.3);
 }
 
 /* Resize Handle */
@@ -61,6 +64,189 @@ body.resizing-panel * {
 .participant-card {
     border: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.2s ease-in-out;
+    width: 100%;
+    flex-shrink: 0;
+    background: #374151;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.participant-card .bg-gray-700 {
+    background: #374151;
+}
+
+.participant-card .bg-gray-900 {
+    background: #111827;
+}
+
+.participant-card .rounded-lg {
+    border-radius: 8px;
+}
+
+.participant-card .w-full {
+    width: 100%;
+}
+
+.participant-card .aspect-video {
+    aspect-ratio: 16 / 9;
+}
+
+.participant-card .absolute {
+    position: absolute;
+}
+
+.participant-card .inset-0 {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.participant-card .flex {
+    display: flex;
+}
+
+.participant-card .items-center {
+    align-items: center;
+}
+
+.participant-card .justify-center {
+    justify-content: center;
+}
+
+.participant-card .text-3xl {
+    font-size: 1.875rem;
+}
+
+.participant-card .font-bold {
+    font-weight: 700;
+}
+
+.participant-card .text-white {
+    color: #ffffff;
+}
+
+.participant-card .text-sm {
+    font-size: 0.875rem;
+}
+
+.participant-card .font-medium {
+    font-weight: 500;
+}
+
+.participant-card .p-2 {
+    padding: 0.5rem;
+}
+
+.participant-card .top-2 {
+    top: 0.5rem;
+}
+
+.participant-card .right-2 {
+    right: 0.5rem;
+}
+
+.participant-card .bg-green-500 {
+    background: #10b981;
+}
+
+.participant-card .w-3 {
+    width: 0.75rem;
+}
+
+.participant-card .h-3 {
+    height: 0.75rem;
+}
+
+.participant-card .rounded-full {
+    border-radius: 9999px;
+}
+
+.participant-card .hidden {
+    display: none;
+}
+
+.participant-card .object-cover {
+    object-fit: cover;
+}
+
+.participant-card .h-full {
+    height: 100%;
+}
+
+/* Participant controls bar (Teams-style) */
+.participant-controls-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px;
+    background: #1f2937;
+    border-top: 1px solid #374151;
+}
+
+.participant-controls-bar button {
+    padding: 8px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.participant-controls-bar button:hover {
+    background: #374151;
+}
+
+.participant-controls-bar button i {
+    font-size: 14px;
+}
+
+/* Utility classes for gradient backgrounds */
+.participant-card .bg-gradient-to-t {
+    background-image: linear-gradient(to top, var(--tw-gradient-stops));
+}
+
+.participant-card .from-black\/80 {
+    --tw-gradient-from: rgba(0, 0, 0, 0.8);
+    --tw-gradient-to: rgba(0, 0, 0, 0);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.participant-card .to-transparent {
+    --tw-gradient-to: transparent;
+}
+
+/* Tab styling (Teams-style) */
+#tab-participants.tab-active,
+#tab-chat.tab-active {
+    color: #ffffff !important;
+    border-bottom-color: #3B82F6 !important;
+    background-color: transparent;
+}
+
+#tab-participants:not(.tab-active),
+#tab-chat:not(.tab-active) {
+    color: #9ca3af;
+}
+
+#tab-participants:hover,
+#tab-chat:hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Participants panel header (Teams-style) */
+#participants-panel > div:first-of-type {
+    background: #1f2937;
+    border-bottom: 1px solid #374151;
+}
+
+#participants-panel .flex.border-b {
+    background: #1f2937;
 }
 
 .participant-card:hover {
@@ -71,10 +257,22 @@ body.resizing-panel * {
 
 .participant-card video {
     border-radius: 8px;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .participant-card .absolute {
     border-radius: 8px;
+}
+
+.participant-card .relative {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #111827;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 #participants-view {
@@ -83,14 +281,30 @@ body.resizing-panel * {
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    width: 100%;
 }
 
 #participants-list {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     min-height: 0;
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: #111827;
+}
+
+#participants-list:empty::before {
+    content: "No participants yet";
+    display: block;
+    text-align: center;
+    color: #9ca3af;
+    padding: 2rem;
+    font-size: 14px;
 }
 
 #participants-list::-webkit-scrollbar {
@@ -146,6 +360,8 @@ body.resizing-panel * {
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    width: 100%;
+    position: relative;
 }
 
 /* Ensure hidden class works properly - override any display properties */

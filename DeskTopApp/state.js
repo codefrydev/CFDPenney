@@ -37,7 +37,15 @@ export const state = {
     
     // Participants panel state
     participantsPanelVisible: undefined, // Whether participants panel is visible
-    participantsPanelWidth: 320 // Default width of participants panel
+    participantsPanelWidth: 320, // Default width of participants panel
+    
+    // Device preferences
+    selectedCameraId: null,
+    selectedMicrophoneId: null,
+    selectedSpeakerId: null,
+    
+    // Audio mute state
+    isAudioMuted: true // Audio muted by default
 };
 
 // Generate color from peer ID

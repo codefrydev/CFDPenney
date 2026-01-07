@@ -99,14 +99,124 @@ function createParticipantCard(peerId, isLocal = false) {
     cameraIndicator.className = 'absolute top-2 right-2 bg-green-500 w-3 h-3 rounded-full hidden';
     cameraIndicator.title = 'Camera on';
     
+    // Mic mute indicator (Teams-style)
+    const micIndicator = document.createElement('div');
+    micIndicator.id = `participant-mic-indicator-${peerId}`;
+    micIndicator.className = 'absolute bottom-2 right-2 flex items-center gap-1 bg-black/60 px-2 py-1 rounded';
+    micIndicator.style.display = 'none';
+    
+    const micIcon = document.createElement('i');
+    micIcon.id = `participant-mic-icon-${peerId}`;
+    micIcon.className = 'fas fa-microphone text-white text-xs';
+    micIndicator.appendChild(micIcon);
+    
     videoContainer.appendChild(video);
     videoContainer.appendChild(avatar);
     videoContainer.appendChild(nameLabel);
     videoContainer.appendChild(cameraIndicator);
+    videoContainer.appendChild(micIndicator);
     card.appendChild(videoContainer);
+    
+    // Controls bar (Teams-style) - only for local user
+    if (isLocal || peerId === 'local') {
+        const controlsBar = document.createElement('div');
+        controlsBar.className = 'participant-controls-bar p-2 bg-gray-800 border-t border-gray-700 flex items-center justify-center gap-2';
+        
+        // Mic mute button
+        const micBtn = document.createElement('button');
+        micBtn.id = `participant-mic-btn-${peerId}`;
+        micBtn.className = 'p-2 rounded-lg transition-colors hover:bg-gray-700';
+        micBtn.title = 'Mute/Unmute';
+        const micBtnIcon = document.createElement('i');
+        micBtnIcon.id = `participant-mic-btn-icon-${peerId}`;
+        micBtnIcon.className = 'fas fa-microphone-slash text-red-500';
+        micBtn.appendChild(micBtnIcon);
+        micBtn.addEventListener('click', () => {
+            toggleLocalMic();
+        });
+        controlsBar.appendChild(micBtn);
+        
+        // Device settings button
+        const settingsBtn = document.createElement('button');
+        settingsBtn.id = `participant-settings-btn-${peerId}`;
+        settingsBtn.className = 'p-2 rounded-lg transition-colors hover:bg-gray-700';
+        settingsBtn.title = 'Device Settings';
+        const settingsBtnIcon = document.createElement('i');
+        settingsBtnIcon.className = 'fas fa-cog text-gray-400';
+        settingsBtn.appendChild(settingsBtnIcon);
+        settingsBtn.addEventListener('click', () => {
+            openDeviceSettings();
+        });
+        controlsBar.appendChild(settingsBtn);
+        
+        card.appendChild(controlsBar);
+    }
     
     return card;
 }
+
+// Toggle local mic mute
+function toggleLocalMic() {
+    if (!state.cameraStream || !state.isCameraActive) return;
+    
+    const audioTracks = state.cameraStream.getAudioTracks();
+    if (audioTracks.length === 0) return;
+    
+    state.isAudioMuted = !state.isAudioMuted;
+    
+    audioTracks.forEach(track => {
+        track.enabled = !state.isAudioMuted;
+    });
+    
+    // Update UI
+    updateLocalMicIndicator();
+    
+    // If collaborating, update peer connections with new audio track state
+    if (state.isCollaborating && window.shareCameraWithPeers) {
+        window.shareCameraWithPeers(state.cameraStream);
+    }
+}
+
+// Update local mic indicator
+function updateLocalMicIndicator() {
+    const micBtn = document.getElementById('participant-mic-btn-local');
+    const micBtnIcon = document.getElementById('participant-mic-btn-icon-local');
+    const micIndicator = document.getElementById('participant-mic-indicator-local');
+    const micIcon = document.getElementById('participant-mic-icon-local');
+    
+    if (micBtnIcon) {
+        if (state.isAudioMuted) {
+            micBtnIcon.className = 'fas fa-microphone-slash text-red-500';
+            micBtn.title = 'Unmute';
+        } else {
+            micBtnIcon.className = 'fas fa-microphone text-green-500';
+            micBtn.title = 'Mute';
+        }
+    }
+    
+    if (micIndicator && micIcon) {
+        if (state.isAudioMuted) {
+            micIndicator.style.display = 'flex';
+            micIcon.className = 'fas fa-microphone-slash text-red-500 text-xs';
+        } else {
+            micIndicator.style.display = 'none';
+        }
+    }
+}
+
+// Open device settings modal
+function openDeviceSettings() {
+    const modal = document.getElementById('device-selection-modal-overlay');
+    if (modal && window.populateDeviceSelects) {
+        modal.classList.remove('hidden');
+        window.populateDeviceSelects();
+    }
+}
+
+// Make functions available globally
+window.toggleLocalMic = toggleLocalMic;
+window.updateLocalMicIndicator = updateLocalMicIndicator;
+window.openDeviceSettings = openDeviceSettings;
 
 // Update participant video
 export function updateParticipantCamera(peerId, stream) {
@@ -116,6 +226,7 @@ export function updateParticipantCamera(peerId, stream) {
     const video = document.getElementById(`participant-video-${peerId}`);
     const avatar = document.getElementById(`participant-avatar-${peerId}`);
     const indicator = document.getElementById(`participant-camera-indicator-${peerId}`);
+    const micIndicator = document.getElementById(`participant-mic-indicator-${peerId}`);
     
     if (stream && stream.getVideoTracks().length > 0) {
         // Show video, hide avatar
@@ -135,6 +246,16 @@ export function updateParticipantCamera(peerId, stream) {
         if (avatar) avatar.classList.add('hidden');
         if (indicator) indicator.classList.remove('hidden');
         peerCameraStreams.set(peerId, stream);
+        
+        // Update mic indicator for local user
+        if (peerId === 'local' && micIndicator) {
+            const audioTracks = stream.getAudioTracks();
+            if (audioTracks.length > 0 && state.isAudioMuted) {
+                micIndicator.style.display = 'flex';
+            } else {
+                micIndicator.style.display = 'none';
+            }
+        }
     } else {
         // Hide video, show avatar
         if (video) {
@@ -143,6 +264,7 @@ export function updateParticipantCamera(peerId, stream) {
         }
         if (avatar) avatar.classList.remove('hidden');
         if (indicator) indicator.classList.add('hidden');
+        if (micIndicator) micIndicator.style.display = 'none';
         peerCameraStreams.delete(peerId);
     }
 }
@@ -252,6 +374,9 @@ export function updateParticipantsPanel() {
     } else {
         updateParticipantCamera(localPeerId, null);
     }
+    
+    // Update local mic indicator
+    updateLocalMicIndicator();
     
     // Add all connected peers
     state.connectedPeers.forEach((peerInfo, peerId) => {
