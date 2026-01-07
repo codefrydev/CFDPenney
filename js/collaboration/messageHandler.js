@@ -1,8 +1,53 @@
 // Message Processing and Canvas State Updates
 import { state } from '../state.js';
-import { redrawCanvas, denormalizeCoordinates } from '../canvas.js';
+import { redrawCanvas as regularRedrawCanvas, denormalizeCoordinates as regularDenormalizeCoordinates } from '../canvas.js';
 import { denormalizeElement } from './coordinateUtils.js';
 import { sendToPeer } from './messageSender.js';
+import { handleChatMessage, handleChatReaction } from './chat.js';
+
+// Feature detection: Check if penney canvas functions are available
+// This allows us to use penney-specific functions when on penney page, with fallback to regular functions
+// penneyMain.js registers penney functions globally at window.penneyCanvasFunctions for synchronous access
+
+// Helper function to check if we're on penney page
+function isPenneyPage() {
+    if (typeof window === 'undefined') return false;
+    // Check for global marker set by penneyMain.js (most reliable)
+    if (window.isPenneyPage) {
+        return true;
+    }
+    // Fallback: Check pathname for penney.html
+    if (window.location && window.location.pathname.includes('penney.html')) {
+        return true;
+    }
+    return false;
+}
+
+// Helper function to get the appropriate redrawCanvas function
+function getRedrawCanvas() {
+    const isPenney = isPenneyPage();
+    const hasPenneyFunctions = window.penneyCanvasFunctions && window.penneyCanvasFunctions.redrawCanvas;
+    
+    // Check if penney functions are available globally (set by penneyMain.js)
+    if (isPenney && hasPenneyFunctions) {
+        return window.penneyCanvasFunctions.redrawCanvas;
+    }
+    // Fallback to regular canvas function
+    return regularRedrawCanvas;
+}
+
+// Helper function to get the appropriate denormalizeCoordinates function
+function getDenormalizeCoordinates() {
+    const isPenney = isPenneyPage();
+    const hasPenneyFunctions = window.penneyCanvasFunctions && window.penneyCanvasFunctions.denormalizeCoordinates;
+    
+    // Check if penney functions are available globally (set by penneyMain.js)
+    if (isPenney && hasPenneyFunctions) {
+        return window.penneyCanvasFunctions.denormalizeCoordinates;
+    }
+    // Fallback to regular canvas function
+    return regularDenormalizeCoordinates;
+}
 
 export function handlePeerMessage(message, peerId) {
     const senderPeerId = message.peerId || peerId || 'unknown';
@@ -30,7 +75,7 @@ export function handlePeerMessage(message, peerId) {
     switch (message.type) {
         case 'ANNOTATION_START':
             // Peer started drawing - denormalize coordinates
-            const denormStart = denormalizeCoordinates(message.x, message.y);
+            const denormStart = getDenormalizeCoordinates()(message.x, message.y);
             const newPeerElement = {
                 id: message.id || `peer-${Date.now()}-${Math.random()}`,
                 type: message.tool,
@@ -49,11 +94,11 @@ export function handlePeerMessage(message, peerId) {
             if (message.sides) newPeerElement.sides = message.sides;
             if (message.radius !== undefined) newPeerElement.radius = message.radius;
             state.peerElements.push(newPeerElement);
-            redrawCanvas();
+            getRedrawCanvas()();
             break;
         case 'ANNOTATION_MOVE':
             // Peer moved while drawing - denormalize coordinates and find the active element
-            const denormMove = denormalizeCoordinates(message.x, message.y);
+            const denormMove = getDenormalizeCoordinates()(message.x, message.y);
             let activePeerEl = null;
             if (message.id) {
                 // Try to find by ID first
@@ -84,7 +129,7 @@ export function handlePeerMessage(message, peerId) {
                 } else {
                     activePeerEl.end = { x: denormMove.x, y: denormMove.y };
                 }
-                redrawCanvas();
+                getRedrawCanvas()();
             } else {
                 // Create new element as fallback
                 state.peerElements.push({
@@ -99,7 +144,7 @@ export function handlePeerMessage(message, peerId) {
                     isActive: true,
                     peerId: senderPeerId
                 });
-                redrawCanvas();
+                getRedrawCanvas()();
             }
             break;
         case 'ANNOTATION_END':
@@ -119,7 +164,7 @@ export function handlePeerMessage(message, peerId) {
                     }
                 }
             }
-            redrawCanvas();
+            getRedrawCanvas()();
             break;
         case 'ANNOTATION_ELEMENT':
             // Peer added a complete element (e.g., text, sticker) - denormalize coordinates
@@ -129,27 +174,28 @@ export function handlePeerMessage(message, peerId) {
                 isPeer: true,
                 peerId: senderPeerId
             });
-            redrawCanvas();
+            getRedrawCanvas()();
             break;
         case 'ELEMENT_UPDATE':
             // Peer updated an element (move, resize, rotate)
             const peerElement = state.peerElements.find(el => el.id === message.id && el.isPeer);
             if (peerElement && message.element) {
+                const denormFunc = getDenormalizeCoordinates();
                 if (message.element.start) {
-                    const denormStart = denormalizeCoordinates(message.element.start.x, message.element.start.y);
+                    const denormStart = denormFunc(message.element.start.x, message.element.start.y);
                     peerElement.start = denormStart;
                 }
                 if (message.element.end) {
-                    const denormEnd = denormalizeCoordinates(message.element.end.x, message.element.end.y);
+                    const denormEnd = denormFunc(message.element.end.x, message.element.end.y);
                     peerElement.end = denormEnd;
                 }
                 if (message.element.points) {
-                    peerElement.points = message.element.points.map(p => denormalizeCoordinates(p.x, p.y));
+                    peerElement.points = message.element.points.map(p => denormFunc(p.x, p.y));
                 }
                 if (message.element.rotation !== undefined) {
                     peerElement.rotation = message.element.rotation;
                 }
-                redrawCanvas();
+                getRedrawCanvas()();
             }
             break;
         case 'ELEMENT_DELETE':
@@ -157,13 +203,13 @@ export function handlePeerMessage(message, peerId) {
             const index = state.peerElements.findIndex(el => el.id === message.id && el.isPeer);
             if (index >= 0) {
                 state.peerElements.splice(index, 1);
-                redrawCanvas();
+                getRedrawCanvas()();
             }
             break;
         case 'ANNOTATION_CLEAR':
             // Peer cleared canvas
             state.peerElements = [];
-            redrawCanvas();
+            getRedrawCanvas()();
             break;
         case 'ANNOTATION_SYNC':
             // Full state sync - denormalize all element coordinates
@@ -178,7 +224,25 @@ export function handlePeerMessage(message, peerId) {
                 };
             });
             state.peerElements = syncedElements;
-            redrawCanvas();
+            getRedrawCanvas()();
+            break;
+        case 'CHAT_MESSAGE':
+            // Handle chat message
+            if (window.handleChatMessage) {
+                window.handleChatMessage(message, senderPeerId);
+            }
+            break;
+        case 'CHAT_REACTION':
+            // Handle chat reaction
+            if (window.handleChatReaction) {
+                window.handleChatReaction(message);
+            }
+            break;
+        case 'CHAT_FILE':
+            // Handle file attachment (same as CHAT_MESSAGE but for backwards compatibility)
+            if (window.handleChatMessage) {
+                window.handleChatMessage(message, senderPeerId);
+            }
             break;
     }
 }

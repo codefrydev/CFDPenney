@@ -18,7 +18,6 @@ export function handlePeerMessage(message, peerId) {
     if (typeof window.handlePeerOverlayEvent === 'function') {
         window.handlePeerOverlayEvent(message);
     } else {
-        console.warn('[MessageHandler] window.handlePeerOverlayEvent not defined!');
     }
     
     // If we're the host, rebroadcast this message to all other peers (except the sender)
@@ -136,6 +135,20 @@ export function handlePeerMessage(message, peerId) {
             // Forward to overlay via IPC if available
             if (window.electronAPI) {
                 window.electronAPI.sendClearOverlay();
+            }
+            break;
+            
+        case 'CHAT_MESSAGE':
+            // Handle chat message
+            if (window.handleChatMessage) {
+                window.handleChatMessage(message, senderPeerId);
+            }
+            break;
+            
+        case 'CHAT_REACTION':
+            // Handle chat reaction
+            if (window.handleChatReaction) {
+                window.handleChatReaction(message);
             }
             break;
     }

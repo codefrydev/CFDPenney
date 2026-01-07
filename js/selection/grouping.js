@@ -11,7 +11,6 @@ import { clearSelection } from './selectionCore.js';
  */
 export function createGroup(elementIds) {
     if (!elementIds || elementIds.length < 2) {
-        console.log('Grouping: Need at least 2 elements, got:', elementIds?.length || 0);
         return null;
     }
     
@@ -28,11 +27,9 @@ export function createGroup(elementIds) {
     });
     
     if (elementsToGroup.length < 2) {
-        console.log('Grouping: Found less than 2 elements to group:', elementsToGroup.length);
         return null;
     }
     
-    console.log('Grouping: Creating group with', elementsToGroup.length, 'elements');
     
     // Calculate group bounding box
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;

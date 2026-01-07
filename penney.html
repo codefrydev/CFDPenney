@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="CFD Penney - Infinite Canvas with collaborative drawing, video calls, and chat messaging. Real-time whiteboard with unlimited space, pan and zoom capabilities for large-scale projects.">
+    <meta name="keywords" content="infinite canvas, collaborative whiteboard, real-time drawing, annotation tool, online whiteboard, collaborative drawing, web annotation, drawing tool, video calls, chat messaging, unlimited canvas">
+    <meta name="author" content="CodeFryDev">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://codefrydev.in/CFDPenney/penney.html">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://codefrydev.in/CFDPenney/penney.html">
+    <meta property="og:title" content="CFD Penney - Infinite Canvas">
+    <meta property="og:description" content="Infinite canvas with collaborative drawing, video calls, and chat messaging. Unlimited space for large-scale projects with pan and zoom capabilities.">
+    <meta property="og:image" content="https://codefrydev.in/CFDPenney/og-image.jpg">
+    <meta property="og:site_name" content="CFD Penney">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://codefrydev.in/CFDPenney/penney.html">
+    <meta name="twitter:title" content="CFD Penney - Infinite Canvas">
+    <meta name="twitter:description" content="Infinite canvas with collaborative drawing, video calls, and chat messaging. Unlimited space for large-scale projects with pan and zoom capabilities.">
+    <meta name="twitter:image" content="https://codefrydev.in/CFDPenney/og-image.jpg">
+    
+    <title>CFD Penney - Infinite Canvas | Unlimited Collaborative Drawing</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" href="favicon-32x32.png">
+    <link rel="shortcut icon" href="favicon-32x32.png">
+    
+    <link rel="stylesheet" href="styles/main.css">
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-VM01Q3R43D" type="text/javascript"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-VM01Q3R43D');
+    </script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    
+    <!-- JSON-LD Structured Data -->
+    <!-- Organization Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "@id": "https://codefrydev.in/#organization",
+      "name": "CodeFryDev",
+      "url": "https://codefrydev.in/",
+      "logo": "https://codefrydev.in/CFDPenney/og-image.jpg",
+      "sameAs": [
+        "https://github.com/codefrydev/CFDPenney"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "support"
+      }
+    }
+    </script>
+    
+    <!-- WebPage Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "@id": "https://codefrydev.in/CFDPenney/penney.html#webpage",
+      "name": "CFD Penney - Infinite Canvas",
+      "description": "Infinite canvas with collaborative drawing, video calls, and chat messaging. Unlimited space for large-scale projects with pan and zoom capabilities.",
+      "url": "https://codefrydev.in/CFDPenney/penney.html",
+      "inLanguage": "en-US",
+      "isPartOf": {
+        "@id": "https://codefrydev.in/CFDPenney/#website"
+      },
+      "about": {
+        "@id": "https://codefrydev.in/CFDPenney/#product"
+      },
+      "breadcrumb": {
+        "@id": "https://codefrydev.in/CFDPenney/penney.html#breadcrumb"
+      }
+    }
+    </script>
+    
+    <!-- WebApplication Schema (Infinite Canvas Feature) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "@id": "https://codefrydev.in/CFDPenney/penney.html#webapp",
+      "name": "CFD Penney Infinite Canvas",
+      "applicationCategory": "CollaborationApplication",
+      "operatingSystem": "Web Browser",
+      "description": "Infinite canvas collaborative drawing tool with unlimited space, pan and zoom capabilities. Features real-time collaboration, video calls, and chat messaging for large-scale creative projects.",
+      "url": "https://codefrydev.in/CFDPenney/penney.html",
+      "browserRequirements": "Requires JavaScript. Requires HTML5.",
+      "softwareVersion": "1.1",
+      "author": {
+        "@id": "https://codefrydev.in/#organization"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock"
+      },
+      "featureList": [
+        "Infinite canvas with unlimited space",
+        "Pan and zoom navigation",
+        "Real-time collaborative drawing",
+        "Video calls and camera sharing",
+        "Chat messaging with file attachments",
+        "Multiple drawing tools (pen, shapes, text, stickers)",
+        "Advanced selection and grouping",
+        "Undo/redo functionality",
+        "Snapshot export",
+        "Dark/light theme support",
+        "Code-based session joining",
+        "No account required"
+      ]
+    }
+    </script>
+    
+    <!-- BreadcrumbList Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "@id": "https://codefrydev.in/CFDPenney/penney.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://codefrydev.in/CFDPenney/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Infinite Canvas",
+          "item": "https://codefrydev.in/CFDPenney/penney.html"
+        }
+      ]
+    }
+    </script>
+    
+    <!-- WebSite Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "@id": "https://codefrydev.in/CFDPenney/#website",
+      "name": "CFD Penney",
+      "url": "https://codefrydev.in/CFDPenney/",
+      "description": "Real-time collaborative whiteboard and screen annotation tool. Turn any screen into a collaborative canvas.",
+      "publisher": {
+        "@id": "https://codefrydev.in/#organization"
+      },
+      "inLanguage": "en-US"
+    }
+    </script>
+    
+    <!-- Product Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "@id": "https://codefrydev.in/CFDPenney/#product",
+      "name": "CFD Penney",
+      "description": "Turn any screen into a collaborative canvas. Free real-time whiteboard and screen annotation tool with video calls and chat messaging for remote teams.",
+      "image": "https://codefrydev.in/CFDPenney/og-image.jpg",
+      "brand": {
+        "@type": "Brand",
+        "name": "CodeFryDev"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock",
+        "url": "https://codefrydev.in/CFDPenney/"
+      }
+    }
+    </script>
+</head>
+<body class="h-screen flex flex-col overflow-hidden font-sans select-none body-theme">
+
+    <!-- Unified Header -->
+    <header class="header-main border-b p-2.5 sm:p-3 md:p-4 flex items-center justify-between shadow-md header-responsive shrink-0 z-20 backdrop-blur-sm annotate-header">
+        <!-- Left: Logo -->
+        <h1 class="flex items-center select-none cursor-pointer group m-0" onclick="window.location.href='index.html'">
+            <span class="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight header-logo-text group-hover:text-blue-600 transition-colors">CFD</span>
+            <span class="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-white bg-orange-500 px-1 sm:px-1.5 md:px-2 py-0.5 transform -rotate-2 shadow-lg inline-block ml-0.5 sm:ml-1 rounded-md group-hover:shadow-xl transition-shadow">Penney</span>
+        </h1>
+
+        <!-- Center: Annotation Controls -->
+        <div class="flex items-center space-x-2 flex-1 justify-center mx-4">
+            <div class="flex items-center space-x-2">
+                <button id="btn-undo" class="p-2 rounded disabled:opacity-30 disabled:cursor-not-allowed btn-action" disabled>
+                    <i data-lucide="undo" class="w-4 h-4"></i>
+                </button>
+                <button id="btn-redo" class="p-2 rounded disabled:opacity-30 disabled:cursor-not-allowed btn-action" disabled>
+                    <i data-lucide="redo" class="w-4 h-4"></i>
+                </button>
+                <button id="btn-snapshot" class="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors">
+                    <i data-lucide="camera" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Snapshot</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Right: Collaboration & Theme -->
+        <div class="flex items-center gap-1 sm:gap-2 md:gap-3">
+            <!-- Connection Status -->
+            <div id="connection-status" class="hidden flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm status-badge">
+                <div id="connection-dot" class="h-2 w-2 rounded-full status-dot"></div>
+                <span id="connection-text" class="text-secondary">Disconnected</span>
+                <span id="share-code-display" class="hidden font-mono font-bold ml-2 text-accent"></span>
+                <button id="btn-copy-code" class="hidden copy-code-btn ml-1 p-1 rounded transition-colors" title="Copy code">
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                </button>
+            </div>
+            <button id="btn-collaborate" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all btn-secondary" title="Start/Stop Collaboration">
+                <i data-lucide="users" class="w-4 h-4 inline mr-1"></i>
+                <span class="hidden sm:inline">Collaborate</span>
+            </button>
+            <button id="btn-participants" class="hidden px-3 py-1.5 rounded-lg text-sm font-medium transition-all btn-secondary" title="Show Participants">
+                <i data-lucide="users-2" class="w-4 h-4 inline mr-1"></i>
+                <span class="hidden sm:inline">Participants</span>
+            </button>
+            <!-- Viewport Controls -->
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm bg-gray-700/50">
+                <button id="btn-reset-view" class="p-1 rounded hover:bg-gray-600 transition-colors" title="Reset View">
+                    <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                </button>
+                <span id="zoom-indicator" class="text-xs font-mono">100%</span>
+            </div>
+            <button id="theme-toggle" onclick="app.toggleTheme()" class="theme-toggle-btn flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg transition-all active:scale-95" title="Toggle theme">
+                <i data-lucide="sun" class="w-5 h-5 theme-icon-light"></i>
+                <i data-lucide="moon" class="w-5 h-5 theme-icon-dark hidden"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Floating Action Button (Mobile Only) -->
+    <button id="mobile-fab" class="mobile-only fixed z-40 flex items-center justify-center">
+        <i data-lucide="palette" class="text-white"></i>
+    </button>
+
+    <!-- Main Workspace -->
+    <div class="flex-1 relative overflow-hidden flex bg-primary" id="workspace-container">
+        
+        <!-- Desktop Toolbar Sidebar -->
+        <div id="main-toolbar" class="w-20 annotate-toolbar desktop-only border-r flex flex-col items-center py-5 space-y-3 z-20 shadow-xl shrink-0 h-full overflow-y-auto">
+            
+            <!-- Tools -->
+            <div class="flex flex-col space-y-2.5 w-full px-2.5" id="tool-container">
+                <!-- Generated by JS -->
+            </div>
+
+            <div class="w-10 h-px my-3 shrink-0 divider-horizontal"></div>
+
+            <!-- Colors -->
+            <div class="flex flex-col space-y-2.5 px-2.5" id="color-container">
+                <!-- Generated by JS -->
+                <!-- Custom Color Picker Wrapper -->
+                <div class="relative group w-8 h-8 mx-auto">
+                    <div class="w-8 h-8 rounded-full border-2 cursor-pointer border-primary shadow-md transition-all duration-200 hover:scale-110 hover:shadow-lg flex items-center justify-center text-xs" style="background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red);">
+                        <i data-lucide="plus" class="w-3 h-3 text-white drop-shadow-md"></i>
+                    </div>
+                    <input type="color" id="custom-color-picker" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full rounded-full">
+                </div>
+            </div>
+
+            <div class="w-10 h-px my-3 shrink-0 divider-horizontal"></div>
+
+            <!-- Fill Controls (only visible for fillable tools) -->
+            <div id="fill-controls" class="flex flex-col space-y-2.5 px-2.5 hidden">
+                <!-- Fill Toggle -->
+                <button id="fill-toggle" class="p-3.5 rounded-xl transition-all duration-200 btn-clear hover:scale-105 hover:shadow-md" title="Toggle Fill">
+                    <i data-lucide="paint-bucket" class="w-5 h-5"></i>
+                </button>
+                <!-- Fill Color Picker -->
+                <div class="relative group w-8 h-8 mx-auto">
+                    <div class="w-8 h-8 rounded-full border-2 cursor-pointer border-primary shadow-md transition-all duration-200 hover:scale-110 hover:shadow-lg flex items-center justify-center" style="background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red);">
+                        <i data-lucide="droplet" class="w-3 h-3 text-white drop-shadow-md"></i>
+                    </div>
+                    <input type="color" id="fill-color-picker" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full rounded-full">
+                </div>
+            </div>
+
+            <div class="w-10 h-px my-3 shrink-0 divider-horizontal"></div>
+
+            <!-- Clear Action -->
+            <button id="btn-clear" class="p-3.5 rounded-xl transition-all duration-200 btn-clear hover:scale-105 hover:shadow-md" title="Clear All">
+                <i data-lucide="trash-2" class="w-5 h-5"></i>
+            </button>
+
+            <!-- Stroke Width Slider -->
+            <div class="mt-auto mb-5 group relative px-2.5">
+                <div class="p-3 rounded-xl cursor-pointer bg-tertiary transition-all duration-200 hover:shadow-md hover:scale-105">
+                    <div id="stroke-indicator" class="w-5 bg-white rounded-full mx-auto stroke-indicator transition-all duration-200"></div>
+                </div>
+                <div class="absolute left-full ml-3 bottom-0 p-4 rounded-xl border hidden group-hover:flex flex-col space-y-3 w-36 shadow-2xl z-50 annotate-controls backdrop-blur-sm">
+                    <span class="text-xs font-semibold text-secondary uppercase tracking-wide">Stroke Width</span>
+                    <input type="range" id="stroke-slider" min="2" max="30" value="4" class="w-full accent-indigo-500">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Toolbar (Bottom Sheet) -->
+        <div id="mobile-toolbar" class="mobile-only annotate-toolbar" style="display: none;">
+            <!-- Tools -->
+            <div id="mobile-tool-container">
+                <!-- Generated by JS (same as desktop) -->
+            </div>
+
+            <div class="w-full h-px my-3 divider-horizontal"></div>
+
+            <!-- Colors -->
+            <div id="mobile-color-container">
+                <!-- Generated by JS (same as desktop) -->
+            </div>
+
+            <div class="w-full h-px my-3 divider-horizontal"></div>
+
+            <!-- Mobile Actions Row -->
+            <div class="flex gap-2 w-full">
+                <button id="mobile-btn-undo" class="flex-1 rounded-lg transition-all btn-action flex items-center justify-center gap-1.5" disabled>
+                    <i data-lucide="undo"></i>
+                    <span>Undo</span>
+                </button>
+                <button id="mobile-btn-redo" class="flex-1 rounded-lg transition-all btn-action flex items-center justify-center gap-1.5" disabled>
+                    <i data-lucide="redo"></i>
+                    <span>Redo</span>
+                </button>
+            </div>
+
+            <div class="flex gap-2 w-full mt-2">
+                <button id="mobile-btn-snapshot" class="flex-1 rounded-lg transition-all flex items-center justify-center gap-1.5" style="color: white;">
+                    <i data-lucide="camera"></i>
+                    <span class="font-medium">Snapshot</span>
+                </button>
+            </div>
+
+            <div class="w-full h-px my-3 divider-horizontal"></div>
+
+            <!-- Fill Controls (only visible for fillable tools) -->
+            <div id="mobile-fill-controls" class="hidden">
+                <!-- Filled in by JS if needed -->
+            </div>
+
+            <!-- Stroke Width Control -->
+            <div class="w-full">
+                <label class="text-xs font-semibold text-secondary uppercase tracking-wide block">Stroke</label>
+                <div class="flex items-center gap-2.5 mt-1.5">
+                    <div id="mobile-stroke-indicator" class="bg-white rounded-full stroke-indicator transition-all duration-200"></div>
+                    <input type="range" id="mobile-stroke-slider" min="2" max="30" value="4" class="flex-1 accent-indigo-500">
+                </div>
+            </div>
+
+            <div class="w-full h-px my-3 divider-horizontal"></div>
+
+            <!-- Clear Action -->
+            <button id="mobile-btn-clear" class="w-full rounded-lg transition-all duration-200 btn-clear flex items-center justify-center gap-1.5" title="Clear All">
+                <i data-lucide="trash-2"></i>
+                <span class="font-medium">Clear Canvas</span>
+            </button>
+        </div>
+
+        <!-- Canvas Area -->
+        <div class="flex-1 relative overflow-hidden canvas-container annotate-canvas-wrapper" id="canvas-wrapper">
+            
+            <!-- Background Layer -->
+            <div id="background-layer" class="absolute inset-0 flex items-center justify-center pointer-events-none w-full h-full">
+                <!-- Whiteboard BG -->
+                <div id="bg-whiteboard" class="w-full h-full annotate-bg-whiteboard transition-colors duration-500"></div>
+            </div>
+
+            <!-- Drawing Canvas -->
+            <canvas id="main-canvas" class="absolute inset-0 w-full h-full cursor-crosshair z-10"></canvas>
+
+            <!-- Text Input Overlay (Hidden by default) -->
+            <input type="text" id="text-tool-input" class="absolute z-20 bg-transparent border outline-none p-1 rounded shadow-lg min-w-[100px] hidden text-tool-input" placeholder="Type..." autocomplete="off">
+
+        </div>
+    </div>
+    
+    <!-- Collaboration Modal -->
+    <div id="collaboration-modal-overlay" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onclick="closeCollaborationModal(event)">
+        <div id="collaboration-modal" class="relative bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full border border-gray-700 modal-bg" onclick="event.stopPropagation()">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-6 border-b modal-header-border">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center modal-icon-container">
+                        <i data-lucide="users" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold modal-title">Collaboration</h2>
+                </div>
+                <button id="close-collaboration-modal" class="w-8 h-8 flex items-center justify-center rounded-lg transition-colors modal-close-btn" onclick="closeCollaborationModal()">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6 space-y-4">
+                <!-- Host Session -->
+                <button id="btn-host-session" class="w-full p-5 rounded-xl border-2 transition-all hover:border-indigo-500 hover:shadow-lg text-left group modal-host-btn" onclick="handleHostSession()">
+                    <div class="font-bold text-lg mb-1 modal-host-title">Host Session</div>
+                    <div class="text-sm modal-host-description">Create a room and start collaborating</div>
+                </button>
+
+                <!-- OR Separator -->
+                <div class="flex items-center gap-4">
+                    <div class="flex-1 h-px modal-separator"></div>
+                    <span class="text-sm font-medium modal-separator-text">OR</span>
+                    <div class="flex-1 h-px modal-separator"></div>
+                </div>
+
+                <!-- Join Session -->
+                <div class="flex gap-3">
+                    <input 
+                        type="text" 
+                        id="join-code-input" 
+                        placeholder="ENTER CODE" 
+                        maxlength="5"
+                        class="flex-1 px-4 py-3 rounded-xl border-2 focus:outline-none focus:border-indigo-500 transition-all font-mono text-center text-lg tracking-widest uppercase modal-input"
+                        onkeydown="if(event.key === 'Enter') handleJoinSession()"
+                    >
+                    <button 
+                        id="btn-join-session" 
+                        class="px-6 py-3 rounded-xl font-semibold text-white transition-all hover:shadow-lg modal-join-btn"
+                        onclick="handleJoinSession()"
+                    >
+                        Join
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup Modal for Alerts and Confirmations -->
+    <div id="popup-modal-overlay" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onclick="handlePopupModalOverlayClick(event)">
+        <div id="popup-modal" class="hidden relative bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-auto border border-gray-700 modal-bg" onclick="event.stopPropagation()">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-6 border-b modal-header-border">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center modal-icon-container">
+                        <i data-lucide="alert-triangle" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <h2 id="popup-modal-title" class="text-2xl font-bold modal-title">Alert</h2>
+                </div>
+                <button id="popup-modal-close" class="w-8 h-8 flex items-center justify-center rounded-lg transition-colors modal-close-btn">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="p-6 pt-4">
+                <p id="popup-modal-message" class="modal-message-text"></p>
+            </div>
+
+            <!-- Footer -->
+            <div id="popup-modal-footer" class="flex items-center justify-end gap-3 p-6 border-t modal-header-border">
+                <!-- Buttons will be inserted here by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Participants Panel Backdrop (Mobile) -->
+    <div id="participants-panel-backdrop" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-20 transition-opacity duration-300"></div>
+    
+    <!-- Participants Panel (Teams-style, right side) -->
+    <div id="participants-panel" class="hidden h-full w-80 bg-gray-800 border-l border-gray-700 z-30 flex flex-col shadow-2xl participants-panel" style="width: 320px;">
+        <!-- Resize Handle -->
+        <div id="participants-panel-resize-handle" class="participants-panel-resize-handle"></div>
+        
+        <!-- Tabs -->
+        <div class="flex border-b border-gray-700 relative">
+            <button id="tab-participants" class="flex-1 px-4 py-3 text-sm font-medium text-gray-300 hover:text-white border-b-2 border-blue-500 transition-colors tab-active">
+                <i data-lucide="users-2" class="w-4 h-4 inline mr-2"></i>
+                Participants
+            </button>
+            <button id="tab-chat" class="flex-1 px-4 py-3 text-sm font-medium text-gray-400 hover:text-white border-b-2 border-transparent transition-colors relative">
+                <i data-lucide="message-square" class="w-4 h-4 inline mr-2"></i>
+                Chat
+                <span id="chat-unread-badge" class="hidden absolute top-1 right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+            </button>
+            <!-- Close Button (visible on mobile) -->
+            <button id="btn-close-participants" class="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-white transition-colors mobile-close-btn" title="Close panel">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        
+        <!-- Participants View -->
+        <div id="participants-view" class="flex-1 flex flex-col min-h-0">
+            <div id="participants-list" class="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
+                <!-- Participants will be dynamically added here -->
+            </div>
+        </div>
+        
+        <!-- Chat View -->
+        <div id="chat-view" class="hidden flex-1 flex flex-col">
+            <!-- Chat Messages -->
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3">
+                <!-- Messages will be dynamically added here -->
+            </div>
+            
+            <!-- Chat Input Area -->
+            <div class="border-t border-gray-700 p-3 bg-gray-800">
+                <!-- File Preview (hidden by default) -->
+                <div id="chat-file-preview" class="hidden mb-2 p-2 bg-gray-700 rounded-lg">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="file" class="w-4 h-4 text-gray-400"></i>
+                            <span id="chat-file-name" class="text-sm text-gray-300"></span>
+                            <span id="chat-file-size" class="text-xs text-gray-500"></span>
+                        </div>
+                        <button id="chat-file-remove" class="p-1 hover:bg-gray-600 rounded">
+                            <i data-lucide="x" class="w-3 h-3 text-gray-400"></i>
+                        </button>
+                    </div>
+                    <img id="chat-file-preview-img" class="hidden mt-2 max-w-full max-h-32 rounded" alt="Preview">
+                </div>
+                
+                <!-- Input Container -->
+                <div class="flex items-end gap-2">
+                    <!-- Emoji Picker Button -->
+                    <button id="chat-emoji-btn" class="p-2 hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0" title="Add emoji">
+                        <i data-lucide="smile" class="w-5 h-5 text-gray-400"></i>
+                    </button>
+                    
+                    <!-- File Attachment Button -->
+                    <button id="chat-file-btn" class="p-2 hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0" title="Attach file">
+                        <i data-lucide="paperclip" class="w-5 h-5 text-gray-400"></i>
+                    </button>
+                    <input type="file" id="chat-file-input" class="hidden" accept="image/*,application/pdf,.doc,.docx,.txt">
+                    
+                    <!-- Message Input -->
+                    <div class="flex-1 relative">
+                        <textarea id="chat-input" rows="1" placeholder="Type a message..." class="w-full px-3 py-2 bg-gray-700 text-white rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" style="max-height: 120px;"></textarea>
+                    </div>
+                    
+                    <!-- Send Button -->
+                    <button id="chat-send-btn" class="p-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex-shrink-0" title="Send message">
+                        <i data-lucide="send" class="w-5 h-5 text-white"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Emoji Picker (hidden by default) -->
+            <div id="emoji-picker" class="hidden absolute bottom-16 left-3 bg-gray-700 border border-gray-600 rounded-lg shadow-xl p-3 z-50" style="width: 280px; max-height: 300px; overflow-y: auto;">
+                <div class="grid grid-cols-8 gap-1">
+                    <!-- Emojis will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-700 bg-gray-800 py-3 px-4 flex items-center justify-center gap-4 text-sm text-gray-400 shrink-0">
+        <a href="index.html" class="hover:text-white transition-colors">Home</a>
+        <span class="text-gray-600">•</span>
+        <a href="llms.txt" target="_blank" class="hover:text-white transition-colors">Documentation (Summary)</a>
+        <span class="text-gray-600">•</span>
+        <a href="llms-full.txt" target="_blank" class="hover:text-white transition-colors">Full Documentation</a>
+        <span class="text-gray-600">•</span>
+        <a href="privacy.html" class="hover:text-white transition-colors">Privacy</a>
+        <span class="text-gray-600">•</span>
+        <a href="terms.html" class="hover:text-white transition-colors">Terms</a>
+    </footer>
+
+    <script type="module" src="js/penney/penneyMain.js"></script>
+</body>
+</html>
+

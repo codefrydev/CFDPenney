@@ -1,8 +1,8 @@
 # CFD Penney
 
-**Collaborative Annotation Tool for Real-Time Drawing, Screen Sharing, and Image Annotation**
+**Collaborative Annotation Tool with Video Calls, Chat Messaging, and Infinite Canvas**
 
-CFD Penney is a free, dual-platform collaborative annotation tool that enables real-time drawing, screen sharing, and image annotation. Available as both a **web application** (browser-based, no installation) and a **desktop application** (Electron app for Windows, macOS, and Linux), CFD Penney is perfect for teams, educators, and anyone who needs to collaborate visually.
+CFD Penney is a free, dual-platform collaborative annotation tool that enables real-time drawing, screen sharing, video calls, chat messaging, and infinite canvas mode. Available as both a **web application** (browser-based, no installation) and a **desktop application** (Electron app for Windows, macOS, and Linux), CFD Penney is perfect for teams, educators, and anyone who needs to collaborate visually.
 
 **Choose your platform:**
 - 🌐 **Web App** - Instant access from any browser, works on mobile and tablets
@@ -27,17 +27,21 @@ CFD Penney is a free, dual-platform collaborative annotation tool that enables r
 - **Stickers** - Add fun stickers to your canvas
 - **Select Tool** - Select and manipulate drawn elements
 
-### 🖼️ Three Annotation Modes (Both Platforms)
+### 🖼️ Four Annotation Modes
 - **Board Mode** - Clean whiteboard for freeform drawing
-- **Screen Mode** - Share and annotate your screen in real-time
+- **Screen Mode** - Share and annotate your screen in real-time (desktop app)
 - **Image Mode** - Upload and annotate images
+- **Infinite Canvas (Penney Mode)** - Unlimited canvas space with pan and zoom capabilities (web app)
 
 ### 👥 Collaboration (Both Platforms)
 - **Real-Time Collaboration** - Multiple users can draw simultaneously
-- **Room-Based System** - 5-character room codes for easy sharing
-- **Peer-to-Peer** - Direct connections using WebRTC
+- **Video Calls & Camera Sharing** - Face-to-face video calls with camera and microphone support
+- **Chat Messaging** - Real-time text messaging with file attachments and emoji reactions
+- **Room-Based System** - 6-character room codes for easy sharing
+- **Peer-to-Peer** - Direct connections using WebRTC (no data stored on servers)
 - **Session Discovery** - Find and join active sessions
 - **Connection Status** - Visual indicators for connection state
+- **Participants Panel** - View all connected users with video status
 - **Cross-Platform** - Web and desktop users can collaborate in the same session
 
 ### 💻 Desktop App Exclusive Features
@@ -61,6 +65,8 @@ CFD Penney is a free, dual-platform collaborative annotation tool that enables r
 - **Dark/Light Theme** - Toggle between themes
 - **Color Picker** - Preset colors and custom color selection
 - **Stroke Width Control** - Adjustable line thickness
+- **Fill Support** - Fill shapes with custom colors
+- **Device Selection** - Choose camera, microphone, and speaker devices
 - **Responsive Design** - Adapts to any screen size
 
 ## Choosing Web vs Desktop
@@ -242,19 +248,36 @@ For production releases, code signing is recommended:
 
 1. Click the **"Collaborate"** button in the header
 2. Click **"Host Session"** to create a new room
-3. A 5-character room code will be generated (e.g., `A3K7M`)
+3. A 6-character room code will be generated (e.g., `XRKXM`)
 4. Share this code with others to invite them to your session
 
 #### Joining a Session
 
 1. Click the **"Collaborate"** button
-2. Enter the 5-character room code in the input field
+2. Enter the 6-character room code in the input field
 3. Click **"Join"** to connect to the session
 
 Alternatively, you can join directly via URL by appending the room code:
 ```
-https://codefrydev.in/CFDPenney/?code=A3K7M
+https://codefrydev.in/CFDPenney/?code=XRKXM
 ```
+
+#### Using Video Calls and Camera
+
+1. Once in a collaboration session, click the **"Participants"** button
+2. Enable your camera and microphone using the device controls
+3. Other participants will see your video stream
+4. You can mute/unmute audio and turn camera on/off at any time
+5. Select different camera or microphone devices from the settings
+
+#### Using Chat Messaging
+
+1. Open the **"Participants"** panel and switch to the **"Chat"** tab
+2. Type your message in the input field
+3. Attach files (images, documents, PDFs) using the paperclip icon
+4. Add emoji reactions using the emoji picker
+5. Messages are sent to all participants in real-time
+6. File attachments are limited to 5MB per file
 
 #### Drawing Tools
 
@@ -268,6 +291,7 @@ https://codefrydev.in/CFDPenney/?code=A3K7M
 - **Board Mode** - Click the "Board" button for a clean whiteboard
 - **Screen Mode** - Click "Screen" to share your screen (requires browser permissions)
 - **Image Mode** - Click "Image" to upload and annotate an image file
+- **Infinite Canvas (Penney)** - Visit `penney.html` for unlimited canvas space with pan and zoom
 
 #### Screen Sharing (Web)
 
@@ -334,6 +358,8 @@ Desktop and web users can collaborate seamlessly:
 
 - **Vanilla JavaScript (ES6 Modules)** - Core application logic
 - **PeerJS** - Peer-to-peer WebRTC connections
+- **WebRTC** - Real-time video, audio, and data transmission
+- **MediaStream API** - Camera and microphone access
 - **HTML5 Canvas** - Drawing and rendering
 - **Tailwind CSS** - Styling and responsive design
 - **Lucide Icons** - Icon library
@@ -395,16 +421,24 @@ js/
 ├── canvas.js               # Canvas rendering
 ├── drawing.js              # Drawing logic
 ├── tools.js                # Tool management
+├── camera.js               # Camera and video management
 ├── collaboration.js        # Collaboration API
 ├── collaboration/
 │   ├── collaborationCore.js    # Core collaboration lifecycle
 │   ├── dataConnection.js       # Data channel management
-│   ├── videoCall.js            # Screen sharing
+│   ├── videoCall.js            # Screen sharing and camera calls
+│   ├── chat.js                 # Chat messaging system
+│   ├── participantsPanel.js   # Participants and video display
 │   ├── messageHandler.js       # Message processing
 │   ├── messageSender.js        # Message sending
 │   ├── connectionStatus.js     # Connection UI updates
 │   ├── coordinateUtils.js      # Coordinate normalization
 │   └── urlUtils.js             # URL code handling
+├── penney/                 # Infinite canvas (Penney mode)
+│   ├── penneyMain.js       # Penney mode entry point
+│   ├── penneyCanvas.js     # Infinite canvas rendering
+│   ├── penneyDrawing.js   # Drawing on infinite canvas
+│   └── ...
 ├── shapes/                 # Shape tools
 ├── stickers/               # Sticker system
 ├── selection/              # Selection and manipulation
@@ -471,11 +505,13 @@ The application uses a centralized state object (`state.js`) that manages:
 
 CFD Penney uses **PeerJS** for peer-to-peer WebRTC connections:
 
-1. **Host creates a session** - Generates a unique 5-character room code
+1. **Host creates a session** - Generates a unique 6-character room code
 2. **PeerJS connection** - Host's peer ID becomes the room code
 3. **Joiners connect** - Other users connect using the room code as the peer ID
-4. **Data channels** - Real-time bidirectional data channels sync drawing actions
+4. **Data channels** - Real-time bidirectional data channels sync drawing actions, chat messages, and collaboration events
 5. **Screen sharing** - Video streams are shared via WebRTC media channels
+6. **Camera streams** - Separate WebRTC calls handle camera/video sharing for face-to-face collaboration
+7. **Chat messages** - Transmitted peer-to-peer via data channels (not stored on servers)
 
 ### TURN/STUN Server Configuration
 
@@ -531,6 +567,18 @@ The application includes a peer-to-peer discovery service that allows users to f
 - The first user to connect becomes the discovery host
 - Other users can query available sessions
 
+### Privacy & Data Protection
+
+CFD Penney is designed with privacy in mind:
+- **No Data Storage**: All drawings, video streams, and chat messages are transmitted peer-to-peer and not stored on servers
+- **No Account Required**: No registration, no personal information collected
+- **Local Storage Only**: Preferences and device settings stored locally in your browser
+- **Peer-to-Peer Architecture**: Direct connections between participants using WebRTC
+- **No Recording**: Video calls and screen sharing are not recorded
+- **Session Codes**: Temporary 6-character codes that expire when sessions end
+
+For detailed privacy information, see [privacy.html](privacy.html)
+
 ## Platform & Browser Support
 
 ### Web Application - Browser Support
@@ -543,7 +591,7 @@ The application includes a peer-to-peer discovery service that allows users to f
 
 **Required Permissions:**
 - **Screen Sharing** - Required for Screen mode
-- **Camera/Microphone** - Not required (no video/audio chat)
+- **Camera/Microphone** - Required for video calls and camera sharing (optional, can be disabled)
 
 **Mobile Support:**
 
@@ -594,8 +642,9 @@ CFD Penney web app is responsive and works on mobile devices:
 
 ```
 Annonate/
-├── index.html              # Landing page
+├── index.html              # Landing page with FAQ section
 ├── canvas.html             # Web application main page
+├── penney.html             # Infinite canvas mode (Penney)
 ├── js/                     # Web app JavaScript modules
 │   ├── main.js             # Entry point
 │   ├── state.js            # State management
@@ -603,17 +652,25 @@ Annonate/
 │   ├── canvas.js           # Canvas operations
 │   ├── drawing.js          # Drawing logic
 │   ├── tools.js            # Tool management
+│   ├── camera.js           # Camera and video management
 │   ├── collaboration.js    # Collaboration API
 │   ├── collaboration/      # Collaboration modules
 │   │   ├── collaborationCore.js    # Core collaboration lifecycle
 │   │   ├── dataConnection.js       # Data channel management
-│   │   ├── videoCall.js            # Screen sharing
+│   │   ├── videoCall.js            # Screen sharing and camera calls
+│   │   ├── chat.js                 # Chat messaging system
+│   │   ├── participantsPanel.js   # Participants and video display
 │   │   ├── messageHandler.js       # Message processing
 │   │   ├── messageSender.js        # Message sending
 │   │   ├── connectionStatus.js     # Connection UI updates
 │   │   ├── coordinateUtils.js      # Coordinate normalization
 │   │   ├── clipboardUtils.js       # Clipboard operations
 │   │   └── urlUtils.js             # URL code handling
+│   ├── penney/             # Infinite canvas (Penney mode)
+│   │   ├── penneyMain.js   # Penney mode entry point
+│   │   ├── penneyCanvas.js # Infinite canvas rendering
+│   │   ├── penneyDrawing.js # Drawing on infinite canvas
+│   │   └── ...
 │   ├── shapes/             # Shape tools
 │   ├── stickers/           # Sticker system
 │   ├── selection/          # Selection tools
@@ -645,8 +702,10 @@ Annonate/
 ├── og-image.jpg            # Open Graph image
 ├── robots.txt              # SEO robots file
 ├── sitemap.xml             # SEO sitemap
-├── privacy.html            # Privacy policy
-├── terms.html              # Terms of service
+├── privacy.html            # Privacy policy (updated with video/chat info)
+├── terms.html              # Terms of service (updated with new features)
+├── llms.txt                # LLM documentation summary
+├── llms-full.txt           # Full LLM documentation
 └── README.md               # This file
 ```
 
@@ -673,7 +732,10 @@ This project is open source. Please check the repository for specific license in
 
 ## Support
 
-For issues, questions, or contributions, please visit the [GitHub repository](https://github.com/codefrydev/CFDPenney).
+For issues, questions, or contributions:
+- **Email**: Contact us via email (click "Contact Us" in the footer)
+- **GitHub**: Visit the [GitHub repository](https://github.com/codefrydev/CFDPenney)
+- **Documentation**: See `llms.txt` for summary or `llms-full.txt` for complete documentation
 
 ## Acknowledgments
 

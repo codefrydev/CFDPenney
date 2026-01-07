@@ -14,7 +14,6 @@ function cleanupOldSessions() {
   for (const [code, session] of sessionRegistry.entries()) {
     if (now - session.timestamp > SESSION_TIMEOUT) {
       sessionRegistry.delete(code);
-      console.log(`Removed stale session: ${code}`);
     }
   }
 }
@@ -25,7 +24,6 @@ export function startDiscoveryHost() {
     return; // Already started
   }
 
-  console.log('Attempting to start as discovery host...');
 
   discoveryPeer = new Peer(DISCOVERY_PEER_ID, {
     debug: 0,
@@ -48,7 +46,6 @@ export function startDiscoveryHost() {
   });
 
   discoveryPeer.on('open', (id) => {
-    console.log('Discovery host ready:', id);
     isDiscoveryHost = true; // Only set to true after successful open
     
     // Start cleanup interval
@@ -56,10 +53,8 @@ export function startDiscoveryHost() {
   });
 
   discoveryPeer.on('connection', (dataConnection) => {
-    console.log('Discovery connection received from:', dataConnection.peer);
     
     dataConnection.on('open', () => {
-      console.log('Discovery data channel open');
     });
 
     dataConnection.on('data', (data) => {
@@ -72,7 +67,6 @@ export function startDiscoveryHost() {
     });
 
     dataConnection.on('close', () => {
-      console.log('Discovery connection closed');
     });
 
     dataConnection.on('error', (err) => {
@@ -89,7 +83,6 @@ export function startDiscoveryHost() {
       // The error handler will prevent it from being used as host
     } else {
       // Only log actual unexpected errors
-      console.warn('Discovery peer error (non-critical):', err.type || err.message);
     }
   });
 }
@@ -121,7 +114,6 @@ function handleDiscoveryMessage(message, dataConnection) {
     case 'register':
       // Only register if it's an Annonate session (has platform identifier)
       if (message.platform !== ANNONATE_PLATFORM_ID) {
-        console.log('Ignoring non-Annonate session registration:', message.code);
         break;
       }
       
@@ -134,7 +126,6 @@ function handleDiscoveryMessage(message, dataConnection) {
         mode: message.mode || 'whiteboard', // Store mode: 'whiteboard', 'screen', 'image'
         connected: false // Track if this session is already connected
       });
-      console.log('Registered Annonate session:', message.code, 'mode:', message.mode || 'whiteboard');
       
       // Send confirmation
       dataConnection.send(JSON.stringify({
@@ -149,7 +140,6 @@ function handleDiscoveryMessage(message, dataConnection) {
       const connectedSession = sessionRegistry.get(message.code);
       if (connectedSession) {
         connectedSession.connected = true;
-        console.log('Marked session as connected:', message.code);
       }
       break;
 
@@ -158,14 +148,12 @@ function handleDiscoveryMessage(message, dataConnection) {
       const availableSession = sessionRegistry.get(message.code);
       if (availableSession) {
         availableSession.connected = false;
-        console.log('Marked session as available:', message.code);
       }
       break;
 
     case 'unregister':
       // Unregister a session
       sessionRegistry.delete(message.code);
-      console.log('Unregistered session:', message.code);
       break;
 
     case 'list':
@@ -199,11 +187,9 @@ function handleDiscoveryMessage(message, dataConnection) {
         type: 'list_response',
         sessions: sessions
       }));
-      console.log('Sent Annonate session list:', sessions.length, 'available sessions');
       break;
 
     default:
-      console.warn('Unknown discovery message type:', message.type);
   }
 }
 
@@ -265,7 +251,6 @@ export function connectToDiscovery(onSessionsReceived, mode) {
       });
 
       clientPeer.on('open', () => {
-        console.log('Connecting to discovery peer as client...');
         
         try {
           const dataConnection = clientPeer.connect(DISCOVERY_PEER_ID, {
@@ -273,7 +258,6 @@ export function connectToDiscovery(onSessionsReceived, mode) {
           });
 
           dataConnection.on('open', () => {
-            console.log('Connected to discovery peer');
             discoveryDataConnection = dataConnection;
 
             // Request session list with Annonate platform identifier and mode
@@ -291,7 +275,6 @@ export function connectToDiscovery(onSessionsReceived, mode) {
               try {
                 const message = JSON.parse(data);
                 if (message.type === 'list_response') {
-                  console.log('Received session list:', message.sessions.length, 'sessions');
                   // Add mode to each session if not present
                   const sessionsWithMode = message.sessions.map(s => ({
                     ...s,
@@ -323,7 +306,6 @@ export function connectToDiscovery(onSessionsReceived, mode) {
           });
 
           dataConnection.on('close', () => {
-            console.log('Discovery data connection closed');
             activeDiscoveryConnections.delete(connectionId);
           });
 
@@ -338,7 +320,6 @@ export function connectToDiscovery(onSessionsReceived, mode) {
         console.error('Client peer error:', err);
         // If discovery peer doesn't exist, we become the host
         if (err.type === 'peer-unavailable' || err.message?.includes('Could not connect')) {
-          console.log('Discovery peer not found, starting as host...');
           stopDiscoveryHost();
           startDiscoveryHost();
           
@@ -368,7 +349,6 @@ export function registerSession(code, name, mode) {
       mode: mode || 'whiteboard', // Store mode: 'whiteboard', 'screen', 'image'
       connected: false
     });
-    console.log('Registered Annonate session locally:', code, 'mode:', mode || 'whiteboard');
     return Promise.resolve();
   }
 
@@ -406,7 +386,6 @@ export function registerSession(code, name, mode) {
             try {
               const message = JSON.parse(data);
               if (message.type === 'register_ack' && message.code === code) {
-                console.log('Session registered:', code);
                 resolve();
                 
                 // Keep connection open for unregister later
@@ -444,7 +423,6 @@ export function registerSession(code, name, mode) {
       // If discovery peer doesn't exist, start as host (expected behavior)
       if (err.type === 'peer-unavailable' || err.message?.includes('Could not connect')) {
         // This is expected when no discovery host exists - we'll become the host
-        console.log('No discovery host found, starting as discovery host...');
         startDiscoveryHost();
         registerSession(code, name, mode).then(resolve).catch(reject);
       } else {
@@ -463,7 +441,6 @@ export function markSessionConnected(code) {
     const session = sessionRegistry.get(code);
     if (session) {
       session.connected = true;
-      console.log('Marked session as connected:', code);
     }
     return Promise.resolve();
   }
@@ -518,7 +495,6 @@ export function markSessionAvailable(code) {
     const session = sessionRegistry.get(code);
     if (session) {
       session.connected = false;
-      console.log('Marked session as available:', code);
     }
     return Promise.resolve();
   }
@@ -571,7 +547,6 @@ export function unregisterSession(code) {
   if (isDiscoveryHost) {
     // We're the host, remove directly
     sessionRegistry.delete(code);
-    console.log('Unregistered session locally:', code);
     return;
   }
 

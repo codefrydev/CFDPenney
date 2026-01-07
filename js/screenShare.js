@@ -37,17 +37,14 @@ export function setMode(newMode) {
 }
 
 export async function startScreenShare() {
-    console.log('startScreenShare called');
     
     // Prevent multiple simultaneous attempts
     if (isStarting) {
-        console.warn('Screen share start already in progress');
         return;
     }
 
     // Check if screen sharing is already active
     if (state.mode === 'screen' && state.stream) {
-        console.warn('Screen sharing is already active');
         return;
     }
 
@@ -68,7 +65,6 @@ export async function startScreenShare() {
     }
 
     isStarting = true;
-    console.log('Starting screen share...');
 
     try {
         // Clean up any existing stream before starting new one
@@ -78,15 +74,12 @@ export async function startScreenShare() {
 
         // Set mode to screen first to ensure state is correct
         setMode('screen');
-        console.log('Mode set to screen');
 
-        console.log('Requesting display media...');
         const mediaStream = await navigator.mediaDevices.getDisplayMedia({
             video: { cursor: "always" },
             audio: false
         });
 
-        console.log('Display media obtained:', mediaStream);
 
         // Check if stream has video tracks
         if (!mediaStream || !mediaStream.getVideoTracks().length) {
@@ -94,14 +87,13 @@ export async function startScreenShare() {
         }
 
         state.stream = mediaStream;
-        console.log('Stream stored in state');
         
         if (videoElem) {
-            console.log('Setting video element srcObject');
             videoElem.srcObject = mediaStream;
+            // Mute local stream to prevent feedback/echo
+            videoElem.muted = true;
             // Ensure video plays
             videoElem.play().catch(err => {
-                console.warn('Video play error:', err);
             });
         } else {
             console.error('Video element not found!');
@@ -109,19 +101,14 @@ export async function startScreenShare() {
         
         if (videoPlaceholder) {
             videoPlaceholder.classList.add('hidden');
-            console.log('Placeholder hidden');
         } else {
-            console.warn('Video placeholder not found');
         }
         
         if (videoControls) {
             videoControls.classList.remove('hidden');
-            console.log('Controls shown');
         } else {
-            console.warn('Video controls not found');
         }
         
-        console.log('Screen share started successfully');
 
         // If collaborating, share the screen stream with connected peers
         // Use setTimeout to ensure mode is set and state is updated

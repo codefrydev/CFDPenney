@@ -6,6 +6,8 @@ import { getCodeFromURL, joinCollaborationWithCode } from './collaboration.js';
 import { state } from './state.js';
 import './popupModal.js'; // Initialize popup modal system
 import './mobile.js'; // Initialize mobile-specific features
+import './collaboration/participantsPanel.js'; // Initialize participants panel
+import './collaboration/chat.js'; // Initialize chat module
 
 // Initialize app
 function init() {

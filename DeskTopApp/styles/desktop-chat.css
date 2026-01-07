@@ -1,0 +1,433 @@
+/* ============================================
+   CHAT STYLES
+   ============================================ */
+
+/* Chat View */
+#chat-view {
+    display: flex !important;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0; /* Important for flex children to respect overflow */
+    position: relative;
+}
+
+/* Ensure chat view is visible when not hidden */
+#chat-view:not(.hidden) {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Chat Messages Container (Teams-style) */
+#chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0; /* Important for flex children to respect overflow */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: #111827;
+}
+
+#chat-messages:empty::before {
+    content: "No messages yet. Start the conversation!";
+    display: block;
+    text-align: center;
+    color: #9ca3af;
+    padding: 2rem;
+    font-size: 14px;
+    margin: auto;
+}
+
+#chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+#chat-messages::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#chat-messages::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+#chat-messages::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Chat Message */
+.chat-message {
+    margin-bottom: 12px;
+    animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.chat-message-local {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.chat-message-remote {
+    display: flex;
+    justify-content: flex-start;
+}
+
+/* Chat Message Content (Teams-style) */
+.chat-message-content {
+    max-width: 80%;
+    word-wrap: break-word;
+    position: relative;
+    padding: 10px 12px;
+    margin: 0;
+}
+
+.chat-message-local .chat-message-content {
+    background: #0b5fff;
+    color: white;
+    border-radius: 18px 18px 4px 18px;
+    margin-left: auto;
+}
+
+.chat-message-remote .chat-message-content {
+    background: #2d2d30;
+    color: white;
+    border-radius: 18px 18px 18px 4px;
+    margin-right: auto;
+}
+
+/* Message Text */
+.chat-message-content .text-white {
+    line-height: 1.5;
+}
+
+/* File Preview in Chat */
+.chat-message-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.chat-message-content img:hover {
+    opacity: 0.9;
+}
+
+/* File Download Button */
+.chat-message-content button[class*="bg-gray-600"] {
+    transition: all 0.2s;
+}
+
+.chat-message-content button[class*="bg-gray-600"]:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Chat Message Reactions */
+.chat-message-reactions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+}
+
+.chat-reaction-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.chat-reaction-item:hover {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.chat-reaction-btn {
+    font-size: 11px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    cursor: pointer;
+}
+
+.chat-reaction-btn:hover {
+    opacity: 1;
+}
+
+/* Chat Input Area (Teams-style) */
+#chat-view .border-t {
+    background: #1f2937 !important;
+    flex-shrink: 0; /* Prevent input area from shrinking */
+    position: relative;
+    z-index: 10;
+    border-top: 1px solid #374151;
+    padding: 12px;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Ensure input container is visible */
+#chat-view:not(.hidden) .border-t {
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* Ensure all input area children are visible */
+#chat-view:not(.hidden) #chat-input,
+#chat-view:not(.hidden) #chat-send-btn,
+#chat-view:not(.hidden) #chat-emoji-btn,
+#chat-view:not(.hidden) #chat-file-btn {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+#chat-view:not(.hidden) #chat-send-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Ensure input container div is visible */
+#chat-view:not(.hidden) .flex.items-end {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Ensure relative wrapper for input is visible */
+#chat-view:not(.hidden) .flex-1.relative {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+#chat-view .border-t > div:last-child {
+    display: flex !important;
+    align-items: flex-end;
+    gap: 8px;
+    width: 100%;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+#chat-view .border-t > div:first-child {
+    margin-bottom: 8px;
+}
+
+/* Chat Input (Teams-style) */
+#chat-input {
+    font-family: inherit;
+    line-height: 1.5;
+    border: 1px solid #4b5563;
+    background: #374151;
+    color: #ffffff !important;
+    padding: 10px 12px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    font-size: 14px;
+}
+
+#chat-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    background: #4b5563;
+}
+
+#chat-input::placeholder {
+    color: #9ca3af !important;
+    opacity: 1 !important;
+}
+
+/* Ensure placeholder is visible even when input is focused */
+#chat-input:focus::placeholder {
+    color: #6b7280 !important;
+}
+
+/* Chat File Preview */
+#chat-file-preview {
+    background: #374151;
+    border: 1px solid #4b5563;
+}
+
+#chat-file-preview img {
+    border-radius: 6px;
+    object-fit: contain;
+}
+
+/* Emoji Picker */
+#emoji-picker {
+    background: #374151;
+    border: 1px solid #4b5563;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+#emoji-picker .grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 4px;
+}
+
+.emoji-btn {
+    transition: all 0.15s;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    padding: 6px;
+    border-radius: 4px;
+}
+
+.emoji-btn:hover {
+    background: #4b5563;
+    transform: scale(1.1);
+}
+
+.emoji-btn:active {
+    transform: scale(0.95);
+}
+
+/* Chat Tabs */
+#participants-panel .flex.border-b button {
+    position: relative;
+    transition: all 0.2s;
+}
+
+#participants-panel .flex.border-b button.tab-active {
+    color: white;
+    border-bottom-color: #3B82F6;
+}
+
+#participants-panel .flex.border-b button:not(.tab-active) {
+    color: #9ca3af;
+}
+
+#participants-panel .flex.border-b button:not(.tab-active):hover {
+    color: white;
+}
+
+/* Debug: Ensure chat view and input are visible when Chat tab is active */
+#tab-chat.tab-active ~ * #chat-view,
+#chat-view:not(.hidden) {
+    display: flex !important;
+}
+
+/* Ensure all chat input elements are visible */
+#chat-view:not(.hidden) #chat-input,
+#chat-view:not(.hidden) #chat-send-btn,
+#chat-view:not(.hidden) #chat-emoji-btn,
+#chat-view:not(.hidden) #chat-file-btn,
+#chat-view:not(.hidden) #chat-file-input {
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Unread Badge */
+#chat-unread-badge {
+    font-size: 10px;
+    font-weight: 600;
+    min-width: 18px;
+    height: 18px;
+    line-height: 1;
+    padding: 0 4px;
+}
+
+/* Timestamp */
+.chat-message-content .text-xs.text-gray-400 {
+    opacity: 0.7;
+    font-size: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .chat-message-content {
+        max-width: 85%;
+    }
+    
+    #emoji-picker {
+        width: 240px !important;
+        max-height: 250px !important;
+    }
+    
+    #emoji-picker .grid {
+        grid-template-columns: repeat(6, 1fr);
+    }
+}
+
+/* Empty State */
+#chat-messages:empty::before {
+    content: "No messages yet. Start the conversation!";
+    display: block;
+    text-align: center;
+    color: #9ca3af;
+    padding: 2rem;
+    font-size: 14px;
+}
+
+/* Loading State */
+.chat-message.loading {
+    opacity: 0.6;
+}
+
+/* Message Animation */
+.chat-message {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.chat-message-local {
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+

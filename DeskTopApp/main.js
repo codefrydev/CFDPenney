@@ -53,6 +53,12 @@ function createMainWindow() {
         backgroundColor: '#1a1a1a'
     });
     
+    // Set window icon
+    const iconPath = getFilePath('build/icon.png');
+    if (fs.existsSync(iconPath)) {
+        mainWindow.setIcon(iconPath);
+    }
+    
     const screenHtmlPath = getFilePath('screen.html');
     mainWindow.loadFile(screenHtmlPath);
     

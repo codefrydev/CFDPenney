@@ -3,10 +3,16 @@ import { state, getPeerColor } from './state.js';
 import { startCollaboration, stopCollaboration, initPeerJS } from './collaboration/collaborationCore.js';
 import { sendToAllPeers } from './collaboration/messageSender.js';
 import { setCanvasDimensions } from './collaboration/messageHandler.js';
+import { shareCameraWithPeers } from './collaboration/videoCall.js';
+import { initDeviceSelection, populateDeviceSelects, getSelectedDeviceIds, saveDevicePreferences } from './deviceSelection.js';
+import './collaboration/chat.js';
+import './collaboration/participantsPanel.js';
 
 // Initialize PeerJS when available
 window.addEventListener('load', () => {
     initPeerJS();
+    initDeviceSelection();
+    setupDeviceModal();
 });
 
 // UI Elements
@@ -23,6 +29,11 @@ const sourcePicker = document.getElementById('source-picker');
 const sourceList = document.getElementById('source-list');
 const btnConfirmSource = document.getElementById('btn-confirm-source');
 const btnCancelSource = document.getElementById('btn-cancel-source');
+const btnCamera = document.getElementById('btn-camera');
+const btnParticipants = document.getElementById('btn-participants');
+const btnCloseParticipants = document.getElementById('btn-close-participants');
+const btnCopyShareCode = document.getElementById('btn-copy-share-code');
+const copyFeedback = document.getElementById('copy-feedback');
 
 let selectedSource = null;
 let sources = [];
@@ -40,12 +51,67 @@ window.updateConnectionStatus = (connected, shareCode = null) => {
             ? `Waiting: ${shareCode}` 
             : 'Not connected';
     }
+    
+    // Show/hide copy button based on whether share code exists
+    if (shareCode && btnCopyShareCode) {
+        btnCopyShareCode.style.display = 'inline-flex';
+        btnCopyShareCode.dataset.shareCode = shareCode;
+    } else if (btnCopyShareCode) {
+        btnCopyShareCode.style.display = 'none';
+    }
 };
 
 // Alert function
 window.showAlert = (message) => {
     alert(message);
 };
+
+// Copy share code to clipboard
+if (btnCopyShareCode) {
+    btnCopyShareCode.addEventListener('click', async () => {
+        const shareCode = btnCopyShareCode.dataset.shareCode || state.shareCode;
+        if (!shareCode) return;
+        
+        try {
+            // Use Clipboard API if available
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(shareCode);
+            } else {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = shareCode;
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+            }
+            
+            // Show feedback
+            if (copyFeedback) {
+                copyFeedback.style.display = 'inline-block';
+                setTimeout(() => {
+                    copyFeedback.style.display = 'none';
+                }, 2000);
+            }
+            
+            // Update button icon temporarily
+            const icon = btnCopyShareCode.querySelector('i');
+            if (icon) {
+                const originalClass = icon.className;
+                icon.className = 'fas fa-check';
+                setTimeout(() => {
+                    icon.className = originalClass;
+                }, 2000);
+            }
+        } catch (err) {
+            console.error('Failed to copy share code:', err);
+            // Fallback: show alert with code
+            alert(`Share code: ${shareCode}\n\n(Please copy manually)`);
+        }
+    });
+}
 
 // Select source button
 btnSelectSource.addEventListener('click', async () => {
@@ -123,6 +189,8 @@ btnStartShare.addEventListener('click', async () => {
         
         state.stream = stream;
         videoElem.srcObject = stream;
+        // Mute local stream to prevent feedback/echo
+        videoElem.muted = true;
         videoElem.classList.add('active');
         placeholder.classList.add('hidden');
         
@@ -289,4 +357,248 @@ window.handlePeerOverlayEvent = (message) => {
 videoElem.addEventListener('loadedmetadata', () => {
     setCanvasDimensions(videoElem.videoWidth, videoElem.videoHeight);
 });
+
+// Camera button handler
+if (btnCamera) {
+    btnCamera.addEventListener('click', async () => {
+        if (!state.isCameraActive) {
+            // Start camera with selected devices
+            try {
+                const videoConstraints = state.selectedCameraId 
+                    ? { deviceId: { exact: state.selectedCameraId } }
+                    : { facingMode: 'user' };
+                
+                const audioConstraints = state.selectedMicrophoneId
+                    ? { deviceId: { exact: state.selectedMicrophoneId } }
+                    : true;
+                
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: videoConstraints,
+                    audio: audioConstraints
+                });
+                
+                // Mute audio by default
+                const audioTracks = stream.getAudioTracks();
+                if (audioTracks.length > 0) {
+                    audioTracks.forEach(track => {
+                        track.enabled = false; // Muted by default
+                    });
+                }
+                state.isAudioMuted = true;
+                
+                state.cameraStream = stream;
+                state.isCameraActive = true;
+                
+                // Update button icon
+                const iconOff = document.getElementById('camera-btn-icon-off');
+                const iconOn = document.getElementById('camera-btn-icon-on');
+                if (iconOff) iconOff.style.display = 'none';
+                if (iconOn) iconOn.style.display = 'inline';
+                
+                // Share camera with peers if collaborating
+                if (state.isCollaborating) {
+                    shareCameraWithPeers(stream);
+                }
+                
+                // Update participants panel
+                if (window.updateParticipantsPanel) {
+                    window.updateParticipantsPanel();
+                }
+                
+                // Update local mic indicator
+                if (window.updateLocalMicIndicator) {
+                    window.updateLocalMicIndicator();
+                }
+            } catch (err) {
+                console.error('Error starting camera:', err);
+                alert('Failed to start camera: ' + err.message);
+            }
+        } else {
+            // Stop camera
+            if (state.cameraStream) {
+                state.cameraStream.getTracks().forEach(track => track.stop());
+                state.cameraStream = null;
+            }
+            state.isCameraActive = false;
+            state.isAudioMuted = true;
+            
+            // Update button icon
+            const iconOff = document.getElementById('camera-btn-icon-off');
+            const iconOn = document.getElementById('camera-btn-icon-on');
+            if (iconOff) iconOff.style.display = 'inline';
+            if (iconOn) iconOn.style.display = 'none';
+            
+            // Stop sharing camera with peers
+            if (state.isCollaborating) {
+                shareCameraWithPeers(null);
+            }
+            
+            // Update participants panel
+            if (window.updateParticipantsPanel) {
+                window.updateParticipantsPanel();
+            }
+        }
+    });
+    
+    // Right-click or long-press for device settings
+    btnCamera.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        openDeviceSettings();
+    });
+}
+
+// Participants panel button handler
+if (btnParticipants) {
+    btnParticipants.addEventListener('click', () => {
+        const panel = document.getElementById('participants-panel');
+        if (panel) {
+            const isVisible = !panel.classList.contains('hidden');
+            if (isVisible) {
+                state.participantsPanelVisible = false;
+                panel.classList.add('hidden');
+            } else {
+                state.participantsPanelVisible = true;
+                panel.classList.remove('hidden');
+            }
+            
+            // Update participants panel to refresh state
+            if (window.updateParticipantsPanel) {
+                window.updateParticipantsPanel();
+            }
+        }
+    });
+}
+
+// Close participants panel button handler
+if (btnCloseParticipants) {
+    btnCloseParticipants.addEventListener('click', () => {
+        const panel = document.getElementById('participants-panel');
+        if (panel) {
+            state.participantsPanelVisible = false;
+            panel.classList.add('hidden');
+            
+            // Update participants panel to refresh state
+            if (window.updateParticipantsPanel) {
+                window.updateParticipantsPanel();
+            }
+        }
+    });
+}
+
+// Device selection modal handlers
+function setupDeviceModal() {
+    const modalOverlay = document.getElementById('device-selection-modal-overlay');
+    const btnCloseDeviceModal = document.getElementById('btn-close-device-modal');
+    const btnCancelDevices = document.getElementById('btn-cancel-devices');
+    const btnApplyDevices = document.getElementById('btn-apply-devices');
+    
+    // Open device settings
+    window.openDeviceSettings = () => {
+        if (modalOverlay && window.populateDeviceSelects) {
+            modalOverlay.classList.remove('hidden');
+            window.populateDeviceSelects();
+        }
+    };
+    
+    // Close device modal
+    const closeDeviceModal = () => {
+        if (modalOverlay) {
+            modalOverlay.classList.add('hidden');
+        }
+    };
+    
+    // Apply device selection
+    const applyDeviceSelection = async () => {
+        const deviceIds = getSelectedDeviceIds();
+        
+        // Update state
+        state.selectedCameraId = deviceIds.cameraId;
+        state.selectedMicrophoneId = deviceIds.microphoneId;
+        state.selectedSpeakerId = deviceIds.speakerId;
+        
+        // Save preferences
+        saveDevicePreferences();
+        
+        // If camera is active, restart with new devices
+        if (state.isCameraActive && state.cameraStream) {
+            try {
+                // Stop current stream
+                state.cameraStream.getTracks().forEach(track => track.stop());
+                state.cameraStream = null;
+                state.isCameraActive = false;
+                
+                // Update button icon
+                const iconOff = document.getElementById('camera-btn-icon-off');
+                const iconOn = document.getElementById('camera-btn-icon-on');
+                if (iconOff) iconOff.style.display = 'inline';
+                if (iconOn) iconOn.style.display = 'none';
+                
+                // Start camera with new devices
+                const videoConstraints = deviceIds.cameraId 
+                    ? { deviceId: { exact: deviceIds.cameraId } }
+                    : { facingMode: 'user' };
+                
+                const audioConstraints = deviceIds.microphoneId
+                    ? { deviceId: { exact: deviceIds.microphoneId } }
+                    : true;
+                
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: videoConstraints,
+                    audio: audioConstraints
+                });
+                
+                // Mute audio by default
+                const audioTracks = stream.getAudioTracks();
+                if (audioTracks.length > 0) {
+                    audioTracks.forEach(track => {
+                        track.enabled = !state.isAudioMuted;
+                    });
+                }
+                
+                state.cameraStream = stream;
+                state.isCameraActive = true;
+                
+                // Update button icon
+                if (iconOff) iconOff.style.display = 'none';
+                if (iconOn) iconOn.style.display = 'inline';
+                
+                // Share camera with peers if collaborating
+                if (state.isCollaborating) {
+                    shareCameraWithPeers(stream);
+                }
+                
+                // Update participants panel
+                if (window.updateParticipantsPanel) {
+                    window.updateParticipantsPanel();
+                }
+            } catch (err) {
+                console.error('Error restarting camera with new devices:', err);
+                alert('Failed to apply device selection. Please try again.');
+            }
+        }
+        
+        closeDeviceModal();
+    };
+    
+    if (btnCloseDeviceModal) {
+        btnCloseDeviceModal.addEventListener('click', closeDeviceModal);
+    }
+    
+    if (btnCancelDevices) {
+        btnCancelDevices.addEventListener('click', closeDeviceModal);
+    }
+    
+    if (btnApplyDevices) {
+        btnApplyDevices.addEventListener('click', applyDeviceSelection);
+    }
+    
+    // Close modal when clicking overlay
+    if (modalOverlay) {
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) {
+                closeDeviceModal();
+            }
+        });
+    }
+}
 

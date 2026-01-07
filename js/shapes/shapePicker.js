@@ -172,6 +172,12 @@ function selectShape(shapeId) {
     // Set the tool directly (bypass setTool to avoid opening picker again)
     state.tool = shapeId;
     
+    // If we're in penney mode, sync the tool to penneyState
+    // Check if penneyMain sync function exists (we're in penney mode)
+    if (window.syncRegularStateToPenney) {
+        window.syncRegularStateToPenney();
+    }
+    
     // Update UI to reflect the change
     updateUI();
 }

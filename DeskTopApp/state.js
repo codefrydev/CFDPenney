@@ -24,7 +24,28 @@ export const state = {
     
     // Screen share state
     stream: null,
-    selectedSourceId: null
+    selectedSourceId: null,
+    
+    // Chat state
+    chatMessages: [], // Array of chat messages
+    unreadChatCount: 0, // Number of unread messages
+    
+    // Camera/Video call state
+    cameraStream: null, // Current camera stream
+    isCameraActive: false, // Boolean flag for camera status
+    cameraCalls: new Map(), // Map<peerId, MediaConnection> - separate from screen share calls
+    
+    // Participants panel state
+    participantsPanelVisible: undefined, // Whether participants panel is visible
+    participantsPanelWidth: 320, // Default width of participants panel
+    
+    // Device preferences
+    selectedCameraId: null,
+    selectedMicrophoneId: null,
+    selectedSpeakerId: null,
+    
+    // Audio mute state
+    isAudioMuted: true // Audio muted by default
 };
 
 // Generate color from peer ID

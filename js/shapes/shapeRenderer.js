@@ -262,7 +262,6 @@ export function renderShape(ctx, element) {
             drawPolygon(ctx, { ...element, sides: 8 });
             break;
         default:
-            console.warn(`Unknown shape type: ${element.type}`);
     }
 }
 

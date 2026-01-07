@@ -3,12 +3,15 @@ CFD Penney - Collaborative Annotation Tool
 URL: https://codefrydev.in/CFDPenney/
 Desktop App: https://github.com/codefrydev/CFDPenney/
 
-Description: A free, open-source collaborative annotation tool for real-time drawing, screen sharing, and image annotation. Available as both a web app and desktop application (Windows, macOS, Linux).
+Description: A free, open-source collaborative annotation tool for real-time drawing, screen sharing, video calls, chat messaging, and image annotation. Available as both a web app and desktop application (Windows, macOS, Linux). Features infinite canvas mode for unlimited creative space.
 
 Key Features:
 - Real-time collaborative drawing via WebRTC peer-to-peer
 - Screen annotation overlay (desktop app)
 - Virtual whiteboard mode
+- Infinite canvas mode (Penney page) with pan and zoom
+- Video calls and camera sharing for face-to-face collaboration
+- Real-time chat messaging with file attachments and emoji reactions
 - Image upload and annotation
 - Multiple drawing tools (pen, arrow, shapes, text, eraser, stickers)
 - Advanced selection and grouping tools
@@ -28,6 +31,7 @@ Platforms:
 Pages:
 - Landing Page: https://codefrydev.in/CFDPenney/
 - Web App: https://codefrydev.in/CFDPenney/canvas.html
+- Infinite Canvas (Penney): https://codefrydev.in/CFDPenney/penney.html
 - Privacy Policy: https://codefrydev.in/CFDPenney/privacy.html
 - Terms & Conditions: https://codefrydev.in/CFDPenney/terms.html
 
