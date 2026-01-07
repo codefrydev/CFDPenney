@@ -14,20 +14,16 @@ export function initDrawing(canvasEl) {
 }
 
 export function handleStart(e) {
-    console.log('[penneyDrawing] handleStart - tool:', state.tool, 'isShapeTool:', isShapeTool(state.tool));
     if (!canvas) {
-        console.log('[penneyDrawing] handleStart - no canvas!');
         return;
     }
     // Don't start drawing if clicking on controls inside canvas
     // Note: Skip target check for touch events (synthetic MouseEvents don't have proper target)
     if (e.target && e.target !== canvas && e.type !== 'mousedown') {
-        console.log('[penneyDrawing] handleStart - target is not canvas:', e.target);
         return;
     }
 
     const { x, y } = getMousePos(e);
-    console.log('[penneyDrawing] handleStart - mouse pos:', { x, y });
 
     if (state.tool === 'text') {
         if (state.textInput) {
@@ -40,18 +36,14 @@ export function handleStart(e) {
 
     // Handle shape tools
     if (isShapeTool(state.tool)) {
-        console.log('[penneyDrawing] handleStart - SHAPE TOOL DETECTED:', state.tool);
         // Sync penneyState → regularState first so handleShapeStart has correct state
         syncPenneyStateToRegular();
         // Set isDrawing in both states
         state.isDrawing = true;
         regularState.isDrawing = true;
-        console.log('[penneyDrawing] handleStart - calling handleShapeStart, regularState.elements.length:', regularState.elements.length, 'penneyState.elements.length:', state.elements.length);
         handleShapeStart(x, y);
-        console.log('[penneyDrawing] handleStart - after handleShapeStart, regularState.elements.length:', regularState.elements.length, 'penneyState.elements.length:', state.elements.length);
         // Immediately sync regularState → penneyState so shape appears on canvas
         syncRegularStateToPenney();
-        console.log('[penneyDrawing] handleStart - after sync, penneyState.elements.length:', state.elements.length, 'isDrawing:', state.isDrawing);
         redrawCanvas();
         return;
     }
@@ -102,11 +94,9 @@ export function handleStart(e) {
     // Send to all peers (normalize coordinates for cross-resolution compatibility)
     // Check both states - regularState is set by collaboration modules, penneyState is synced
     const isCollaborating = state.isCollaborating || regularState.isCollaborating;
-    console.log('[penneyDrawing] handleStart - isCollaborating:', state.isCollaborating, 'regularState.isCollaborating:', regularState.isCollaborating, 'using:', isCollaborating, 'elementId:', elementId);
     if (isCollaborating) {
         const normalized = normalizeCoordinates(x, y);
-        console.log('[penneyDrawing] handleStart - sending ANNOTATION_START, normalized coords:', normalized.x, normalized.y, 'tool:', state.tool);
-        const sentCount = sendToAllPeers({
+        sendToAllPeers({
             type: 'ANNOTATION_START',
             id: elementId,
             tool: state.tool,
@@ -117,9 +107,6 @@ export function handleStart(e) {
             x: normalized.x,
             y: normalized.y
         });
-        console.log('[penneyDrawing] handleStart - sent to', sentCount, 'peers');
-    } else {
-        console.log('[penneyDrawing] handleStart - NOT collaborating, not sending message');
     }
 
     redrawCanvas(); // Draw the initial point
@@ -127,14 +114,12 @@ export function handleStart(e) {
 
 export function handleMove(e) {
     if (!state.isDrawing) {
-        console.log('[penneyDrawing] handleMove - not drawing, isDrawing:', state.isDrawing);
         return;
     }
     const { x, y } = getMousePos(e);
     
     // Handle shape tools
     if (isShapeTool(state.tool)) {
-        console.log('[penneyDrawing] handleMove - shape tool move:', state.tool);
         // Ensure regularState.isDrawing is also true
         if (!regularState.isDrawing) {
             regularState.isDrawing = true;
@@ -160,14 +145,13 @@ export function handleMove(e) {
     if (isCollaborating) {
         const currentElement = state.elements[state.historyStep];
         const normalized = normalizeCoordinates(x, y);
-        const sentCount = sendToAllPeers({
+        sendToAllPeers({
             type: 'ANNOTATION_MOVE',
             id: currentElement ? currentElement.id : null,
             tool: state.tool,
             x: normalized.x,
             y: normalized.y
         });
-        console.log('[penneyDrawing] handleMove - sent ANNOTATION_MOVE to', sentCount, 'peers, coords:', normalized.x, normalized.y);
     }
 
     redrawCanvas();
@@ -176,7 +160,6 @@ export function handleMove(e) {
 export function handleEnd(e) {
     // Handle shape tools
     if (isShapeTool(state.tool) && state.isDrawing) {
-        console.log('[penneyDrawing] handleEnd - shape tool end:', state.tool);
         // Ensure regularState.isDrawing is true before calling handleShapeEnd
         if (!regularState.isDrawing) {
             regularState.isDrawing = true;
@@ -184,11 +167,9 @@ export function handleEnd(e) {
         handleShapeEnd();
         // Immediately sync regularState → penneyState so final shape appears on canvas
         syncRegularStateToPenney();
-        console.log('[penneyDrawing] handleEnd - after sync, penneyState.elements.length:', state.elements.length);
         // Reset isDrawing in both states
         state.isDrawing = false;
         regularState.isDrawing = false;
-        console.log('[penneyDrawing] handleEnd - isDrawing reset to false');
         redrawCanvas();
         return;
     }
@@ -199,21 +180,16 @@ export function handleEnd(e) {
         const currentElement = state.elements[state.historyStep];
         if (currentElement) {
             currentElement.isActive = false;
-            const sentCount = sendToAllPeers({ 
+            sendToAllPeers({ 
                 type: 'ANNOTATION_END',
                 id: currentElement.id
             });
-            console.log('[penneyDrawing] handleEnd - sent ANNOTATION_END to', sentCount, 'peers, elementId:', currentElement.id);
         } else {
-            const sentCount = sendToAllPeers({ type: 'ANNOTATION_END' });
-            console.log('[penneyDrawing] handleEnd - sent ANNOTATION_END to', sentCount, 'peers (no element)');
+            sendToAllPeers({ type: 'ANNOTATION_END' });
         }
-    } else {
-        console.log('[penneyDrawing] handleEnd - NOT sending (isDrawing:', state.isDrawing, 'penneyIsCollaborating:', state.isCollaborating, 'regularIsCollaborating:', regularState.isCollaborating, 'using:', isCollaborating, ')');
     }
     // Reset isDrawing in both states
     state.isDrawing = false;
     regularState.isDrawing = false;
-    console.log('[penneyDrawing] handleEnd - isDrawing reset to false (non-shape)');
 }
 

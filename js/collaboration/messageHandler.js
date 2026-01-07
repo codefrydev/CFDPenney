@@ -14,15 +14,12 @@ function isPenneyPage() {
     if (typeof window === 'undefined') return false;
     // Check for global marker set by penneyMain.js (most reliable)
     if (window.isPenneyPage) {
-        console.log('[messageHandler] isPenneyPage: true (via window.isPenneyPage)');
         return true;
     }
     // Fallback: Check pathname for penney.html
     if (window.location && window.location.pathname.includes('penney.html')) {
-        console.log('[messageHandler] isPenneyPage: true (via pathname check)');
         return true;
     }
-    console.log('[messageHandler] isPenneyPage: false');
     return false;
 }
 
@@ -31,15 +28,11 @@ function getRedrawCanvas() {
     const isPenney = isPenneyPage();
     const hasPenneyFunctions = window.penneyCanvasFunctions && window.penneyCanvasFunctions.redrawCanvas;
     
-    console.log('[messageHandler] getRedrawCanvas - isPenney:', isPenney, 'hasPenneyFunctions:', hasPenneyFunctions);
-    
     // Check if penney functions are available globally (set by penneyMain.js)
     if (isPenney && hasPenneyFunctions) {
-        console.log('[messageHandler] Using penney redrawCanvas');
         return window.penneyCanvasFunctions.redrawCanvas;
     }
     // Fallback to regular canvas function
-    console.log('[messageHandler] Using regular redrawCanvas');
     return regularRedrawCanvas;
 }
 
@@ -48,23 +41,16 @@ function getDenormalizeCoordinates() {
     const isPenney = isPenneyPage();
     const hasPenneyFunctions = window.penneyCanvasFunctions && window.penneyCanvasFunctions.denormalizeCoordinates;
     
-    console.log('[messageHandler] getDenormalizeCoordinates - isPenney:', isPenney, 'hasPenneyFunctions:', hasPenneyFunctions);
-    
     // Check if penney functions are available globally (set by penneyMain.js)
     if (isPenney && hasPenneyFunctions) {
-        console.log('[messageHandler] Using penney denormalizeCoordinates');
         return window.penneyCanvasFunctions.denormalizeCoordinates;
     }
     // Fallback to regular canvas function
-    console.log('[messageHandler] Using regular denormalizeCoordinates');
     return regularDenormalizeCoordinates;
 }
 
 export function handlePeerMessage(message, peerId) {
     const senderPeerId = message.peerId || peerId || 'unknown';
-    
-    console.log('[messageHandler] handlePeerMessage - type:', message.type, 'from:', senderPeerId, 'isHosting:', state.isHosting, 'isCollaborating:', state.isCollaborating);
-    console.log('[messageHandler] handlePeerMessage - state.peerElements.length:', state.peerElements.length);
     
     // If we're the host, rebroadcast this message to all other peers (except the sender)
     // This ensures all peers see each other's annotations
@@ -89,9 +75,7 @@ export function handlePeerMessage(message, peerId) {
     switch (message.type) {
         case 'ANNOTATION_START':
             // Peer started drawing - denormalize coordinates
-            console.log('[messageHandler] ANNOTATION_START - normalized coords:', message.x, message.y);
             const denormStart = getDenormalizeCoordinates()(message.x, message.y);
-            console.log('[messageHandler] ANNOTATION_START - denormalized coords:', denormStart.x, denormStart.y);
             const newPeerElement = {
                 id: message.id || `peer-${Date.now()}-${Math.random()}`,
                 type: message.tool,
@@ -110,14 +94,11 @@ export function handlePeerMessage(message, peerId) {
             if (message.sides) newPeerElement.sides = message.sides;
             if (message.radius !== undefined) newPeerElement.radius = message.radius;
             state.peerElements.push(newPeerElement);
-            console.log('[messageHandler] ANNOTATION_START - added peer element, total peerElements:', state.peerElements.length);
             getRedrawCanvas()();
             break;
         case 'ANNOTATION_MOVE':
             // Peer moved while drawing - denormalize coordinates and find the active element
-            console.log('[messageHandler] ANNOTATION_MOVE - normalized coords:', message.x, message.y, 'id:', message.id);
             const denormMove = getDenormalizeCoordinates()(message.x, message.y);
-            console.log('[messageHandler] ANNOTATION_MOVE - denormalized coords:', denormMove.x, denormMove.y);
             let activePeerEl = null;
             if (message.id) {
                 // Try to find by ID first
@@ -143,16 +124,13 @@ export function handlePeerMessage(message, peerId) {
             }
             
             if (activePeerEl) {
-                console.log('[messageHandler] ANNOTATION_MOVE - found active element:', activePeerEl.id, 'tool:', message.tool);
                 if (message.tool === 'pencil' || message.tool === 'eraser') {
                     activePeerEl.points.push({ x: denormMove.x, y: denormMove.y });
-                    console.log('[messageHandler] ANNOTATION_MOVE - added point, total points:', activePeerEl.points.length);
                 } else {
                     activePeerEl.end = { x: denormMove.x, y: denormMove.y };
                 }
                 getRedrawCanvas()();
             } else {
-                console.log('[messageHandler] ANNOTATION_MOVE - no active element found, creating new one');
                 // Create new element as fallback
                 state.peerElements.push({
                     id: message.id || `peer-${Date.now()}-${Math.random()}`,
@@ -236,7 +214,6 @@ export function handlePeerMessage(message, peerId) {
         case 'ANNOTATION_SYNC':
             // Full state sync - denormalize all element coordinates
             // Mark all synced elements as not active (they're complete)
-            console.log('[messageHandler] ANNOTATION_SYNC - received', (message.elements || []).length, 'elements');
             const syncedElements = (message.elements || []).map(el => {
                 const denormEl = denormalizeElement(el);
                 return {
@@ -247,7 +224,6 @@ export function handlePeerMessage(message, peerId) {
                 };
             });
             state.peerElements = syncedElements;
-            console.log('[messageHandler] ANNOTATION_SYNC - set peerElements to', syncedElements.length, 'elements');
             getRedrawCanvas()();
             break;
         case 'CHAT_MESSAGE':

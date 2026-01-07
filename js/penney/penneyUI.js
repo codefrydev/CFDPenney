@@ -316,7 +316,6 @@ function setupEventListeners() {
     });
     
     canvas.addEventListener('mouseleave', (e) => {
-        console.log('[penneyUI] mouseleave event');
         handlePanEnd(e);
         if (state.tool === 'select') {
             handleSelectionEnd(e);
@@ -396,12 +395,10 @@ function setupEventListeners() {
     document.querySelectorAll('.tool-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const toolId = btn.dataset.tool;
-            console.log('[penneyUI] tool button clicked - toolId:', toolId);
             setTool(toolId);
             // Sync tool from regularState to penneyState
             syncPenneyStateToRegular();
             syncRegularStateToPenney();
-            console.log('[penneyUI] after tool set - penneyState.tool:', state.tool, 'regularState.tool:', regularState.tool);
             updateUI();
         });
     });

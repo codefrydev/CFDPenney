@@ -128,7 +128,7 @@ export function updateParticipantCamera(peerId, stream) {
             video.classList.remove('hidden');
             video.play().catch(err => {
                 if (err.name !== 'AbortError') {
-                    console.warn(`Error playing participant video for ${peerId}:`, err);
+                    // Error playing participant video
                 }
             });
         }
@@ -149,27 +149,16 @@ export function updateParticipantCamera(peerId, stream) {
 
 // Update participants panel
 export function updateParticipantsPanel() {
-    console.log('[updateParticipantsPanel] Function called');
     const panel = document.getElementById('participants-panel');
     const list = document.getElementById('participants-list');
     const btnParticipants = document.getElementById('btn-participants');
     
-    console.log('[updateParticipantsPanel] Panel found:', !!panel);
-    console.log('[updateParticipantsPanel] List found:', !!list);
-    console.log('[updateParticipantsPanel] Button found:', !!btnParticipants);
-    
     if (!panel || !list) {
-        console.warn('[updateParticipantsPanel] Panel or list not found, returning');
         return;
     }
     
-    console.log('[updateParticipantsPanel] state.isCollaborating:', state.isCollaborating);
-    console.log('[updateParticipantsPanel] state.participantsPanelVisible:', state.participantsPanelVisible);
-    console.log('[updateParticipantsPanel] Panel classes before update:', panel.className);
-    
     // Only show panel button and allow panel when collaborating
     if (!state.isCollaborating) {
-        console.log('[updateParticipantsPanel] Not collaborating, hiding panel');
         panel.classList.add('hidden');
         if (btnParticipants) {
             btnParticipants.classList.add('hidden');
@@ -182,28 +171,17 @@ export function updateParticipantsPanel() {
     
     // Show or hide panel based on user preference (default to visible on first collaboration)
     if (state.participantsPanelVisible === undefined) {
-        console.log('[updateParticipantsPanel] participantsPanelVisible is undefined, setting to true (default)');
         state.participantsPanelVisible = true; // Default to visible
     }
     
-    console.log('[updateParticipantsPanel] Final state.participantsPanelVisible:', state.participantsPanelVisible);
-    
     if (state.participantsPanelVisible) {
-        console.log('[updateParticipantsPanel] Showing panel (removing hidden class)');
         panel.classList.remove('hidden');
     } else {
-        console.log('[updateParticipantsPanel] Hiding panel (adding hidden class)');
         panel.classList.add('hidden');
     }
     
     // Handle backdrop for mobile
     updateBackdrop();
-    
-    console.log('[updateParticipantsPanel] Panel classes after update:', panel.className);
-    console.log('[updateParticipantsPanel] Panel has hidden class:', panel.classList.contains('hidden'));
-    const computedStyle = window.getComputedStyle(panel);
-    console.log('[updateParticipantsPanel] Panel computed display:', computedStyle.display);
-    console.log('[updateParticipantsPanel] Panel computed visibility:', computedStyle.visibility);
     
     // Setup tabs if not already done
     setupTabs();
@@ -321,7 +299,6 @@ function setupTabs() {
     const chatView = document.getElementById('chat-view');
     
     if (!tabParticipants || !tabChat || !participantsView || !chatView) {
-        console.warn('Tab elements not found, retrying...');
         // Retry after a short delay if elements aren't ready
         setTimeout(setupTabs, 100);
         return;
@@ -396,7 +373,6 @@ function setupTabs() {
     
     // Mark as set up
     tabParticipants.dataset.setup = 'true';
-    console.log('Tabs setup complete');
 }
 
 // Get remote camera streams from window (set by videoCall.js)

@@ -23,13 +23,7 @@ export function loadDevicePreferences() {
         if (microphoneId) state.selectedMicrophoneId = microphoneId;
         if (speakerId) state.selectedSpeakerId = speakerId;
         
-        console.log('Loaded device preferences:', {
-            camera: state.selectedCameraId,
-            microphone: state.selectedMicrophoneId,
-            speaker: state.selectedSpeakerId
-        });
     } catch (err) {
-        console.warn('Failed to load device preferences:', err);
     }
 }
 
@@ -54,9 +48,7 @@ export function saveDevicePreferences() {
             localStorage.removeItem(STORAGE_KEY_PREFIX + 'speaker');
         }
         
-        console.log('Saved device preferences');
     } catch (err) {
-        console.warn('Failed to save device preferences:', err);
     }
 }
 
@@ -69,7 +61,6 @@ export async function enumerateDevices() {
             await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         } catch (err) {
             // Permission denied or not available - we can still enumerate but labels may be empty
-            console.warn('Could not request permissions for device enumeration:', err);
         }
         
         const devices = await navigator.mediaDevices.enumerateDevices();
@@ -78,11 +69,6 @@ export async function enumerateDevices() {
         devicesCache.microphones = devices.filter(device => device.kind === 'audioinput');
         devicesCache.speakers = devices.filter(device => device.kind === 'audiooutput');
         
-        console.log('Enumerated devices:', {
-            cameras: devicesCache.cameras.length,
-            microphones: devicesCache.microphones.length,
-            speakers: devicesCache.speakers.length
-        });
         
         return {
             cameras: devicesCache.cameras,
@@ -189,17 +175,14 @@ export function validateSelectedDevices() {
         devicesCache.speakers.some(d => d.deviceId === state.selectedSpeakerId);
     
     if (!cameraExists) {
-        console.warn('Selected camera no longer available, resetting to default');
         state.selectedCameraId = null;
     }
     
     if (!microphoneExists) {
-        console.warn('Selected microphone no longer available, resetting to default');
         state.selectedMicrophoneId = null;
     }
     
     if (!speakerExists) {
-        console.warn('Selected speaker no longer available, resetting to default');
         state.selectedSpeakerId = null;
     }
     
@@ -213,7 +196,6 @@ export function validateSelectedDevices() {
 export function setupDeviceChangeListener() {
     if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
         navigator.mediaDevices.addEventListener('devicechange', async () => {
-            console.log('Device change detected, re-enumerating...');
             await enumerateDevices();
             validateSelectedDevices();
             

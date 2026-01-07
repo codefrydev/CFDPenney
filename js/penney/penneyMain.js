@@ -44,11 +44,9 @@ function syncStateForCollaboration() {
     // Otherwise, sync from penneyState.peer to regularState.peer
     if (regularState.peer && !penneyState.peer) {
         // regularState.peer was set by collaboration functions, sync to penneyState
-        console.log('[penneyMain] syncStateForCollaboration - syncing regularState.peer to penneyState');
         penneyState.peer = regularState.peer;
     } else if (penneyState.peer) {
         // penneyState.peer exists, sync to regularState
-        console.log('[penneyMain] syncStateForCollaboration - syncing penneyState.peer to regularState');
         regularState.peer = penneyState.peer;
     }
     // If both are null, no sync needed
@@ -61,9 +59,6 @@ function syncStateForCollaboration() {
     if (regularState.isCollaborating !== penneyState.isCollaborating) {
         const wasCollaborating = penneyState.isCollaborating;
         penneyState.isCollaborating = regularState.isCollaborating;
-        if (wasCollaborating !== penneyState.isCollaborating) {
-            console.log('[penneyMain] syncStateForCollaboration - isCollaborating changed:', wasCollaborating, '->', penneyState.isCollaborating, '(from regularState)');
-        }
     }
     
     // For dataConnections and connectedPeers: sync FROM regularState TO penneyState (collaboration modules control these)
@@ -99,20 +94,14 @@ function syncStateForCollaboration() {
     penneyState.calls = regularState.calls;
     penneyState.cameraCalls = regularState.cameraCalls;
     
-    // Log collaboration state
-    if (regularState.isCollaborating || penneyState.isCollaborating) {
-        console.log('[penneyMain] syncStateForCollaboration - isCollaborating:', regularState.isCollaborating, 'penneyIsCollaborating:', penneyState.isCollaborating, 'dataConnections:', regularState.dataConnections.size, 'peerElements:', regularState.peerElements.length, 'penneyPeerElements:', penneyState.peerElements.length);
-    }
 }
 
 // Sync penneyState to regularState (needed before selection operations)
 // Selection modules read from regularState, so we need to sync before they access it
 export function syncPenneyStateToRegular() {
-    console.log('[penneyMain] syncPenneyStateToRegular - penneyState.elements.length:', penneyState.elements.length, 'regularState.elements.length:', regularState.elements.length);
     // Sync all properties that selection and collaboration modules need
     regularState.elements = penneyState.elements;
     regularState.historyStep = penneyState.historyStep;
-    console.log('[penneyMain] syncPenneyStateToRegular - after sync, regularState.elements.length:', regularState.elements.length);
     regularState.selectedElementId = penneyState.selectedElementId;
     regularState.selectedElementIndex = penneyState.selectedElementIndex;
     regularState.selectedElementIds = penneyState.selectedElementIds;
@@ -139,16 +128,11 @@ export function syncPenneyStateToRegular() {
 // This is needed because shape handlers and selection modules write to regularState
 // but penneyCanvas reads from penneyState
 export function syncRegularStateToPenney() {
-    console.log('[penneyMain] syncRegularStateToPenney - regularState.elements.length:', regularState.elements.length, 'penneyState.elements.length:', penneyState.elements.length);
-    console.log('[penneyMain] syncRegularStateToPenney - regularState.historyStep:', regularState.historyStep, 'penneyState.historyStep:', penneyState.historyStep);
-    
     // Sync elements and history (critical for shapes to appear)
     if (regularState.elements !== penneyState.elements) {
-        console.log('[penneyMain] syncRegularStateToPenney - SYNCING ELEMENTS ARRAY');
         penneyState.elements = regularState.elements;
     }
     if (regularState.historyStep !== penneyState.historyStep) {
-        console.log('[penneyMain] syncRegularStateToPenney - SYNCING historyStep');
         penneyState.historyStep = regularState.historyStep;
     }
     
@@ -228,7 +212,6 @@ window.syncStateForCollaboration = syncStateForCollaboration;
 
 // Set global marker to indicate we're on penney page (for messageHandler detection)
 window.isPenneyPage = true;
-console.log('[penneyMain] Set window.isPenneyPage = true');
 
 // Register penney canvas functions globally so messageHandler can access them synchronously
 // This ensures messageHandler uses penney-specific functions instead of regular canvas functions
@@ -237,11 +220,6 @@ window.penneyCanvasFunctions = {
     denormalizeCoordinates: penneyCanvas.denormalizeCoordinates,
     normalizeCoordinates: penneyCanvas.normalizeCoordinates
 };
-console.log('[penneyMain] Registered penney canvas functions globally:', {
-    hasRedrawCanvas: !!window.penneyCanvasFunctions.redrawCanvas,
-    hasDenormalizeCoordinates: !!window.penneyCanvasFunctions.denormalizeCoordinates,
-    hasNormalizeCoordinates: !!window.penneyCanvasFunctions.normalizeCoordinates
-});
 
 // Start App
 init();

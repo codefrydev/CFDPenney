@@ -99,7 +99,6 @@ export function renderSticker(ctx, element) {
             renderImage(ctx, element);
             break;
         default:
-            console.warn(`Unknown sticker type: ${element.stickerType}`);
     }
 }
 

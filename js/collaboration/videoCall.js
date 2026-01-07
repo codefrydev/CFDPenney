@@ -7,16 +7,13 @@ export const remoteCameraStreams = new Map(); // Map<peerId, {stream, videoEleme
 
 // Handle remote camera streams - now updates participants panel
 function handleRemoteCameraStream(remoteStream, peerId) {
-    console.log(`handleRemoteCameraStream: Storing camera stream for peer ${peerId}`, remoteStream);
     
     // Log audio track information for debugging
     const audioTracks = remoteStream.getAudioTracks();
     if (audioTracks.length > 0) {
         audioTracks.forEach((track, index) => {
-            console.log(`handleRemoteCameraStream: Remote audio track ${index} from peer ${peerId}, enabled: ${track.enabled}, id: ${track.id}, label: ${track.label}`);
         });
     } else {
-        console.warn(`handleRemoteCameraStream: No audio tracks in remote stream from peer ${peerId}`);
     }
     
     // Store stream reference
@@ -36,7 +33,6 @@ function handleRemoteCameraStream(remoteStream, peerId) {
     const videoTrack = remoteStream.getVideoTracks()[0];
     if (videoTrack) {
         videoTrack.onended = () => {
-            console.log(`Camera stream ended for peer ${peerId}`);
             removeRemoteCamera(peerId);
         };
     }
@@ -44,7 +40,6 @@ function handleRemoteCameraStream(remoteStream, peerId) {
 
 // Remove remote camera stream
 function removeRemoteCamera(peerId) {
-    console.log(`removeRemoteCamera: Removing camera stream for peer ${peerId}`);
     remoteCameraStreams.delete(peerId);
     
     // Update participants panel
@@ -60,22 +55,18 @@ export function setupCallHandlers(call, peerId) {
     if (!call) return;
 
     call.on('stream', (remoteStream) => {
-        console.log(`Received remote stream from peer ${peerId}`, remoteStream);
         
         // Log audio track information for debugging
         const audioTracks = remoteStream.getAudioTracks();
         if (audioTracks.length > 0) {
             audioTracks.forEach((track, index) => {
-                console.log(`Received remote stream: Audio track ${index} from peer ${peerId}, enabled: ${track.enabled}, id: ${track.id}`);
             });
         } else {
-            console.warn(`Received remote stream: No audio tracks in stream from peer ${peerId}`);
         }
         
         // Check if this is a real video stream (not a dummy stream)
         const videoTrack = remoteStream.getVideoTracks()[0];
         if (!videoTrack) {
-            console.warn(`No video track in stream from peer ${peerId}`);
             return;
         }
         
@@ -102,11 +93,9 @@ export function setupCallHandlers(call, peerId) {
             }
         } catch (e) {
             // If we can't check, assume it's a real stream
-            console.warn('Could not check if stream is dummy:', e);
         }
         
         if (isDummyStream) {
-            console.log(`Dummy stream received from peer ${peerId}, ignoring`);
             // If a dummy stream is received for a camera, it means the camera was stopped
             if (isCameraCall) {
                 removeRemoteCamera(peerId);
@@ -117,7 +106,6 @@ export function setupCallHandlers(call, peerId) {
         
         // Handle camera streams separately
         if (isCameraCall) {
-            console.log(`Received camera stream from peer ${peerId}`);
             handleRemoteCameraStream(remoteStream, peerId);
             if (window.updateParticipantsPanel) window.updateParticipantsPanel();
             return;
@@ -127,7 +115,6 @@ export function setupCallHandlers(call, peerId) {
         // If host is sharing their own screen, don't overwrite it with remote streams
         // Host should always see their own screen share
         if (state.isHosting && state.stream && state.mode === 'screen') {
-            console.log(`Host is sharing their own screen, ignoring remote stream from peer ${peerId}`);
             return;
         }
         
@@ -138,7 +125,6 @@ export function setupCallHandlers(call, peerId) {
         const bgScreen = document.getElementById('bg-screen');
         
         if (videoElem && remoteStream) {
-            console.log(`Displaying remote screen share from peer ${peerId} in video element`);
             
             // Set the remote stream to the video element
             videoElem.srcObject = remoteStream;
@@ -148,7 +134,6 @@ export function setupCallHandlers(call, peerId) {
                 // AbortError is expected when a new stream replaces the old one quickly
                 // Only log if it's not an AbortError
                 if (err.name !== 'AbortError') {
-                    console.warn('Error playing remote stream:', err);
                 }
             });
             
@@ -193,7 +178,6 @@ export function setupCallHandlers(call, peerId) {
             
             // Track when the remote stream ends
             videoTrack.onended = () => {
-                console.log(`Remote stream from peer ${peerId} ended`);
                 // Clear the video element
                 if (videoElem) {
                     videoElem.srcObject = null;
@@ -224,7 +208,6 @@ export function setupCallHandlers(call, peerId) {
     });
 
     call.on('close', () => {
-        console.log(`Call closed for peer ${peerId}`);
         
         // Check if this is a camera call or screen share call
         const isCameraCall = call._isCameraCall || state.cameraCalls.has(peerId);
@@ -284,13 +267,11 @@ export function recreateCallWithStream(stream, peerId) {
 // Export function for screen sharing integration
 export function shareScreenWithPeers(stream) {
     if (!state.isCollaborating || !stream) {
-        console.warn('shareScreenWithPeers: Not collaborating or no stream');
         return;
     }
 
     const videoTrack = stream.getVideoTracks()[0];
     if (!videoTrack) {
-        console.warn('shareScreenWithPeers: No video track in stream');
         return;
     }
 
@@ -308,7 +289,6 @@ export function shareScreenWithPeers(stream) {
                 throw new Error('Invalid sender or track');
             }
             await videoSender.replaceTrack(track);
-            console.log(`Successfully replaced track for peer ${peerId}`);
         } catch (err) {
             console.error(`Error replacing track for peer ${peerId}:`, err);
             // If replace fails, use fallback (recreate call)
@@ -322,7 +302,6 @@ export function shareScreenWithPeers(stream) {
     if (state.isHosting) {
         state.dataConnections.forEach((conn, peerId) => {
             if (!conn || !conn.open) {
-                console.warn(`shareScreenWithPeers: Connection to ${peerId} not open`);
                 return;
             }
 
@@ -331,7 +310,6 @@ export function shareScreenWithPeers(stream) {
             if (existingCall && existingCall.peerConnection) {
                 // Check if peer connection is in a ready state
                 if (!isPeerConnectionReady(existingCall.peerConnection)) {
-                    console.warn(`shareScreenWithPeers: Peer connection to ${peerId} not ready, will retry`);
                     // Wait a bit and retry
                     setTimeout(() => {
                         if (state.calls.has(peerId) && state.mode === 'screen' && state.stream) {
@@ -353,13 +331,11 @@ export function shareScreenWithPeers(stream) {
                     });
                 } else {
                     // No video sender found, recreate call
-                    console.log(`shareScreenWithPeers: No video sender found for ${peerId}, recreating call`);
                     recreateCallWithStream(stream, peerId);
                 }
             } else {
                 // No call exists, create new one
                 if (state.peer) {
-                    console.log(`shareScreenWithPeers: Creating new call to ${peerId}`);
                     try {
                         const call = state.peer.call(peerId, stream);
                         if (call) {
@@ -370,7 +346,6 @@ export function shareScreenWithPeers(stream) {
                         console.error(`Error creating call to ${peerId}:`, err);
                     }
                 } else {
-                    console.warn(`shareScreenWithPeers: No peer instance available for ${peerId}`);
                 }
             }
         });
@@ -385,7 +360,6 @@ export function shareScreenWithPeers(stream) {
             if (existingCall && existingCall.peerConnection) {
                 // Check if peer connection is in a ready state
                 if (!isPeerConnectionReady(existingCall.peerConnection)) {
-                    console.warn('shareScreenWithPeers: Peer connection to host not ready, will retry');
                     setTimeout(() => {
                         if (state.calls.has(hostPeerId) && state.mode === 'screen' && state.stream) {
                             shareScreenWithPeers(state.stream);
@@ -417,7 +391,6 @@ export function shareScreenWithPeers(stream) {
                     });
                 } else {
                     // No video sender, recreate call
-                    console.log('shareScreenWithPeers: No video sender found as joiner, recreating call');
                     const existingCall = state.calls.get(hostPeerId);
                     if (existingCall) {
                         existingCall.close();
@@ -433,7 +406,6 @@ export function shareScreenWithPeers(stream) {
                 }
             } else if (state.peer && !existingCall) {
                 // Create new call to host
-                console.log('shareScreenWithPeers: Creating new call to host as joiner');
                 try {
                     const call = state.peer.call(hostPeerId, stream);
                     if (call) {
@@ -445,7 +417,6 @@ export function shareScreenWithPeers(stream) {
                 }
             }
         } else {
-            console.warn('shareScreenWithPeers: No open connection to host');
         }
     }
 }
@@ -456,13 +427,11 @@ window.shareScreenWithPeers = shareScreenWithPeers;
 // Camera stream sharing function - uses separate calls from screen share
 export function shareCameraWithPeers(stream) {
     if (!state.isCollaborating) {
-        console.warn('shareCameraWithPeers: Not collaborating');
         return;
     }
 
     // If stream is null, camera was stopped - close all camera calls
     if (!stream) {
-        console.log('shareCameraWithPeers: Camera stopped, closing camera calls');
         state.cameraCalls.forEach((call, peerId) => {
             if (call) {
                 call.close();
@@ -475,15 +444,12 @@ export function shareCameraWithPeers(stream) {
     const videoTrack = stream.getVideoTracks()[0];
     const audioTrack = stream.getAudioTracks()[0];
     if (!videoTrack) {
-        console.warn('shareCameraWithPeers: No video track in camera stream');
         return;
     }
     
     // Log audio track state for debugging
     if (audioTrack) {
-        console.log(`shareCameraWithPeers: Audio track found, enabled: ${audioTrack.enabled}, id: ${audioTrack.id}`);
     } else {
-        console.log('shareCameraWithPeers: No audio track in camera stream');
     }
 
     // Note: We can't modify videoTrack.label as it's read-only
@@ -500,7 +466,6 @@ export function shareCameraWithPeers(stream) {
     if (state.isHosting) {
         state.dataConnections.forEach((conn, peerId) => {
             if (!conn || !conn.open) {
-                console.warn(`shareCameraWithPeers: Connection to ${peerId} not open`);
                 return;
             }
 
@@ -508,7 +473,6 @@ export function shareCameraWithPeers(stream) {
             
             if (existingCameraCall && existingCameraCall.peerConnection) {
                 if (!isPeerConnectionReady(existingCameraCall.peerConnection)) {
-                    console.warn(`shareCameraWithPeers: Camera peer connection to ${peerId} not ready, will retry`);
                     setTimeout(() => {
                         if (state.cameraCalls.has(peerId) && state.isCameraActive && state.cameraStream) {
                             shareCameraWithPeers(state.cameraStream);
@@ -532,25 +496,19 @@ export function shareCameraWithPeers(stream) {
 
                 if (audioTrack) {
                     if (audioSender) {
-                        console.log(`shareCameraWithPeers: Replacing audio track for peer ${peerId}, enabled: ${audioTrack.enabled}`);
                         audioSender.replaceTrack(audioTrack).then(() => {
-                            console.log(`shareCameraWithPeers: Successfully replaced audio track for peer ${peerId}`);
                         }).catch(err => {
                             console.error(`Error replacing camera audio track for peer ${peerId}:`, err);
                             // If replace fails, try adding the track
-                            console.log(`shareCameraWithPeers: Replace failed, trying to add audio track for peer ${peerId}`);
                             try {
                                 existingCameraCall.peerConnection.addTrack(audioTrack, stream);
-                                console.log(`shareCameraWithPeers: Successfully added audio track after replace failure for peer ${peerId}`);
                             } catch (addErr) {
                                 console.error(`Error adding audio track after replace failure for peer ${peerId}:`, addErr);
                             }
                         });
                     } else {
-                        console.log(`shareCameraWithPeers: No audio sender found, adding audio track for peer ${peerId}, enabled: ${audioTrack.enabled}`);
                         try {
                             existingCameraCall.peerConnection.addTrack(audioTrack, stream);
-                            console.log(`shareCameraWithPeers: Successfully added audio track for peer ${peerId}`);
                         } catch (err) {
                             console.error(`Error adding audio track for peer ${peerId}:`, err);
                             // If addTrack fails, the connection might not be ready - retry later
@@ -563,7 +521,6 @@ export function shareCameraWithPeers(stream) {
                                         if (!retryAudioSender) {
                                             try {
                                                 existingCameraCall.peerConnection.addTrack(retryAudioTrack, state.cameraStream);
-                                                console.log(`shareCameraWithPeers: Successfully added audio track on retry for peer ${peerId}`);
                                             } catch (retryErr) {
                                                 console.error(`Error adding audio track on retry for peer ${peerId}:`, retryErr);
                                             }
@@ -574,14 +531,11 @@ export function shareCameraWithPeers(stream) {
                         }
                     }
                 } else {
-                    console.log(`shareCameraWithPeers: No audio track to share with peer ${peerId}`);
                 }
             } else {
                 // Create new camera call
                 if (state.peer) {
-                    console.log(`shareCameraWithPeers: Creating new camera call to ${peerId}`);
                     if (audioTrack) {
-                        console.log(`shareCameraWithPeers: New call will include audio track, enabled: ${audioTrack.enabled}`);
                     }
                     try {
                         const call = state.peer.call(peerId, stream, { metadata: { isCameraCall: true } });
@@ -596,9 +550,7 @@ export function shareCameraWithPeers(stream) {
                                 if (call.peerConnection) {
                                     const connectionState = call.peerConnection.connectionState || call.peerConnection.iceConnectionState;
                                     if (connectionState === 'connected' || connectionState === 'completed') {
-                                        console.log(`shareCameraWithPeers: Camera call to ${peerId} established`);
                                     } else if (connectionState === 'failed' || connectionState === 'disconnected' || connectionState === 'closed') {
-                                        console.warn(`shareCameraWithPeers: Camera call to ${peerId} failed, will retry`);
                                         state.cameraCalls.delete(peerId);
                                         setTimeout(() => {
                                             if (state.isCameraActive && state.cameraStream && state.isCollaborating) {
@@ -631,7 +583,6 @@ export function shareCameraWithPeers(stream) {
             
             if (existingCameraCall && existingCameraCall.peerConnection) {
                 if (!isPeerConnectionReady(existingCameraCall.peerConnection)) {
-                    console.warn('shareCameraWithPeers: Camera peer connection to host not ready, will retry');
                     setTimeout(() => {
                         if (state.cameraCalls.has(hostPeerId) && state.isCameraActive && state.cameraStream) {
                             shareCameraWithPeers(state.cameraStream);
@@ -655,25 +606,19 @@ export function shareCameraWithPeers(stream) {
 
                 if (audioTrack) {
                     if (audioSender) {
-                        console.log(`shareCameraWithPeers: Replacing audio track for host, enabled: ${audioTrack.enabled}`);
                         audioSender.replaceTrack(audioTrack).then(() => {
-                            console.log(`shareCameraWithPeers: Successfully replaced audio track for host`);
                         }).catch(err => {
                             console.error(`Error replacing camera audio track for host:`, err);
                             // If replace fails, try adding the track
-                            console.log(`shareCameraWithPeers: Replace failed, trying to add audio track for host`);
                             try {
                                 existingCameraCall.peerConnection.addTrack(audioTrack, stream);
-                                console.log(`shareCameraWithPeers: Successfully added audio track after replace failure for host`);
                             } catch (addErr) {
                                 console.error(`Error adding audio track after replace failure for host:`, addErr);
                             }
                         });
                     } else {
-                        console.log(`shareCameraWithPeers: No audio sender found, adding audio track for host, enabled: ${audioTrack.enabled}`);
                         try {
                             existingCameraCall.peerConnection.addTrack(audioTrack, stream);
-                            console.log(`shareCameraWithPeers: Successfully added audio track for host`);
                         } catch (err) {
                             console.error(`Error adding audio track for host:`, err);
                             // If addTrack fails, the connection might not be ready - retry later
@@ -686,7 +631,6 @@ export function shareCameraWithPeers(stream) {
                                         if (!retryAudioSender) {
                                             try {
                                                 existingCameraCall.peerConnection.addTrack(retryAudioTrack, state.cameraStream);
-                                                console.log(`shareCameraWithPeers: Successfully added audio track on retry for host`);
                                             } catch (retryErr) {
                                                 console.error(`Error adding audio track on retry for host:`, retryErr);
                                             }
@@ -697,13 +641,10 @@ export function shareCameraWithPeers(stream) {
                         }
                     }
                 } else {
-                    console.log(`shareCameraWithPeers: No audio track to share with host`);
                 }
             } else if (state.peer && !existingCameraCall) {
                 // Create new camera call to host
-                console.log('shareCameraWithPeers: Creating new camera call to host as joiner');
                 if (audioTrack) {
-                    console.log(`shareCameraWithPeers: New call to host will include audio track, enabled: ${audioTrack.enabled}`);
                 }
                 try {
                     const call = state.peer.call(hostPeerId, stream, { metadata: { isCameraCall: true } });
@@ -718,9 +659,7 @@ export function shareCameraWithPeers(stream) {
                             if (call.peerConnection) {
                                 const connectionState = call.peerConnection.connectionState || call.peerConnection.iceConnectionState;
                                 if (connectionState === 'connected' || connectionState === 'completed') {
-                                    console.log('shareCameraWithPeers: Camera call to host established');
                                 } else if (connectionState === 'failed' || connectionState === 'disconnected' || connectionState === 'closed') {
-                                    console.warn('shareCameraWithPeers: Camera call to host failed, will retry');
                                     state.cameraCalls.delete(hostPeerId);
                                     setTimeout(() => {
                                         if (state.isCameraActive && state.cameraStream && state.isCollaborating) {

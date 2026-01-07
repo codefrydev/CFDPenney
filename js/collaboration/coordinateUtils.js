@@ -25,11 +25,9 @@ function getNormalizeCoordinates() {
     const hasPenneyFunctions = window.penneyCanvasFunctions && window.penneyCanvasFunctions.normalizeCoordinates;
     
     if (isPenney && hasPenneyFunctions) {
-        console.log('[coordinateUtils] Using penney normalizeCoordinates');
         return window.penneyCanvasFunctions.normalizeCoordinates;
     }
     // Fallback to regular canvas function
-    console.log('[coordinateUtils] Using regular normalizeCoordinates');
     return regularNormalizeCoordinates;
 }
 
@@ -39,11 +37,9 @@ function getDenormalizeCoordinates() {
     const hasPenneyFunctions = window.penneyCanvasFunctions && window.penneyCanvasFunctions.denormalizeCoordinates;
     
     if (isPenney && hasPenneyFunctions) {
-        console.log('[coordinateUtils] Using penney denormalizeCoordinates');
         return window.penneyCanvasFunctions.denormalizeCoordinates;
     }
     // Fallback to regular canvas function
-    console.log('[coordinateUtils] Using regular denormalizeCoordinates');
     return regularDenormalizeCoordinates;
 }
 

@@ -20,12 +20,6 @@ export async function startCollaboration() {
         }
 
         // Log environment info for debugging
-        console.log('[PeerJS Config] Environment:', {
-            protocol: window.location.protocol,
-            host: window.location.host,
-            secureContext: window.isSecureContext,
-            userAgent: navigator.userAgent
-        });
 
         state.peer = new Peer(shareCode, {
             debug: 1,
@@ -50,7 +44,6 @@ export async function startCollaboration() {
         
         // Log PeerJS connection events
         state.peer.on('open', (id) => {
-            console.log('[PeerJS] Peer opened with ID:', id);
         });
         
         state.peer.on('error', (err) => {
@@ -69,8 +62,7 @@ export async function startCollaboration() {
             
             // Register session with discovery service
             registerSession(shareCode, null, state.mode).catch(err => {
-                console.warn('Failed to register session with discovery service:', err);
-                // Continue anyway - discovery is optional
+                // Failed to register session with discovery service - continue anyway
             });
             
             // If screen sharing is already active, share it with peers when they connect
@@ -86,14 +78,11 @@ export async function startCollaboration() {
             const peerId = dataConnection.peer;
             const now = Date.now();
             
-            console.log(`[Host Connection] Received from peer ${peerId}, open: ${dataConnection.open}, readyState: ${dataConnection.readyState}`);
-            
             // Check if we already have a connection from this peer
             const existingConnection = state.dataConnections.get(peerId);
             if (existingConnection) {
                 // If existing connection is open, close the new duplicate
                 if (existingConnection.open || existingConnection.readyState === 'open') {
-                    console.log(`[Host Connection] ${peerId}: Existing connection is open, closing duplicate`);
                     dataConnection.close();
                     return;
                 } else {
@@ -108,7 +97,6 @@ export async function startCollaboration() {
                     
                     // Don't replace if ICE is actively negotiating (unless it's been a very long time)
                     if (isIceActive && existingAge < 20000) {
-                        console.log(`[Host Connection] ${peerId}: ICE actively negotiating (${iceState}), blocking replacement (age: ${existingAge}ms)`);
                         dataConnection.close();
                         return;
                     }
@@ -120,7 +108,6 @@ export async function startCollaboration() {
                     // 1. Existing connection is older than grace period, OR
                     // 2. We haven't exceeded max replacements
                     if (existingAge < CONNECTION_GRACE_PERIOD && attemptInfo.count >= MAX_REPLACEMENTS) {
-                        console.log(`[Host Connection] ${peerId}: Blocking replacement (age: ${existingAge}ms, attempts: ${attemptInfo.count}/${MAX_REPLACEMENTS}, ICE: ${iceState})`);
                         dataConnection.close();
                         return;
                     }
@@ -133,7 +120,6 @@ export async function startCollaboration() {
                     }
                     connectionAttempts.set(peerId, attemptInfo);
                     
-                    console.log(`[Host Connection] ${peerId}: Replacing connection (age: ${existingAge}ms, replacement #${attemptInfo.count}, ICE: ${iceState || 'unknown'})`);
                     existingConnection.close();
                     // Remove the stale connection from maps
                     state.dataConnections.delete(peerId);
@@ -151,7 +137,6 @@ export async function startCollaboration() {
             // Don't store the connection yet - wait for it to open
             // This prevents premature duplicate detection
             // setupDataConnection will store it when it opens
-            console.log(`[Host Connection] ${peerId}: Setting up data connection`);
             setupDataConnection(dataConnection, peerId);
             
             // Clean up attempt tracking when connection opens
@@ -168,11 +153,9 @@ export async function startCollaboration() {
             
             if (isCameraCall) {
                 // Handle camera call separately
-                console.log(`Host received camera call from peer ${peerId}`);
                 
                 // Check if we already have a camera call from this peer
                 if (state.cameraCalls.has(peerId)) {
-                    console.log(`Camera call from peer ${peerId} already exists, closing duplicate`);
                     incomingCall.close();
                     return;
                 }
@@ -184,11 +167,9 @@ export async function startCollaboration() {
                     // Log audio track state when answering call
                     const audioTracks = streamToShare.getAudioTracks();
                     if (audioTracks.length > 0) {
-                        audioTracks.forEach((track, index) => {
-                            console.log(`Host answering camera call: Audio track ${index} in stream, enabled: ${track.enabled}, id: ${track.id}`);
-                        });
+                        // Audio tracks available
                     } else {
-                        console.warn(`Host answering camera call: No audio tracks in camera stream`);
+                        // No audio tracks in camera stream
                     }
                 } else {
                     // Create dummy stream for camera calls when camera is off
@@ -210,7 +191,6 @@ export async function startCollaboration() {
                     if (state.isCameraActive && state.cameraStream && window.shareCameraWithPeers) {
                         setTimeout(() => {
                             if (state.cameraCalls.has(peerId) && state.isCameraActive && state.cameraStream) {
-                                console.log(`Syncing camera tracks for newly answered call from peer ${peerId}`);
                                 window.shareCameraWithPeers(state.cameraStream);
                             }
                         }, 500);
@@ -222,7 +202,6 @@ export async function startCollaboration() {
                 // Handle screen share call
                 // Check if we already have a call from this peer
                 if (state.calls.has(peerId)) {
-                    console.log(`Call from peer ${peerId} already exists, closing duplicate`);
                     incomingCall.close();
                     return;
                 }
@@ -287,12 +266,6 @@ export async function joinCollaborationWithCode(code) {
         }
 
         // Log environment info for debugging
-        console.log('[PeerJS Config] Environment:', {
-            protocol: window.location.protocol,
-            host: window.location.host,
-            secureContext: window.isSecureContext,
-            userAgent: navigator.userAgent
-        });
 
         state.peer = new Peer({
             debug: 1,
@@ -317,7 +290,7 @@ export async function joinCollaborationWithCode(code) {
         
         // Log PeerJS connection events
         state.peer.on('open', (id) => {
-            console.log('[PeerJS] Peer opened with ID:', id);
+            // Peer opened
         });
         
         state.peer.on('error', (err) => {
@@ -344,18 +317,15 @@ export async function joinCollaborationWithCode(code) {
         // Listen for incoming calls from the host
         state.peer.on('call', (incomingCall) => {
             const peerId = incomingCall.peer;
-            console.log(`Peer received incoming call from host ${peerId}`, incomingCall);
             
             // Check if this is a camera call (using metadata)
             const isCameraCall = incomingCall.metadata && incomingCall.metadata.isCameraCall;
             
             if (isCameraCall) {
                 // Handle camera call separately
-                console.log(`Joiner received camera call from host ${peerId}`);
                 
                 // Check if we already have a camera call from this peer
                 if (state.cameraCalls.has(peerId)) {
-                    console.log(`Camera call from host ${peerId} already exists, closing duplicate`);
                     incomingCall.close();
                     return;
                 }
@@ -373,11 +343,9 @@ export async function joinCollaborationWithCode(code) {
                     // Log audio track state when answering call
                     const audioTracks = streamToAnswer.getAudioTracks();
                     if (audioTracks.length > 0) {
-                        audioTracks.forEach((track, index) => {
-                            console.log(`Joiner answering camera call: Audio track ${index} in stream, enabled: ${track.enabled}, id: ${track.id}`);
-                        });
+                        // Audio tracks available
                     } else {
-                        console.warn(`Joiner answering camera call: No audio tracks in camera stream`);
+                        // No audio tracks in camera stream
                     }
                 } else {
                     // Create dummy stream for camera calls when camera is off
@@ -389,14 +357,12 @@ export async function joinCollaborationWithCode(code) {
                 
                 if (streamToAnswer) {
                     incomingCall.answer(streamToAnswer);
-                    console.log(`Joiner answered camera call from host ${peerId} with stream:`, streamToAnswer);
                     
                     // If camera is active, ensure tracks are synchronized after connection is established
                     // This handles cases where audio track state might need to be updated
                     if (state.isCameraActive && state.cameraStream && window.shareCameraWithPeers) {
                         setTimeout(() => {
                             if (state.cameraCalls.has(peerId) && state.isCameraActive && state.cameraStream) {
-                                console.log(`Syncing camera tracks for newly answered call to host ${peerId}`);
                                 window.shareCameraWithPeers(state.cameraStream);
                             }
                         }, 500);
@@ -414,7 +380,6 @@ export async function joinCollaborationWithCode(code) {
                 // Handle screen share call
                 // Check if we already have a call from this peer
                 if (state.calls.has(peerId)) {
-                    console.log(`Call from host ${peerId} already exists, closing duplicate`);
                     incomingCall.close();
                     return;
                 }
@@ -438,7 +403,6 @@ export async function joinCollaborationWithCode(code) {
                 
                 if (streamToAnswer) {
                     incomingCall.answer(streamToAnswer);
-                    console.log(`Peer answered call from host ${peerId} with stream:`, streamToAnswer);
                 } else {
                     console.error('Peer: No stream available to answer call');
                     // Still answer even without stream
@@ -492,7 +456,7 @@ export function stopCollaboration() {
     // Mark session as available before unregistering (if it was connected)
     if (state.shareCode && state.isHosting) {
         markSessionAvailable(state.shareCode).catch(err => {
-            console.warn('Failed to mark session as available:', err);
+            // Failed to mark session as available
         });
     }
     

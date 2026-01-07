@@ -18,7 +18,6 @@ export function handlePeerMessage(message, peerId) {
     if (typeof window.handlePeerOverlayEvent === 'function') {
         window.handlePeerOverlayEvent(message);
     } else {
-        console.warn('[MessageHandler] window.handlePeerOverlayEvent not defined!');
     }
     
     // If we're the host, rebroadcast this message to all other peers (except the sender)

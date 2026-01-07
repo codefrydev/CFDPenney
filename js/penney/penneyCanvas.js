@@ -261,7 +261,6 @@ export function drawElements(elements, isPeer = false) {
  */
 export function redrawCanvas() {
     if (!ctx || !canvas) {
-        console.log('[penneyCanvas] redrawCanvas - no ctx or canvas!');
         return;
     }
     
@@ -270,10 +269,6 @@ export function redrawCanvas() {
     
     // Draw local elements
     const itemsToDraw = state.elements.slice(0, state.historyStep + 1);
-    console.log('[penneyCanvas] redrawCanvas - drawing', itemsToDraw.length, 'elements, historyStep:', state.historyStep, 'total elements:', state.elements.length);
-    if (itemsToDraw.length > 0) {
-        console.log('[penneyCanvas] redrawCanvas - first element:', itemsToDraw[0]);
-    }
     drawElements(itemsToDraw);
 
     // Draw peer elements
