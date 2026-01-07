@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- SEO Meta Tags -->
-    <meta name="description" content="CFD Penney - Turn any screen into a collaborative canvas. Free real-time whiteboard and screen annotation tool for Windows, macOS & Linux. No account required, instant collaboration.">
-    <meta name="keywords" content="collaborative whiteboard, screen annotation, real-time drawing, online whiteboard, screen sharing, annotation tool, collaborative drawing, virtual whiteboard, free whiteboard, team collaboration, remote collaboration, annotation software, desktop annotation">
+    <meta name="description" content="CFD Penney - Turn any screen into a collaborative canvas. Free real-time whiteboard, screen annotation, video calls, and chat messaging for Windows, macOS & Linux. No account required, instant collaboration.">
+    <meta name="keywords" content="collaborative whiteboard, screen annotation, real-time drawing, online whiteboard, screen sharing, annotation tool, collaborative drawing, virtual whiteboard, free whiteboard, team collaboration, remote collaboration, annotation software, desktop annotation, video calls, chat messaging, infinite canvas">
     <meta name="author" content="CodeFryDev">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://codefrydev.in/CFDPenney/">
@@ -15,7 +15,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://codefrydev.in/CFDPenney/">
     <meta property="og:title" content="CFD Penney - Turn Any Screen Into a Collaborative Canvas">
-    <meta property="og:description" content="Free real-time whiteboard and screen annotation tool for Windows, macOS & Linux. Draw over any app, collaborate with remote teams, and brainstorm on an infinite canvas. No account required.">
+    <meta property="og:description" content="Free real-time whiteboard and screen annotation tool with video calls and chat messaging for Windows, macOS & Linux. Draw over any app, collaborate with remote teams, and brainstorm on an infinite canvas. No account required.">
     <meta property="og:image" content="https://codefrydev.in/CFDPenney/og-image.jpg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -26,7 +26,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://codefrydev.in/CFDPenney/">
     <meta name="twitter:title" content="CFD Penney - Turn Any Screen Into a Collaborative Canvas">
-    <meta name="twitter:description" content="Free real-time whiteboard and screen annotation tool for Windows, macOS & Linux. Draw over any app, collaborate with remote teams, and brainstorm on an infinite canvas. No account required.">
+    <meta name="twitter:description" content="Free real-time whiteboard and screen annotation tool with video calls and chat messaging for Windows, macOS & Linux. Draw over any app, collaborate with remote teams, and brainstorm on an infinite canvas. No account required.">
     <meta name="twitter:image" content="https://codefrydev.in/CFDPenney/og-image.jpg">
     <meta name="twitter:image:alt" content="CFD Penney - Collaborative Screen Annotation and Whiteboard Tool">
     
@@ -40,6 +40,15 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles/landing-main.css">
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-VM01Q3R43D" type="text/javascript"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-VM01Q3R43D');
+    </script>
     
     <!-- JSON-LD Structured Data -->
     <!-- Organization Schema -->
@@ -103,6 +112,9 @@
         "Screen annotation overlay",
         "Real-time collaboration via WebRTC",
         "Virtual whiteboard mode",
+        "Infinite canvas (Penney mode)",
+        "Video calls and camera sharing",
+        "Real-time chat messaging with file attachments",
         "Code-based session joining",
         "No account required",
         "Cross-platform support",
@@ -119,7 +131,7 @@
       "@type": "Product",
       "@id": "https://codefrydev.in/CFDPenney/#product",
       "name": "CFD Penney",
-      "description": "Turn any screen into a collaborative canvas. Free real-time whiteboard and screen annotation tool for remote teams.",
+      "description": "Turn any screen into a collaborative canvas. Free real-time whiteboard and screen annotation tool with video calls and chat messaging for remote teams.",
       "image": "https://codefrydev.in/CFDPenney/og-image.jpg",
       "brand": {
         "@type": "Brand",
@@ -206,6 +218,119 @@
           "position": 2,
           "name": "Web App",
           "item": "https://codefrydev.in/CFDPenney/canvas.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Infinite Canvas",
+          "item": "https://codefrydev.in/CFDPenney/penney.html"
+        }
+      ]
+    }
+    </script>
+    
+    <!-- FAQPage Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "@id": "https://codefrydev.in/CFDPenney/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is CFD Penney?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "CFD Penney is a free, open-source collaborative annotation tool that enables real-time drawing, screen sharing, video calls, and chat messaging. You can draw on whiteboards, annotate shared screens (desktop app), or use the infinite canvas mode for unlimited creative space. No account required."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is CFD Penney free to use?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, CFD Penney is completely free forever. There are no hidden costs, no subscriptions, and no account registration required. The service is open-source and available for anyone to use."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need to create an account?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No, CFD Penney does not require any account creation or login. You can start collaborating immediately by hosting a session or joining with a 6-character session code. No personal information is collected."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does collaboration work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Collaboration works through peer-to-peer WebRTC connections. When you host a session, you get a unique 6-character code. Share this code with others, and they can join instantly. All drawing, video, and chat data is transmitted directly between participants - nothing is stored on servers."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What platforms are supported?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "CFD Penney is available as a desktop application for Windows, macOS, and Linux, and as a web application that works in any modern browser. Web users can collaborate with desktop users seamlessly."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I use video calls and chat?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, CFD Penney includes video calls with camera sharing, audio support, and real-time chat messaging with file attachments. All video and chat data is transmitted peer-to-peer and is not recorded or stored on servers."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the infinite canvas (Penney mode)?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The infinite canvas (Penney mode) provides unlimited canvas space with pan and zoom capabilities. It's perfect for large-scale projects, extensive brainstorming sessions, and creative work that requires unlimited space. All drawing tools are available in infinite mode with collaborative editing support."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is my data stored on servers?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No, CFD Penney uses a peer-to-peer architecture. Your drawings, annotations, video streams, and chat messages are transmitted directly between participants and are not stored on our servers. Only temporary session codes are used to facilitate connections."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I use CFD Penney offline?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, you can use the whiteboard and drawing features locally without an internet connection. However, collaboration features (real-time sync, video calls, chat) require an internet connection for peer-to-peer communication."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I join a collaboration session?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "To join a session, you need the 6-character session code from the host. Enter the code in the join field on the homepage or in the collaboration modal. You'll connect instantly via peer-to-peer WebRTC."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What drawing tools are available?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "CFD Penney includes multiple drawing tools: pen for freehand drawing, eraser, text tool, various shapes (line, arrow, rectangle, circle, ellipse, triangle, diamond, star, and more), stickers, and a selection tool for manipulating drawn elements. You can customize colors, stroke width, and fill options."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is CFD Penney open source?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, CFD Penney is open-source software. The complete source code is available on GitHub, allowing you to review the code, audit privacy and security practices, contribute to development, or fork and modify it for your own use."
+          }
         }
       ]
     }
@@ -260,6 +385,10 @@
                         <i class="fas fa-globe" style="color:#94a3b8;"></i>
                         Open Web App
                     </a>
+                    <a href="penney.html" class="btn-secondary">
+                        <i class="fas fa-infinity" style="color:#94a3b8;"></i>
+                        Infinite Canvas
+                    </a>
                 </div>
             </div>
 
@@ -293,7 +422,7 @@
                             <path d="M 550 220 L 530 215 M 550 220 L 540 200" stroke="#f43f5e" stroke-width="4" fill="none" stroke-linecap="round" />
                             
                             <!-- Circle -->
-                            <ellipse cx="70%" cy="60%" rx="80" ry="40" stroke="#22d3ee" stroke-width="4" fill="none" transform="rotate(-10 70% 60%)" stroke-dasharray="400" stroke-dashoffset="0" />
+                            <ellipse cx="560" cy="360" rx="80" ry="40" stroke="#22d3ee" stroke-width="4" fill="none" transform="rotate(-10 560 360)" stroke-dasharray="400" stroke-dashoffset="0" />
                             
                             <!-- Cursor 1 -->
                             <g transform="translate(550, 220)">
@@ -411,6 +540,109 @@
         </div>
     </section>
 
+    <!-- Enhanced Features Section -->
+    <section id="enhanced-features" class="features-section" style="background: var(--slate-50);">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="overline">Enhanced Collaboration</span>
+                <h3 class="section-title">More Ways to Connect</h3>
+                <p style="margin-top:1rem; color:var(--slate-600); max-width: 42rem; margin-left: auto; margin-right: auto;">Beyond drawing together, CFD Penney offers video calls, chat messaging, and an infinite canvas for unlimited creativity.</p>
+            </div>
+
+            <div class="features-grid">
+                <!-- Video & Camera Feature -->
+                <div class="feature-card-wrapper reveal">
+                    <div class="card-glow glow-purple"></div>
+                    <div class="feature-card">
+                        <div class="feature-icon icon-blue" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <h4 class="feature-title">Video & Camera</h4>
+                        <p style="margin-bottom: 1rem; color: var(--slate-500);">See and hear your team in real-time.</p>
+                        <ul class="feature-list">
+                            <li>
+                                <i class="fas fa-check check-icon"></i>
+                                <span>Face-to-face video calls with camera sharing.</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check check-icon"></i>
+                                <span>Audio support with mute/unmute controls.</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check check-icon"></i>
+                                <span>Device selection for camera and microphone.</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check check-icon"></i>
+                                <span>Peer-to-peer video streams (not recorded).</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Chat & Messaging Feature -->
+                <div class="feature-card-wrapper reveal">
+                    <div class="card-glow glow-green"></div>
+                    <div class="feature-card">
+                        <div class="feature-icon icon-teal" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <h4 class="feature-title">Chat & Messaging</h4>
+                        <p style="margin-bottom: 1rem; color: var(--slate-500);">Real-time messaging with file sharing.</p>
+                        <ul class="feature-list">
+                            <li>
+                                <i class="fas fa-check check-icon"></i>
+                                <span>Instant text messaging during collaboration.</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check check-icon"></i>
+                                <span>File attachments (images, documents, PDFs).</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check check-icon"></i>
+                                <span>Emoji reactions and rich message formatting.</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check check-icon"></i>
+                                <span>Message history during active sessions.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Infinite Canvas Feature -->
+                <div class="feature-card-wrapper reveal">
+                    <div class="card-glow glow-orange"></div>
+                    <div class="feature-card">
+                        <div class="feature-icon icon-blue" style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);">
+                            <i class="fas fa-infinity"></i>
+                        </div>
+                        <h4 class="feature-title">Infinite Canvas</h4>
+                        <p style="margin-bottom: 1rem; color: var(--slate-500);">Penney mode for unlimited creativity.</p>
+                        <ul class="feature-list">
+                            <li>
+                                <i class="fas fa-check check-icon"></i>
+                                <span>Unlimited canvas space with pan and zoom.</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check check-icon"></i>
+                                <span>Perfect for large projects and brainstorming.</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check check-icon"></i>
+                                <span>All drawing tools available in infinite mode.</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check check-icon"></i>
+                                <span>Collaborative editing on the infinite canvas.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Join Session CTA -->
     <section class="cta-section">
         <div class="cta-blob cta-blob-1"></div>
@@ -435,6 +667,151 @@
         </div>
     </section>
 
+    <!-- FAQ Section -->
+    <section id="faq" class="features-section" style="background: white;">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="overline">Frequently Asked Questions</span>
+                <h3 class="section-title">Got Questions? We've Got Answers</h3>
+                <p style="margin-top:1rem; color:var(--slate-600); max-width: 42rem; margin-left: auto; margin-right: auto;">Everything you need to know about CFD Penney</p>
+            </div>
+
+            <div class="faq-container" style="max-width: 48rem; margin: 0 auto; padding: 0 1rem;">
+                <!-- FAQ Item 1 -->
+                <div class="faq-item reveal" style="border-bottom: 1px solid var(--slate-200); padding: 1.5rem 0;">
+                    <button class="faq-question" onclick="toggleFAQ(this)" style="width: 100%; text-align: left; background: none; border: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 0;">
+                        <h4 style="font-size: 1.125rem; font-weight: 600; color: var(--slate-900); margin: 0;">What is CFD Penney?</h4>
+                        <i class="fas fa-chevron-down faq-icon" style="color: var(--brand-600); transition: transform 0.3s;"></i>
+                    </button>
+                    <div class="faq-answer" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; padding-top: 0;">
+                        <p style="color: var(--slate-600); line-height: 1.7; margin-top: 1rem; padding-right: 2rem; padding-bottom: 0.5rem;">CFD Penney is a free, open-source collaborative annotation tool that enables real-time drawing, screen sharing, video calls, and chat messaging. You can draw on whiteboards, annotate shared screens (desktop app), or use the infinite canvas mode for unlimited creative space. No account required.</p>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 2 -->
+                <div class="faq-item reveal" style="border-bottom: 1px solid var(--slate-200); padding: 1.5rem 0;">
+                    <button class="faq-question" onclick="toggleFAQ(this)" style="width: 100%; text-align: left; background: none; border: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 0;">
+                        <h4 style="font-size: 1.125rem; font-weight: 600; color: var(--slate-900); margin: 0;">Is CFD Penney free to use?</h4>
+                        <i class="fas fa-chevron-down faq-icon" style="color: var(--brand-600); transition: transform 0.3s;"></i>
+                    </button>
+                    <div class="faq-answer" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; padding-top: 0;">
+                        <p style="color: var(--slate-600); line-height: 1.7; margin-top: 1rem; padding-right: 2rem; padding-bottom: 0.5rem;">Yes, CFD Penney is completely free forever. There are no hidden costs, no subscriptions, and no account registration required. The service is open-source and available for anyone to use.</p>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 3 -->
+                <div class="faq-item reveal" style="border-bottom: 1px solid var(--slate-200); padding: 1.5rem 0;">
+                    <button class="faq-question" onclick="toggleFAQ(this)" style="width: 100%; text-align: left; background: none; border: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 0;">
+                        <h4 style="font-size: 1.125rem; font-weight: 600; color: var(--slate-900); margin: 0;">Do I need to create an account?</h4>
+                        <i class="fas fa-chevron-down faq-icon" style="color: var(--brand-600); transition: transform 0.3s;"></i>
+                    </button>
+                    <div class="faq-answer" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; padding-top: 0;">
+                        <p style="color: var(--slate-600); line-height: 1.7; margin-top: 1rem; padding-right: 2rem; padding-bottom: 0.5rem;">No, CFD Penney does not require any account creation or login. You can start collaborating immediately by hosting a session or joining with a 6-character session code. No personal information is collected.</p>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 4 -->
+                <div class="faq-item reveal" style="border-bottom: 1px solid var(--slate-200); padding: 1.5rem 0;">
+                    <button class="faq-question" onclick="toggleFAQ(this)" style="width: 100%; text-align: left; background: none; border: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 0;">
+                        <h4 style="font-size: 1.125rem; font-weight: 600; color: var(--slate-900); margin: 0;">How does collaboration work?</h4>
+                        <i class="fas fa-chevron-down faq-icon" style="color: var(--brand-600); transition: transform 0.3s;"></i>
+                    </button>
+                    <div class="faq-answer" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; padding-top: 0;">
+                        <p style="color: var(--slate-600); line-height: 1.7; margin-top: 1rem; padding-right: 2rem; padding-bottom: 0.5rem;">Collaboration works through peer-to-peer WebRTC connections. When you host a session, you get a unique 6-character code. Share this code with others, and they can join instantly. All drawing, video, and chat data is transmitted directly between participants - nothing is stored on servers.</p>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 5 -->
+                <div class="faq-item reveal" style="border-bottom: 1px solid var(--slate-200); padding: 1.5rem 0;">
+                    <button class="faq-question" onclick="toggleFAQ(this)" style="width: 100%; text-align: left; background: none; border: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 0;">
+                        <h4 style="font-size: 1.125rem; font-weight: 600; color: var(--slate-900); margin: 0;">What platforms are supported?</h4>
+                        <i class="fas fa-chevron-down faq-icon" style="color: var(--brand-600); transition: transform 0.3s;"></i>
+                    </button>
+                    <div class="faq-answer" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; padding-top: 0;">
+                        <p style="color: var(--slate-600); line-height: 1.7; margin-top: 1rem; padding-right: 2rem; padding-bottom: 0.5rem;">CFD Penney is available as a desktop application for Windows, macOS, and Linux, and as a web application that works in any modern browser. Web users can collaborate with desktop users seamlessly.</p>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 6 -->
+                <div class="faq-item reveal" style="border-bottom: 1px solid var(--slate-200); padding: 1.5rem 0;">
+                    <button class="faq-question" onclick="toggleFAQ(this)" style="width: 100%; text-align: left; background: none; border: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 0;">
+                        <h4 style="font-size: 1.125rem; font-weight: 600; color: var(--slate-900); margin: 0;">Can I use video calls and chat?</h4>
+                        <i class="fas fa-chevron-down faq-icon" style="color: var(--brand-600); transition: transform 0.3s;"></i>
+                    </button>
+                    <div class="faq-answer" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; padding-top: 0;">
+                        <p style="color: var(--slate-600); line-height: 1.7; margin-top: 1rem; padding-right: 2rem; padding-bottom: 0.5rem;">Yes, CFD Penney includes video calls with camera sharing, audio support, and real-time chat messaging with file attachments. All video and chat data is transmitted peer-to-peer and is not recorded or stored on servers.</p>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 7 -->
+                <div class="faq-item reveal" style="border-bottom: 1px solid var(--slate-200); padding: 1.5rem 0;">
+                    <button class="faq-question" onclick="toggleFAQ(this)" style="width: 100%; text-align: left; background: none; border: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 0;">
+                        <h4 style="font-size: 1.125rem; font-weight: 600; color: var(--slate-900); margin: 0;">What is the infinite canvas (Penney mode)?</h4>
+                        <i class="fas fa-chevron-down faq-icon" style="color: var(--brand-600); transition: transform 0.3s;"></i>
+                    </button>
+                    <div class="faq-answer" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; padding-top: 0;">
+                        <p style="color: var(--slate-600); line-height: 1.7; margin-top: 1rem; padding-right: 2rem; padding-bottom: 0.5rem;">The infinite canvas (Penney mode) provides unlimited canvas space with pan and zoom capabilities. It's perfect for large-scale projects, extensive brainstorming sessions, and creative work that requires unlimited space. All drawing tools are available in infinite mode with collaborative editing support.</p>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 8 -->
+                <div class="faq-item reveal" style="border-bottom: 1px solid var(--slate-200); padding: 1.5rem 0;">
+                    <button class="faq-question" onclick="toggleFAQ(this)" style="width: 100%; text-align: left; background: none; border: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 0;">
+                        <h4 style="font-size: 1.125rem; font-weight: 600; color: var(--slate-900); margin: 0;">Is my data stored on servers?</h4>
+                        <i class="fas fa-chevron-down faq-icon" style="color: var(--brand-600); transition: transform 0.3s;"></i>
+                    </button>
+                    <div class="faq-answer" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; padding-top: 0;">
+                        <p style="color: var(--slate-600); line-height: 1.7; margin-top: 1rem; padding-right: 2rem; padding-bottom: 0.5rem;">No, CFD Penney uses a peer-to-peer architecture. Your drawings, annotations, video streams, and chat messages are transmitted directly between participants and are not stored on our servers. Only temporary session codes are used to facilitate connections.</p>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 9 -->
+                <div class="faq-item reveal" style="border-bottom: 1px solid var(--slate-200); padding: 1.5rem 0;">
+                    <button class="faq-question" onclick="toggleFAQ(this)" style="width: 100%; text-align: left; background: none; border: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 0;">
+                        <h4 style="font-size: 1.125rem; font-weight: 600; color: var(--slate-900); margin: 0;">Can I use CFD Penney offline?</h4>
+                        <i class="fas fa-chevron-down faq-icon" style="color: var(--brand-600); transition: transform 0.3s;"></i>
+                    </button>
+                    <div class="faq-answer" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; padding-top: 0;">
+                        <p style="color: var(--slate-600); line-height: 1.7; margin-top: 1rem; padding-right: 2rem; padding-bottom: 0.5rem;">Yes, you can use the whiteboard and drawing features locally without an internet connection. However, collaboration features (real-time sync, video calls, chat) require an internet connection for peer-to-peer communication.</p>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 10 -->
+                <div class="faq-item reveal" style="border-bottom: 1px solid var(--slate-200); padding: 1.5rem 0;">
+                    <button class="faq-question" onclick="toggleFAQ(this)" style="width: 100%; text-align: left; background: none; border: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 0;">
+                        <h4 style="font-size: 1.125rem; font-weight: 600; color: var(--slate-900); margin: 0;">How do I join a collaboration session?</h4>
+                        <i class="fas fa-chevron-down faq-icon" style="color: var(--brand-600); transition: transform 0.3s;"></i>
+                    </button>
+                    <div class="faq-answer" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; padding-top: 0;">
+                        <p style="color: var(--slate-600); line-height: 1.7; margin-top: 1rem; padding-right: 2rem; padding-bottom: 0.5rem;">To join a session, you need the 6-character session code from the host. Enter the code in the join field on the homepage or in the collaboration modal. You'll connect instantly via peer-to-peer WebRTC.</p>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 11 -->
+                <div class="faq-item reveal" style="border-bottom: 1px solid var(--slate-200); padding: 1.5rem 0;">
+                    <button class="faq-question" onclick="toggleFAQ(this)" style="width: 100%; text-align: left; background: none; border: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 0;">
+                        <h4 style="font-size: 1.125rem; font-weight: 600; color: var(--slate-900); margin: 0;">What drawing tools are available?</h4>
+                        <i class="fas fa-chevron-down faq-icon" style="color: var(--brand-600); transition: transform 0.3s;"></i>
+                    </button>
+                    <div class="faq-answer" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; padding-top: 0;">
+                        <p style="color: var(--slate-600); line-height: 1.7; margin-top: 1rem; padding-right: 2rem; padding-bottom: 0.5rem;">CFD Penney includes multiple drawing tools: pen for freehand drawing, eraser, text tool, various shapes (line, arrow, rectangle, circle, ellipse, triangle, diamond, star, and more), stickers, and a selection tool for manipulating drawn elements. You can customize colors, stroke width, and fill options.</p>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 12 -->
+                <div class="faq-item reveal" style="border-bottom: 1px solid var(--slate-200); padding: 1.5rem 0;">
+                    <button class="faq-question" onclick="toggleFAQ(this)" style="width: 100%; text-align: left; background: none; border: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 0;">
+                        <h4 style="font-size: 1.125rem; font-weight: 600; color: var(--slate-900); margin: 0;">Is CFD Penney open source?</h4>
+                        <i class="fas fa-chevron-down faq-icon" style="color: var(--brand-600); transition: transform 0.3s;"></i>
+                    </button>
+                    <div class="faq-answer" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; padding-top: 0;">
+                        <p style="color: var(--slate-600); line-height: 1.7; margin-top: 1rem; padding-right: 2rem; padding-bottom: 0.5rem;">Yes, CFD Penney is open-source software. The complete source code is available on GitHub, allowing you to review the code, audit privacy and security practices, contribute to development, or fork and modify it for your own use.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Footer -->
     <footer id="download" class="footer">
         <div class="container">
@@ -454,6 +831,7 @@
                     <ul class="footer-links">
                         <li><a href="#" id="footer-download-link" style="cursor: pointer;">Download Desktop</a></li>
                         <li><a href="canvas.html">Web Client</a></li>
+                        <li><a href="penney.html">Infinite Canvas</a></li>
                         <li><a href="https://github.com/codefrydev/CFDPenney/" target="_blank">Source Code</a></li>
                         <li><a href="#">Free Forever</a></li>
                     </ul>
@@ -462,10 +840,9 @@
                 <div>
                     <h4 class="footer-heading">Support</h4>
                     <ul class="footer-links">
-                        <li><a href="#">Help Center</a></li>
                         <li><a href="llms.txt" target="_blank">Documentation (Summary)</a></li>
                         <li><a href="llms-full.txt" target="_blank">Full Documentation</a></li>
-                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="mailto:codefrydev@gmail.com">Contact Us</a></li>
                         <li><a href="privacy.html">Privacy Policy</a></li>
                         <li><a href="terms.html">Terms & Conditions</a></li>
                     </ul>
@@ -864,6 +1241,39 @@
                 }
             });
         });
+
+        // FAQ Toggle Function
+        function toggleFAQ(button) {
+            const faqItem = button.closest('.faq-item');
+            const answer = faqItem.querySelector('.faq-answer');
+            const icon = button.querySelector('.faq-icon');
+            const isOpen = answer.style.maxHeight && answer.style.maxHeight !== '0px';
+
+            // Close all other FAQs
+            document.querySelectorAll('.faq-item').forEach(item => {
+                if (item !== faqItem) {
+                    const otherAnswer = item.querySelector('.faq-answer');
+                    const otherIcon = item.querySelector('.faq-icon');
+                    otherAnswer.style.maxHeight = '0px';
+                    otherAnswer.style.paddingTop = '0';
+                    otherIcon.style.transform = 'rotate(0deg)';
+                }
+            });
+
+            // Toggle current FAQ
+            if (isOpen) {
+                answer.style.maxHeight = '0px';
+                answer.style.paddingTop = '0';
+                answer.style.paddingBottom = '0';
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                // Set a large max-height to accommodate all content
+                answer.style.maxHeight = answer.scrollHeight + 50 + 'px';
+                answer.style.paddingTop = '1rem';
+                answer.style.paddingBottom = '0.5rem';
+                icon.style.transform = 'rotate(180deg)';
+            }
+        }
     </script>
 </body>
 </html>

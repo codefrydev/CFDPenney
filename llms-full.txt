@@ -6,19 +6,21 @@ CFD Penney is a free, open-source collaborative annotation tool that enables rea
 ## URLs
 - **Production Website**: https://codefrydev.in/CFDPenney/
 - **Web Application**: https://codefrydev.in/CFDPenney/canvas.html
+- **Infinite Canvas (Penney)**: https://codefrydev.in/CFDPenney/penney.html
 - **Privacy Policy**: https://codefrydev.in/CFDPenney/privacy.html
 - **Terms & Conditions**: https://codefrydev.in/CFDPenney/terms.html
 - **GitHub Repository**: https://github.com/codefrydev/CFDPenney/
 - **Desktop Downloads**: https://github.com/codefrydev/CFDPenney/
 
 ## Description
-CFD Penney is a comprehensive annotation platform that allows multiple users to collaborate in real-time using peer-to-peer WebRTC connections. Users can draw on whiteboards, annotate shared screens (desktop app), or upload and annotate images. The tool supports various drawing modes, advanced selection tools, shape drawing with fill options, stickers, and provides a seamless collaboration experience with no account required.
+CFD Penney is a comprehensive annotation platform that allows multiple users to collaborate in real-time using peer-to-peer WebRTC connections. Users can draw on whiteboards, annotate shared screens (desktop app), use infinite canvas mode, engage in video calls, chat with team members, or upload and annotate images. The tool supports various drawing modes, advanced selection tools, shape drawing with fill options, stickers, video/camera sharing, real-time messaging, and provides a seamless collaboration experience with no account required.
 
 ## Key Features
 
-### Two Distinct Modes
+### Three Distinct Modes
 1. **Screen Annotation Mode** (Desktop App): Turn your actual desktop into a canvas. Draw over any app (CAD, IDEs, browsers). Perfect for code reviews and tutorials. Remote peers see your screen + drawings.
-2. **Virtual Whiteboard Mode** (Web & Desktop): A clean slate for fresh ideas. Infinite canvas for brainstorming. Works locally even if server is offline. Works instantly in any web browser.
+2. **Virtual Whiteboard Mode** (Web & Desktop): A clean slate for fresh ideas. Standard canvas for brainstorming. Works locally even if server is offline. Works instantly in any web browser.
+3. **Infinite Canvas Mode (Penney)** (Web): Unlimited canvas space with pan and zoom capabilities. Perfect for large projects, extensive brainstorming, and creative work that requires unlimited space. All drawing tools available with collaborative editing support.
 
 ### Drawing Modes
 1. **Board Mode**: Draw on a blank whiteboard canvas with infinite possibilities
@@ -42,6 +44,8 @@ CFD Penney is a comprehensive annotation platform that allows multiple users to 
 - **Session Discovery**: Find and join active sessions
 - **Peer-to-Peer**: Direct connections using WebRTC (no data stored on servers)
 - **Screen Sharing**: Desktop app allows screen annotation overlay
+- **Video Calls & Camera Sharing**: Face-to-face video calls with camera and microphone support. Peer-to-peer video streams that are not recorded or stored
+- **Chat Messaging**: Real-time text messaging with file attachments (images, documents, PDFs up to 5MB), emoji reactions, and message history during active sessions
 - **No Account Required**: Jump in and collaborate immediately
 - **Cross-Platform**: Web users can join desktop host sessions and vice versa
 
@@ -56,17 +60,22 @@ CFD Penney is a comprehensive annotation platform that allows multiple users to 
 - Snapshot capture to save current canvas state
 - Clear all functionality to reset the canvas
 - Touch-friendly interface for mobile devices
+- Device selection for camera, microphone, and speakers
+- Camera/microphone mute controls
+- Chat message notifications and unread badges
+- Participants panel showing all connected users with video status
 
 ## Use Cases
 
-1. **Team Collaboration**: Remote brainstorming, design reviews, agile ceremonies, and team meetings
-2. **Code Reviews**: Annotate code directly on screen, perfect for pair programming and technical discussions
-3. **Education**: Online teaching, presentations, interactive learning, and student collaboration
-4. **Design Feedback**: Annotating designs, mockups, visual assets, and prototypes in real-time
-5. **Screen Tutorials**: Creating visual guides, walkthroughs, and tutorials with screen annotations
-6. **Visual Communication**: Expressing ideas visually in real-time for remote teams
-7. **Technical Support**: Help users by annotating their screens during support sessions
-8. **Presentations**: Enhance presentations with live annotations and highlighting
+1. **Team Collaboration**: Remote brainstorming, design reviews, agile ceremonies, and team meetings with video calls and chat
+2. **Code Reviews**: Annotate code directly on screen, perfect for pair programming and technical discussions with real-time video and messaging
+3. **Education**: Online teaching, presentations, interactive learning, and student collaboration with video calls and chat support
+4. **Design Feedback**: Annotating designs, mockups, visual assets, and prototypes in real-time with team video calls
+5. **Screen Tutorials**: Creating visual guides, walkthroughs, and tutorials with screen annotations and video explanations
+6. **Visual Communication**: Expressing ideas visually in real-time for remote teams with face-to-face video and instant messaging
+7. **Technical Support**: Help users by annotating their screens during support sessions with video calls and chat
+8. **Presentations**: Enhance presentations with live annotations, highlighting, and interactive Q&A via chat
+9. **Large-Scale Projects**: Use infinite canvas (Penney mode) for extensive brainstorming, project planning, and large visual workflows
 
 ## Technical Requirements
 
@@ -80,8 +89,9 @@ CFD Penney is a comprehensive annotation platform that allows multiple users to 
 
 - Frontend: HTML5, CSS3, JavaScript (ES6+)
 - Canvas API: For drawing functionality
-- WebRTC: For real-time collaboration and screen sharing
-- PeerJS: For peer-to-peer connections
+- WebRTC: For real-time collaboration, screen sharing, video calls, and data channels for chat
+- PeerJS: For peer-to-peer connections and signaling
+- MediaStream API: For camera and microphone access
 - Responsive Design: Mobile and desktop compatible
 
 ## How to Use
@@ -143,7 +153,7 @@ Complete terms of service including:
 **FREE** - No cost, no registration, no account required. Completely free forever.
 
 ## Version
-1.0 - Initial release with collaborative annotation features, comprehensive SEO, and legal documentation
+1.1 - Enhanced with video calls, camera sharing, chat messaging, and infinite canvas (Penney) mode. Updated privacy policy and terms to reflect new features.
 
 ## Open Source
 The project is open source on GitHub. Users can:
@@ -183,9 +193,18 @@ js/
 ├── collaboration/          # Collaboration modules
 │   ├── collaborationCore.js
 │   ├── dataConnection.js
-│   ├── videoCall.js
+│   ├── videoCall.js        # Video calls and camera sharing
+│   ├── chat.js             # Chat messaging system
 │   ├── messageHandler.js
+│   ├── messageSender.js
+│   ├── participantsPanel.js # Participants and video display
 │   └── ...
+├── penney/                 # Infinite canvas (Penney mode)
+│   ├── penneyMain.js
+│   ├── penneyCanvas.js
+│   ├── penneyDrawing.js
+│   └── ...
+├── camera.js                # Camera and video management
 ├── shapes/                 # Shape tools
 ├── stickers/               # Sticker system
 └── selection/              # Selection and manipulation
@@ -195,6 +214,14 @@ js/
 - Built with Electron
 - Screen capture capabilities
 - Overlay functionality
-- Same collaboration features as web app
+- Same collaboration features as web app (video, chat, drawing)
 - Runs on Windows, macOS, and Linux
+
+### Penney Page (Infinite Canvas)
+- Dedicated page for infinite canvas mode (penney.html)
+- Pan and zoom functionality for unlimited canvas space
+- All standard drawing tools available
+- Real-time collaboration support
+- Viewport controls for navigation
+- Optimized for large-scale projects and extensive brainstorming
 
