@@ -196,6 +196,9 @@ export function updateParticipantsPanel() {
         panel.classList.add('hidden');
     }
     
+    // Handle backdrop for mobile
+    updateBackdrop();
+    
     console.log('[updateParticipantsPanel] Panel classes after update:', panel.className);
     console.log('[updateParticipantsPanel] Panel has hidden class:', panel.classList.contains('hidden'));
     const computedStyle = window.getComputedStyle(panel);
@@ -207,6 +210,25 @@ export function updateParticipantsPanel() {
     
     // Setup panel resize if not already done
     setupPanelResize();
+    
+    // Setup backdrop if not already done
+    setupBackdrop();
+    
+    // Setup swipe-to-close if not already done
+    setupSwipeToClose();
+    
+    // Handle window resize to update backdrop
+    if (!window.participantsPanelResizeHandler) {
+        window.participantsPanelResizeHandler = () => {
+            updateBackdrop();
+            // Re-setup swipe if switching to mobile
+            const panel = document.getElementById('participants-panel');
+            if (panel && window.innerWidth <= 768 && panel.dataset.swipeSetup !== 'true') {
+                setupSwipeToClose();
+            }
+        };
+        window.addEventListener('resize', window.participantsPanelResizeHandler);
+    }
     
     // Ensure correct view is shown based on active tab
     const tabParticipants = document.getElementById('tab-participants');
@@ -477,10 +499,134 @@ function updateParticipantsButton() {
     }
 }
 
+// Update backdrop visibility for mobile
+function updateBackdrop() {
+    const backdrop = document.getElementById('participants-panel-backdrop');
+    const panel = document.getElementById('participants-panel');
+    
+    if (!backdrop || !panel) return;
+    
+    // Only show backdrop on mobile and when panel is visible
+    const isMobile = window.innerWidth <= 768;
+    const isPanelVisible = !panel.classList.contains('hidden') && state.participantsPanelVisible;
+    
+    if (isMobile && isPanelVisible && state.isCollaborating) {
+        backdrop.classList.remove('hidden');
+    } else {
+        backdrop.classList.add('hidden');
+    }
+}
+
+// Setup backdrop click handler
+function setupBackdrop() {
+    const backdrop = document.getElementById('participants-panel-backdrop');
+    if (!backdrop) return;
+    
+    // Check if already set up
+    if (backdrop.dataset.setup === 'true') {
+        return;
+    }
+    
+    backdrop.addEventListener('click', () => {
+        // Close panel when backdrop is clicked
+        if (state.isCollaborating && state.participantsPanelVisible) {
+            state.participantsPanelVisible = false;
+            updateParticipantsPanel();
+        }
+    });
+    
+    // Mark as set up
+    backdrop.dataset.setup = 'true';
+}
+
+// Setup swipe-to-close gesture for mobile
+function setupSwipeToClose() {
+    const panel = document.getElementById('participants-panel');
+    if (!panel) return;
+    
+    // Check if already set up
+    if (panel.dataset.swipeSetup === 'true') {
+        return;
+    }
+    
+    // Only enable on mobile
+    const isMobile = window.innerWidth <= 768;
+    if (!isMobile) {
+        return;
+    }
+    
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartTime = 0;
+    let isSwiping = false;
+    const SWIPE_THRESHOLD = 50;
+    const SWIPE_MAX_TIME = 500;
+    const SWIPE_MIN_DISTANCE = 30;
+    
+    panel.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchStartTime = Date.now();
+        isSwiping = false;
+    }, { passive: true });
+    
+    panel.addEventListener('touchmove', (e) => {
+        if (!touchStartX || !touchStartY) return;
+        
+        const currentX = e.touches[0].clientX;
+        const currentY = e.touches[0].clientY;
+        const deltaX = currentX - touchStartX;
+        const deltaY = currentY - touchStartY;
+        
+        // Only consider horizontal swipes
+        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
+            isSwiping = true;
+            // Allow some horizontal movement for swipe detection
+            // Don't prevent default to allow scrolling
+        }
+    }, { passive: true });
+    
+    panel.addEventListener('touchend', (e) => {
+        if (!touchStartX || !touchStartY || !isSwiping) {
+            touchStartX = 0;
+            touchStartY = 0;
+            return;
+        }
+        
+        const endX = e.changedTouches[0].clientX;
+        const endY = e.changedTouches[0].clientY;
+        const deltaX = endX - touchStartX;
+        const deltaY = endY - touchStartY;
+        const deltaTime = Date.now() - touchStartTime;
+        
+        // Check if it's a right-to-left swipe (closing gesture)
+        const isRightToLeft = deltaX < -SWIPE_THRESHOLD;
+        const isHorizontal = Math.abs(deltaX) > Math.abs(deltaY);
+        const isFastEnough = deltaTime < SWIPE_MAX_TIME;
+        const isFarEnough = Math.abs(deltaX) > SWIPE_MIN_DISTANCE;
+        
+        if (isRightToLeft && isHorizontal && isFastEnough && isFarEnough) {
+            // Close the panel
+            if (state.isCollaborating && state.participantsPanelVisible) {
+                state.participantsPanelVisible = false;
+                updateParticipantsPanel();
+            }
+        }
+        
+        touchStartX = 0;
+        touchStartY = 0;
+        isSwiping = false;
+    }, { passive: true });
+    
+    // Mark as set up
+    panel.dataset.swipeSetup = 'true';
+}
+
 // Make functions available globally
 window.updateParticipantsPanel = updateParticipantsPanel;
 window.updateParticipantCamera = updateParticipantCamera;
 window.setupTabs = setupTabs;
 window.setupPanelResize = setupPanelResize;
 window.updateParticipantsButton = updateParticipantsButton;
+window.updateBackdrop = updateBackdrop;
 

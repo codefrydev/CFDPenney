@@ -281,10 +281,6 @@
                     <i data-lucide="monitor" class="w-3.5 h-3.5"></i>
                     <span>Screen</span>
                 </button>
-                <button id="btn-mode-image" class="annotate-mode-btn px-3 py-1.5 rounded-md text-sm font-medium flex items-center space-x-1 transition-colors">
-                    <i data-lucide="image" class="w-3.5 h-3.5"></i>
-                    <span>Image</span>
-                </button>
                 <input type="file" id="file-input" class="hidden" accept="image/*">
             </div>
 
@@ -305,7 +301,7 @@
         </div>
 
         <!-- Right: Collaboration & Theme -->
-        <div class="flex items-center gap-2 sm:gap-2.5 md:gap-3">
+        <div class="flex items-center gap-1 sm:gap-2 md:gap-3">
             <!-- Connection Status -->
             <div id="connection-status" class="hidden flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm status-badge">
                 <div id="connection-dot" class="h-2 w-2 rounded-full status-dot"></div>
@@ -416,10 +412,6 @@
                 <button id="mobile-btn-mode-screen">
                     <i data-lucide="monitor"></i>
                     <span>Screen</span>
-                </button>
-                <button id="mobile-btn-mode-image">
-                    <i data-lucide="image"></i>
-                    <span>Image</span>
                 </button>
             </div>
             
@@ -636,13 +628,16 @@
             </div>
         </div>
         
+        <!-- Participants Panel Backdrop (Mobile) -->
+        <div id="participants-panel-backdrop" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-20 transition-opacity duration-300"></div>
+        
         <!-- Participants Panel (Teams-style, right side) -->
         <div id="participants-panel" class="hidden h-full w-80 bg-gray-800 border-l border-gray-700 z-30 flex flex-col shadow-2xl participants-panel" style="width: 320px;">
             <!-- Resize Handle -->
             <div id="participants-panel-resize-handle" class="participants-panel-resize-handle"></div>
             
             <!-- Tabs -->
-            <div class="flex border-b border-gray-700">
+            <div class="flex border-b border-gray-700 relative">
                 <button id="tab-participants" class="flex-1 px-4 py-3 text-sm font-medium text-gray-300 hover:text-white border-b-2 border-blue-500 transition-colors tab-active">
                     <i data-lucide="users-2" class="w-4 h-4 inline mr-2"></i>
                     Participants
@@ -651,6 +646,10 @@
                     <i data-lucide="message-square" class="w-4 h-4 inline mr-2"></i>
                     Chat
                     <span id="chat-unread-badge" class="hidden absolute top-1 right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+                </button>
+                <!-- Close Button (visible on mobile) -->
+                <button id="btn-close-participants" class="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-white transition-colors mobile-close-btn" title="Close panel">
+                    <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
             

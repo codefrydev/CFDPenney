@@ -158,8 +158,46 @@ body.resizing-panel * {
     display: none !important;
 }
 
+/* Backdrop Overlay */
+#participants-panel-backdrop {
+    opacity: 0;
+    pointer-events: none;
+}
+
+#participants-panel-backdrop:not(.hidden) {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* Close Button - Hidden on desktop, visible on mobile */
+.mobile-close-btn {
+    display: none;
+}
+
 /* Responsive participants panel */
 @media (max-width: 768px) {
+    /* Hide resize handle on mobile */
+    .participants-panel-resize-handle {
+        display: none !important;
+    }
+    
+    /* Show close button on mobile */
+    .mobile-close-btn {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Backdrop styles */
+    #participants-panel-backdrop {
+        display: block;
+    }
+    
+    #participants-panel-backdrop.hidden {
+        display: none;
+    }
+    
+    /* Panel styles - slide in from right */
     #participants-panel {
         position: fixed !important;
         width: 100% !important;
@@ -168,6 +206,23 @@ body.resizing-panel * {
         left: 0 !important;
         top: 0 !important;
         height: 100vh !important;
+        transform: translateX(100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-left: none;
+    }
+    
+    /* Panel visible state - slide in */
+    #participants-panel:not(.hidden) {
+        transform: translateX(0);
+    }
+    
+    /* Ensure panel is above backdrop */
+    #participants-panel {
+        z-index: 30 !important;
+    }
+    
+    #participants-panel-backdrop {
+        z-index: 25 !important;
     }
 }
 

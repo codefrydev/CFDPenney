@@ -35,8 +35,11 @@ export function updateConnectionStatus(isConnected, shareCode = null, statusText
         if (peerCount > 0 && state.isHosting) {
             const peerListText = peerList.map(id => id.substring(0, 8)).join(', ');
             textEl.title = `Connected peers: ${peerListText}`;
+            // Also add title to status badge for mobile (where text is hidden)
+            statusEl.title = `${displayText} - Room: ${shareCode || ''}`;
         } else {
             textEl.title = '';
+            statusEl.title = `${displayText}${shareCode ? ` - Room: ${shareCode}` : ''}`;
         }
         
         if (shareCode) {
@@ -56,8 +59,11 @@ export function updateConnectionStatus(isConnected, shareCode = null, statusText
     } else if (shareCode) {
         statusEl.classList.remove('hidden');
         dotEl.style.backgroundColor = '#f59e0b'; // yellow
-        textEl.textContent = statusText || (state.isHosting ? 'Waiting for peers...' : 'Waiting for peer...');
+        const waitingText = statusText || (state.isHosting ? 'Waiting for peers...' : 'Waiting for peer...');
+        textEl.textContent = waitingText;
         textEl.title = '';
+        // Add title to status badge for mobile
+        statusEl.title = `${waitingText} - Room: ${shareCode}`;
         codeEl.textContent = shareCode;
         codeEl.classList.remove('hidden');
         if (copyBtn) {
@@ -72,11 +78,14 @@ export function updateConnectionStatus(isConnected, shareCode = null, statusText
         dotEl.style.backgroundColor = '#3b82f6'; // blue for connecting
         textEl.textContent = statusText;
         textEl.title = '';
+        // Add title to status badge for mobile
+        statusEl.title = statusText;
         codeEl.classList.add('hidden');
         if (copyBtn) copyBtn.classList.add('hidden');
         btnEl.innerHTML = '<i data-lucide="users" class="w-4 h-4 inline mr-1"></i><span class="hidden sm:inline">Stop</span>';
     } else {
         statusEl.classList.add('hidden');
+        statusEl.title = '';
         codeEl.classList.add('hidden');
         if (copyBtn) copyBtn.classList.add('hidden');
         btnEl.innerHTML = '<i data-lucide="users" class="w-4 h-4 inline mr-1"></i><span class="hidden sm:inline">Collaborate</span>';
