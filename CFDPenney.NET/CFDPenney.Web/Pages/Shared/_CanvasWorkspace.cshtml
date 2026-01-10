@@ -1,0 +1,12 @@
+<!-- Floating Action Button (Mobile Only) -->
+<button id="mobile-fab" class="mobile-only fixed z-40 flex items-center justify-center">
+    <i data-lucide="palette" class="text-white"></i>
+</button>
+
+<!-- Main Workspace -->
+<div class="flex-1 relative overflow-hidden flex bg-primary" id="workspace-container">
+    @await Html.PartialAsync("Shared/_CanvasToolbar")
+    @await Html.PartialAsync("Shared/_CanvasArea")
+    @await Html.PartialAsync("Shared/_DeviceSelectionModal")
+    @await Html.PartialAsync("Shared/_ParticipantsPanel")
+</div>

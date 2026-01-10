@@ -1,0 +1,56 @@
+<!-- Device Selection Modal -->
+<div id="device-selection-modal-overlay" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div id="device-selection-modal" class="bg-gray-800 rounded-lg shadow-2xl border border-gray-700 w-full max-w-md" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-between p-4 border-b border-gray-700">
+            <h3 class="text-lg font-semibold text-white">Device Settings</h3>
+            <button id="btn-close-device-modal" class="p-2 hover:bg-gray-700 rounded-lg transition-colors">
+                <i data-lucide="x" class="w-5 h-5 text-gray-400"></i>
+            </button>
+        </div>
+        <div class="p-4 space-y-4">
+            <!-- Camera Selection -->
+            <div>
+                <label for="select-camera" class="block text-sm font-medium text-gray-300 mb-2">
+                    <i data-lucide="video" class="w-4 h-4 inline mr-1"></i>
+                    Camera
+                </label>
+                <select id="select-camera" class="w-full bg-gray-700 text-white rounded-lg px-3 py-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Loading cameras...</option>
+                </select>
+            </div>
+            
+            <!-- Microphone Selection -->
+            <div>
+                <label for="select-microphone" class="block text-sm font-medium text-gray-300 mb-2">
+                    <i data-lucide="mic" class="w-4 h-4 inline mr-1"></i>
+                    Microphone
+                </label>
+                <select id="select-microphone" class="w-full bg-gray-700 text-white rounded-lg px-3 py-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Loading microphones...</option>
+                </select>
+            </div>
+            
+            <!-- Speaker Selection -->
+            <div>
+                <label for="select-speaker" class="block text-sm font-medium text-gray-300 mb-2">
+                    <i data-lucide="volume-2" class="w-4 h-4 inline mr-1"></i>
+                    Speaker
+                </label>
+                <select id="select-speaker" class="w-full bg-gray-700 text-white rounded-lg px-3 py-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Loading speakers...</option>
+                </select>
+                <p class="text-xs text-gray-400 mt-1">Note: Speaker selection may not be supported in all browsers</p>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="flex gap-2 pt-2">
+                <button id="btn-apply-devices" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors font-medium">
+                    Apply
+                </button>
+                <button id="btn-cancel-devices" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,95 @@
+<!-- Canvas Area -->
+<div class="flex-1 relative overflow-hidden flex items-center justify-center canvas-container annotate-canvas-wrapper" id="canvas-wrapper">
+    <!-- Background Layer -->
+    <div id="background-layer" class="absolute inset-0 flex items-center justify-center pointer-events-none w-full h-full">
+        <!-- Whiteboard BG -->
+        <div id="bg-whiteboard" class="w-full h-full annotate-bg-whiteboard transition-colors duration-500"></div>
+        
+        <!-- Screen/Video BG -->
+        <div id="bg-screen" class="hidden w-full h-full relative">
+            <video id="screen-video" autoplay playsinline muted class="w-full h-full object-contain"></video>
+            
+            <div id="screen-placeholder" class="absolute inset-0 flex flex-col items-center justify-center annotate-placeholder bg-primary">
+                <i data-lucide="monitor" class="mb-4 opacity-50 w-16 h-16"></i>
+                <p class="text-xl font-medium">Click "Screen" to start sharing</p>
+            </div>
+
+            <!-- Screen Controls -->
+            <div id="screen-controls" class="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-2 pointer-events-auto backdrop-blur-sm p-2 rounded-full border shadow-2xl z-30 hidden annotate-controls">
+                <button id="btn-pause-video" class="p-2 hover:bg-white/10 rounded-full text-white transition-colors">
+                    <i id="icon-pause" data-lucide="pause" class="w-5 h-5"></i>
+                    <i id="icon-play" data-lucide="play" class="w-5 h-5 hidden"></i>
+                </button>
+                <div class="w-px my-1 divider-vertical"></div>
+                <button id="btn-stop-share" class="p-2 hover:bg-red-500/20 text-red-400 rounded-full transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div id="video-frozen-badge" class="absolute top-4 left-1/2 -translate-x-1/2 bg-yellow-500/90 text-black px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg hidden">
+                Video Frozen
+            </div>
+        </div>
+
+        <!-- Image BG -->
+        <div id="bg-image" class="hidden w-full h-full relative flex items-center justify-center">
+            <img id="uploaded-image" src="" class="max-w-full max-h-full object-contain select-none hidden" alt="Annotation Background">
+            <div id="image-placeholder" class="annotate-placeholder flex flex-col items-center">
+                <i data-lucide="image" class="mb-2 opacity-50 w-12 h-12"></i>
+                <span>No image selected</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Drawing Canvas -->
+    <canvas id="main-canvas" class="absolute inset-0 w-full h-full cursor-crosshair z-10"></canvas>
+
+    <!-- Text Input Overlay (Hidden by default) -->
+    <input type="text" id="text-tool-input" class="absolute z-20 bg-transparent border outline-none p-1 rounded shadow-lg min-w-[100px] hidden text-tool-input" placeholder="Type..." autocomplete="off">
+
+    <!-- Camera Video Overlay (Floating, like Teams) -->
+    <div id="camera-container" class="hidden fixed z-50 camera-window pointer-events-auto" style="bottom: 24px; right: 24px; width: 240px; height: 180px;">
+        <div class="camera-video-wrapper bg-gray-900 rounded-lg shadow-2xl overflow-hidden border border-gray-700 relative" style="width: 100%; height: 100%;">
+            <!-- Camera Video -->
+            <video id="camera-video" autoplay playsinline class="w-full h-full object-cover"></video>
+            
+            <!-- Resize Handle (bottom-right corner) -->
+            <div id="camera-resize-handle" class="absolute bottom-0 right-0 w-4 h-4 cursor-nwse-resize bg-white/20 hover:bg-white/40 transition-colors" style="border-top-left-radius: 8px;"></div>
+            
+            <!-- Camera Controls -->
+            <div id="camera-controls" class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 flex items-center justify-center gap-2">
+                <button id="btn-camera-mute" class="p-2 hover:bg-white/20 rounded-full text-white transition-colors" title="Toggle Audio">
+                    <i id="camera-icon-mute" data-lucide="mic-off" class="w-4 h-4"></i>
+                    <i id="camera-icon-unmute" data-lucide="mic" class="w-4 h-4 hidden"></i>
+                </button>
+                <button id="btn-camera-hide" class="p-2 hover:bg-white/20 rounded-full text-white transition-colors" title="Hide Video">
+                    <i id="camera-icon-hide" data-lucide="eye-off" class="w-4 h-4"></i>
+                    <i id="camera-icon-show" data-lucide="eye" class="w-4 h-4 hidden"></i>
+                </button>
+                <button id="btn-camera-settings" class="p-2 hover:bg-white/20 rounded-full text-white transition-colors" title="Device Settings">
+                    <i data-lucide="settings" class="w-4 h-4"></i>
+                </button>
+                <button id="btn-camera-maximize" class="p-2 hover:bg-white/20 rounded-full text-white transition-colors" title="Maximize">
+                    <i id="camera-icon-maximize" data-lucide="maximize-2" class="w-4 h-4"></i>
+                    <i id="camera-icon-restore" data-lucide="minimize-2" class="w-4 h-4 hidden"></i>
+                </button>
+                <button id="btn-camera-minimize" class="p-2 hover:bg-white/20 rounded-full text-white transition-colors" title="Minimize">
+                    <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                </button>
+                <button id="btn-camera-stop" class="p-2 hover:bg-red-500/20 text-red-400 rounded-full transition-colors" title="Stop Camera">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            
+            <!-- Minimized State Controls (shown when minimized) -->
+            <div id="camera-minimized-controls" class="absolute inset-0 flex items-center justify-center gap-2 bg-black/80 hidden">
+                <button id="btn-camera-restore" class="p-2 hover:bg-white/20 rounded-full text-white transition-colors" title="Restore">
+                    <i data-lucide="chevron-up" class="w-5 h-5"></i>
+                </button>
+                <button id="btn-camera-stop-minimized" class="p-2 hover:bg-red-500/20 text-red-400 rounded-full transition-colors" title="Stop Camera">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
