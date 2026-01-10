@@ -10,6 +10,7 @@
 .annotate-toolbar ::-webkit-scrollbar-track {
     background: var(--bg-secondary);
     border-radius: 3px;
+    margin: 0.25rem 0;
 }
 
 .annotate-toolbar ::-webkit-scrollbar-thumb {
@@ -19,7 +20,8 @@
 }
 
 .annotate-toolbar ::-webkit-scrollbar-thumb:hover {
-    background: var(--border-tertiary);
+    background: var(--accent-primary);
+    box-shadow: 0 0 4px rgba(37, 99, 235, 0.3);
 }
 
 /* Theme-aware colors */
@@ -36,6 +38,11 @@
     border-right: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow), var(--shadow-lg);
     transition: all var(--transition-base);
+    padding: 1.25rem 0.5rem;
+}
+
+.annotate-toolbar:hover {
+    box-shadow: var(--glass-shadow), var(--shadow-xl);
 }
 
 /* Tool Buttons */
@@ -46,6 +53,7 @@
     overflow: hidden;
     border-radius: 12px;
     background: transparent;
+    margin: 0.125rem;
 }
 
 .annotate-tool-btn::before {
@@ -63,8 +71,9 @@
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     color: var(--text-primary);
-    transform: scale(1.1);
+    transform: scale(1.08);
     box-shadow: var(--shadow-md);
+    border: 1px solid var(--glass-border);
 }
 
 .annotate-tool-btn:active {
@@ -75,9 +84,10 @@
     background: var(--button-primary-bg);
     color: var(--text-inverse);
     box-shadow: var(--shadow-colored);
-    transform: scale(1.15);
+    transform: scale(1.1);
     border: 2px solid transparent;
     background-clip: padding-box;
+    margin: 0.125rem;
 }
 
 .annotate-tool-btn-active::before {
@@ -96,7 +106,7 @@
 .annotate-tool-btn-active:hover {
     background: var(--button-primary-hover);
     box-shadow: var(--shadow-colored-lg);
-    transform: scale(1.18);
+    transform: scale(1.12);
 }
 
 /* Mode Buttons */
@@ -203,32 +213,39 @@ input[type=range]:hover::-webkit-slider-runnable-track {
 
 /* Color Swatches */
 .color-btn {
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     border-width: 2px;
     border-radius: 50% !important;
     width: 32px;
     height: 32px;
     position: relative;
     border-color: transparent;
+    margin: 0.125rem;
 }
 
 .color-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 12px rgba(0, 0, 0, 0.15);
+    transform: scale(1.15);
+    box-shadow: 0 0 16px rgba(0, 0, 0, 0.2), 0 0 0 2px var(--bg-primary);
     z-index: 10;
 }
 
 .color-btn.border-white {
     border-color: var(--accent-blue);
     border-width: 3px;
-    box-shadow: var(--shadow-sm);
-    transform: scale(1.1);
+    box-shadow: var(--shadow-md), 0 0 0 2px var(--bg-primary);
+    transform: scale(1.15);
 }
 
 /* Stroke Indicator */
 #stroke-indicator {
     transition: all var(--transition-base);
     box-shadow: var(--shadow-sm), 0 0 8px rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+}
+
+.annotate-toolbar .group:hover #stroke-indicator {
+    box-shadow: var(--shadow-md), 0 0 12px rgba(255, 255, 255, 0.4);
+    transform: scale(1.1);
 }
 
 /* Stroke Control Panel */
@@ -237,23 +254,37 @@ input[type=range]:hover::-webkit-slider-runnable-track {
     backdrop-filter: var(--backdrop-blur);
     -webkit-backdrop-filter: var(--backdrop-blur);
     border-color: var(--glass-border);
+    box-shadow: var(--glass-shadow), var(--shadow-lg);
+    animation: slideIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 /* Fill Controls */
 #fill-controls button {
     color: var(--text-secondary);
     transition: all var(--transition-base);
+    margin: 0.125rem;
 }
 
 #fill-controls button:hover {
     background-color: var(--bg-tertiary);
     color: var(--text-primary);
-    transform: translateY(-1px);
+    transform: scale(1.08);
     box-shadow: var(--shadow-md);
 }
 
 #fill-controls button:active {
-    transform: translateY(0) scale(0.98);
+    transform: scale(0.95);
 }
 
 #fill-toggle.bg-indigo-600 {
@@ -266,13 +297,18 @@ input[type=range]:hover::-webkit-slider-runnable-track {
 #fill-toggle.bg-indigo-600:hover {
     background: var(--button-primary-hover) !important;
     box-shadow: var(--shadow-colored-lg) !important;
-    transform: scale(1.08) translateY(-1px) !important;
+    transform: scale(1.1) !important;
 }
 
 /* Divider */
 .divider-horizontal {
     background: linear-gradient(to right, transparent, var(--border-primary), transparent);
-    opacity: 0.6;
+    opacity: 0.5;
+    transition: opacity var(--transition-base);
+}
+
+.annotate-toolbar:hover .divider-horizontal {
+    opacity: 0.7;
 }
 
 /* Footer */
@@ -280,5 +316,36 @@ input[type=range]:hover::-webkit-slider-runnable-track {
     background-color: var(--bg-secondary);
     border-color: var(--border-primary);
     color: var(--text-tertiary);
+}
+
+/* Footer Styles */
+.footer-main {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-primary);
+    transition: background-color var(--transition-slow), border-color var(--transition-slow);
+}
+
+.footer-link {
+    color: var(--text-tertiary);
+    transition: all var(--transition-base);
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    text-decoration: none;
+}
+
+.footer-link:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-tertiary);
+    transform: translateY(-1px);
+}
+
+.footer-link:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.footer-separator {
+    color: var(--text-tertiary);
+    opacity: 0.5;
+    user-select: none;
 }
 

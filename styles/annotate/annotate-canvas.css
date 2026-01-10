@@ -14,9 +14,10 @@
 /* Canvas Wrapper */
 .annotate-canvas-wrapper {
     background-color: var(--bg-primary);
-    transition: background-color var(--transition-base);
+    transition: background-color var(--transition-slow);
     flex: 1;
     min-width: 0; /* Allows flex item to shrink below content size */
+    position: relative;
 }
 
 /* Background Styles */
@@ -25,8 +26,13 @@
     background-image: radial-gradient(circle, var(--border-primary) 1px, transparent 1px);
     background-size: 24px 24px;
     background-position: 0 0, 12px 12px;
-    transition: background-color var(--transition-base);
+    transition: background-color var(--transition-slow), background-image var(--transition-slow);
     position: relative;
+    opacity: 0.6;
+}
+
+[data-theme="dark"] .annotate-bg-whiteboard {
+    opacity: 0.4;
 }
 
 .annotate-bg-whiteboard::before {
@@ -35,8 +41,13 @@
     inset: 0;
     background: radial-gradient(circle at top left, var(--accent-blue) 0%, transparent 50%),
                 radial-gradient(circle at bottom right, var(--accent-purple) 0%, transparent 50%);
-    opacity: 0.02;
+    opacity: 0.03;
     pointer-events: none;
+    transition: opacity var(--transition-slow);
+}
+
+.annotate-canvas-wrapper:hover .annotate-bg-whiteboard::before {
+    opacity: 0.05;
 }
 
 .annotate-bg-screen {
@@ -97,12 +108,14 @@
     -webkit-backdrop-filter: var(--backdrop-blur);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow), var(--shadow-lg);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all var(--transition-base);
+    animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .annotate-controls:hover {
     box-shadow: var(--glass-shadow), var(--shadow-xl);
-    transform: translateY(-2px);
+    transform: translateY(-3px);
+    background: var(--bg-tertiary);
 }
 
 /* Screen Controls Enhancement */
@@ -155,12 +168,14 @@
     border-radius: 0.5rem;
     padding: 0.5rem 0.75rem;
     font-weight: 500;
+    border: 2px solid var(--accent-primary);
 }
 
 .text-tool-input:focus {
     outline: none;
     box-shadow: var(--shadow-xl), 0 0 0 3px var(--input-border-focus-glow);
     transform: scale(1.02);
+    border-color: var(--accent-primary-hover);
 }
 
 /* Connection Status Dot Colors */

@@ -85,7 +85,7 @@
 .btn-secondary:hover {
     background-color: var(--button-secondary-hover);
     border-color: var(--button-secondary-hover-border);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
     box-shadow: var(--shadow-md);
 }
 
@@ -113,8 +113,9 @@
 
 .btn-action:hover:not(:disabled) {
     background-color: var(--bg-tertiary);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    color: var(--text-primary);
 }
 
 .btn-action:active:not(:disabled) {
@@ -152,8 +153,8 @@
 .btn-clear:hover {
     background-color: var(--status-error-bg);
     color: var(--status-error);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 
 .btn-clear:hover::before {

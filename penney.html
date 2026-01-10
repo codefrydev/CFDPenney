@@ -237,11 +237,11 @@
                 <span class="hidden sm:inline">Participants</span>
             </button>
             <!-- Viewport Controls -->
-            <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm bg-gray-700/50">
-                <button id="btn-reset-view" class="p-1 rounded hover:bg-gray-600 transition-colors" title="Reset View">
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm viewport-controls">
+                <button id="btn-reset-view" class="p-1 rounded reset-view-btn transition-all" title="Reset View">
                     <i data-lucide="maximize-2" class="w-4 h-4"></i>
                 </button>
-                <span id="zoom-indicator" class="text-xs font-mono">100%</span>
+                <span id="zoom-indicator" class="text-xs font-mono zoom-indicator-text">100%</span>
             </div>
             <button id="theme-toggle" onclick="app.toggleTheme()" class="theme-toggle-btn flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg transition-all active:scale-95" title="Toggle theme">
                 <i data-lucide="sun" class="w-5 h-5 theme-icon-light"></i>
@@ -566,16 +566,16 @@
     </div>
 
     <!-- Footer -->
-    <footer class="border-t border-gray-700 bg-gray-800 py-3 px-4 flex items-center justify-center gap-4 text-sm text-gray-400 shrink-0">
-        <a href="index.html" class="hover:text-white transition-colors">Home</a>
-        <span class="text-gray-600">•</span>
-        <a href="llms.txt" target="_blank" class="hover:text-white transition-colors">Documentation (Summary)</a>
-        <span class="text-gray-600">•</span>
-        <a href="llms-full.txt" target="_blank" class="hover:text-white transition-colors">Full Documentation</a>
-        <span class="text-gray-600">•</span>
-        <a href="privacy.html" class="hover:text-white transition-colors">Privacy</a>
-        <span class="text-gray-600">•</span>
-        <a href="terms.html" class="hover:text-white transition-colors">Terms</a>
+    <footer class="border-t footer-main py-3 px-4 flex items-center justify-center gap-4 text-sm shrink-0">
+        <a href="index.html" class="footer-link">Home</a>
+        <span class="footer-separator">•</span>
+        <a href="llms.txt" target="_blank" class="footer-link">Documentation (Summary)</a>
+        <span class="footer-separator">•</span>
+        <a href="llms-full.txt" target="_blank" class="footer-link">Full Documentation</a>
+        <span class="footer-separator">•</span>
+        <a href="privacy.html" class="footer-link">Privacy</a>
+        <span class="footer-separator">•</span>
+        <a href="terms.html" class="footer-link">Terms</a>
     </footer>
 
     <script type="module" src="js/penney/penneyMain.js"></script>
