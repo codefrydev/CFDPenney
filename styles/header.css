@@ -13,6 +13,10 @@
     position: relative;
 }
 
+.header-main:hover {
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+}
+
 .header-main::after {
     content: '';
     position: absolute;
@@ -48,8 +52,9 @@
 
 .theme-toggle-btn:hover {
     background-color: var(--bg-tertiary);
-    transform: scale(1.05);
-    box-shadow: var(--shadow-sm);
+    transform: scale(1.08);
+    box-shadow: var(--shadow-md);
+    color: var(--text-primary);
 }
 
 .theme-toggle-btn:active {
@@ -88,7 +93,13 @@
 .theme-icon-light,
 .theme-icon-dark {
     color: var(--text-secondary);
-    transition: color 0.3s ease;
+    transition: color var(--transition-base), transform var(--transition-base);
+}
+
+.theme-toggle-btn:hover .theme-icon-light,
+.theme-toggle-btn:hover .theme-icon-dark {
+    color: var(--text-primary);
+    transform: rotate(15deg);
 }
 
 [data-theme="dark"] .theme-icon-light {
@@ -385,8 +396,9 @@
 
 .btn-action:hover:not(:disabled) {
     background-color: var(--bg-tertiary);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    color: var(--text-primary);
 }
 
 .btn-action:active:not(:disabled) {
@@ -396,6 +408,7 @@
 .btn-action:disabled {
     opacity: 0.4;
     cursor: not-allowed;
+    background-color: transparent;
 }
 
 /* Snapshot Button - Primary Theme Color */
@@ -443,9 +456,26 @@
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
     border-color: var(--accent-primary);
+    background-color: var(--button-secondary-hover);
 }
 
 #btn-collaborate:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* Participants Button */
+#btn-participants {
+    transition: all var(--transition-base);
+}
+
+#btn-participants:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--accent-primary);
+    background-color: var(--button-secondary-hover);
+}
+
+#btn-participants:active {
     transform: translateY(0) scale(0.98);
 }
 
@@ -461,6 +491,7 @@
 .status-badge:hover {
     box-shadow: var(--shadow-md);
     transform: translateY(-1px);
+    background: var(--bg-tertiary);
 }
 
 .status-dot {
@@ -512,5 +543,41 @@
 .header-main h1:hover span:last-child {
     transform: rotate(-2deg) scale(1.05);
     box-shadow: var(--shadow-pink);
+}
+
+/* Viewport Controls Styling */
+.viewport-controls {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    transition: all var(--transition-base);
+}
+
+.viewport-controls:hover {
+    box-shadow: var(--shadow-sm);
+    background: var(--bg-tertiary);
+}
+
+.reset-view-btn {
+    color: var(--text-secondary);
+    transition: all var(--transition-base);
+}
+
+.reset-view-btn:hover {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    transform: scale(1.1);
+}
+
+.reset-view-btn:active {
+    transform: scale(0.95);
+}
+
+.zoom-indicator-text {
+    color: var(--text-secondary);
+    font-weight: 500;
+    min-width: 3rem;
+    text-align: center;
 }
 

@@ -5,9 +5,9 @@
 /* Collaboration Modal - Enhanced Glassmorphism */
 #collaboration-modal-overlay {
     animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background: rgba(0, 0, 0, 0.65);
 }
 
 #collaboration-modal {
@@ -66,9 +66,10 @@
 }
 
 #btn-host-session:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-xl);
     border-color: var(--accent-blue);
+    background: var(--bg-secondary);
 }
 
 #btn-host-session:hover::before {
@@ -154,6 +155,7 @@
 .modal-input:hover:not(:focus) {
     border-color: var(--border-secondary);
     box-shadow: var(--shadow-sm);
+    background: var(--input-bg);
 }
 
 .modal-input:focus {
@@ -183,8 +185,8 @@
 
 .modal-join-btn:hover {
     background: var(--button-primary-hover);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-colored);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-colored-lg);
 }
 
 .modal-join-btn:hover::before {
@@ -236,8 +238,8 @@
 
 .popup-modal-btn-primary:hover {
     background: var(--button-primary-hover);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-colored);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-colored-lg);
 }
 
 .popup-modal-btn-primary:active {
@@ -259,8 +261,8 @@
 .popup-modal-btn-secondary:hover {
     background-color: var(--bg-secondary);
     border-color: var(--border-secondary);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
 }
 
 .popup-modal-btn-secondary:active {

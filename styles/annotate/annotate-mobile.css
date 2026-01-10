@@ -14,12 +14,17 @@
     height: 56px;
     border-radius: 50%;
     overflow: hidden;
-    transition: all 0.2s ease;
+    transition: all var(--transition-base);
     border: none;
     cursor: pointer;
     z-index: 40;
     will-change: transform;
     -webkit-tap-highlight-color: transparent;
+}
+
+#mobile-fab:hover {
+    box-shadow: var(--shadow-xl);
+    transform: scale(1.05);
 }
 
 #mobile-fab:active {
@@ -65,6 +70,7 @@
     /* Visible state */
     .annotate-toolbar.mobile-visible {
         transform: translateY(0);
+        box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.25);
     }
     
     /* Add header to mobile toolbar - Smaller handle */
@@ -147,9 +153,16 @@
         gap: 0;
         font-size: 0.625rem;
         cursor: pointer;
-        border-radius: 8px;
+        border-radius: 10px;
         -webkit-tap-highlight-color: transparent;
         will-change: transform, background-color;
+        transition: all var(--transition-base);
+        margin: 0.125rem;
+    }
+    
+    #mobile-tool-container .annotate-tool-btn:active,
+    #tool-container .annotate-tool-btn:active {
+        transform: scale(0.94);
     }
     
     #mobile-tool-container .annotate-tool-btn i,
@@ -177,6 +190,13 @@
         cursor: pointer;
         -webkit-tap-highlight-color: transparent;
         will-change: transform, border-color;
+        transition: all var(--transition-base);
+        margin: 0.125rem;
+    }
+    
+    #mobile-color-container .color-btn:active,
+    #color-container .color-btn:active {
+        transform: scale(0.9);
     }
     
     /* Custom color picker */
@@ -220,12 +240,19 @@
     #mobile-btn-undo,
     #mobile-btn-redo {
         padding: 0.625rem 0.75rem;
+        transition: all var(--transition-base);
+    }
+    
+    #mobile-btn-undo:active:not(:disabled),
+    #mobile-btn-redo:active:not(:disabled) {
+        transform: scale(0.96);
     }
     
     #mobile-btn-undo:disabled,
     #mobile-btn-redo:disabled {
         opacity: 0.4;
         cursor: not-allowed;
+        background-color: transparent;
     }
     
     #mobile-btn-snapshot {
@@ -237,11 +264,13 @@
     }
     
     #mobile-btn-snapshot:hover {
-        filter: brightness(1.05);
+        filter: brightness(1.1);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
     }
     
     #mobile-btn-snapshot:active {
-        transform: scale(0.96);
+        transform: scale(0.96) translateY(0);
         box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
     }
     
