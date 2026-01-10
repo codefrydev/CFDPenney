@@ -1,4 +1,7 @@
-<div id="chat-details-panel" class="chat-details-panel hidden">
+@model ChatModel
+@using CFDPenney.Web.Models
+
+<div id="chat-details-panel" class="chat-details-panel @(Model.SelectedConversation == null ? "hidden" : "")">
     <div class="chat-details-header">
         <h3 class="chat-details-title">Details</h3>
         <button id="btn-close-details" class="chat-close-button" title="Close">
@@ -6,40 +9,69 @@
         </button>
     </div>
     
-    <div class="chat-details-content">
-        <div id="chat-session-details" class="chat-details-section">
-            <h4 class="chat-details-section-title">Session Information</h4>
-            <div class="chat-details-item">
-                <span class="chat-details-label">Session Code:</span>
-                <div class="chat-details-value-group">
-                    <span id="chat-details-code" class="chat-details-code">-</span>
-                    <button id="btn-copy-session-code" class="chat-copy-button" title="Copy code">
-                        <i data-lucide="copy" class="w-4 h-4"></i>
-                    </button>
+    @if (Model.SelectedConversation != null)
+    {
+        <div class="chat-details-content">
+            <div id="chat-session-details" class="chat-details-section">
+                <h4 class="chat-details-section-title">Conversation Information</h4>
+                <div class="chat-details-item">
+                    <span class="chat-details-label">Name:</span>
+                    <span class="chat-details-value">@Model.SelectedConversation.Name</span>
+                </div>
+                <div class="chat-details-item">
+                    <span class="chat-details-label">Type:</span>
+                    <span class="chat-details-value">@(Model.SelectedConversation.Type == ConversationType.Personal ? "Personal" : "Group")</span>
+                </div>
+                <div class="chat-details-item">
+                    <span class="chat-details-label">Created:</span>
+                    <span class="chat-details-value">@Model.SelectedConversation.CreatedAt.ToString("MMM d, yyyy")</span>
+                </div>
+                <div class="chat-details-item">
+                    <span class="chat-details-label">Participants:</span>
+                    <span class="chat-details-value">@Model.SelectedConversation.Participants.Count</span>
                 </div>
             </div>
-            <div class="chat-details-item">
-                <span class="chat-details-label">Created:</span>
-                <span id="chat-details-created" class="chat-details-value">-</span>
-            </div>
-            <div class="chat-details-item">
-                <span class="chat-details-label">Participants:</span>
-                <span id="chat-details-participant-count" class="chat-details-value">0</span>
+            
+            <div id="chat-participants-details" class="chat-details-section">
+                <h4 class="chat-details-section-title">Participants</h4>
+                <div id="chat-details-participants-list" class="chat-participants-list">
+                    @if (Model.SelectedConversation.Participants == null || !Model.SelectedConversation.Participants.Any())
+                    {
+                        <p class="chat-empty-text">No participants</p>
+                    }
+                    else
+                    {
+                        @foreach (var participant in Model.SelectedConversation.Participants)
+                        {
+                            <div class="chat-participant-item">
+                                <div class="chat-participant-avatar" style="background-color: @participant.User.GetAvatarColor();">
+                                    @participant.User.GetInitials()
+                                    @if (participant.User.Presence?.Status == PresenceStatus.Online)
+                                    {
+                                        <div class="chat-presence-dot online"></div>
+                                    }
+                                </div>
+                                <div class="chat-participant-name">@participant.User.DisplayName</div>
+                                @if (participant.Role == ParticipantRole.Owner)
+                                {
+                                    <span class="chat-participant-role">Owner</span>
+                                }
+                                else if (participant.Role == ParticipantRole.Admin)
+                                {
+                                    <span class="chat-participant-role">Admin</span>
+                                }
+                            </div>
+                        }
+                    }
+                </div>
             </div>
         </div>
-        
-        <div id="chat-participants-details" class="chat-details-section">
-            <h4 class="chat-details-section-title">Participants</h4>
-            <div id="chat-details-participants-list" class="chat-participants-list">
-                <p class="chat-empty-text">No participants</p>
-            </div>
+    }
+    else
+    {
+        <div class="chat-details-content">
+            <p class="chat-empty-text">Select a conversation to view details</p>
         </div>
-        
-        <div class="chat-details-actions">
-            <button id="btn-leave-session" class="chat-leave-button">
-                <i data-lucide="log-out" class="w-4 h-4"></i>
-                Leave Session
-            </button>
-        </div>
-    </div>
+    }
 </div>
+

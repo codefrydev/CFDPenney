@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace CFDPenney.Web.Pages;
 
+[AllowAnonymous]
 public class SignOutModel : PageModel
 {
     private readonly ILogger<SignOutModel> _logger;
@@ -23,7 +25,7 @@ public class SignOutModel : PageModel
             _logger.LogInformation("User {Username} signed out", username);
         }
 
-        return RedirectToPage("/Index");
+        return RedirectToPage("/SignIn");
     }
 
     public async Task<IActionResult> OnPostAsync()
@@ -35,6 +37,6 @@ public class SignOutModel : PageModel
             _logger.LogInformation("User {Username} signed out", username);
         }
 
-        return RedirectToPage("/Index");
+        return RedirectToPage("/SignIn");
     }
 }

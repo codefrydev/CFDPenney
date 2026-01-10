@@ -8,6 +8,8 @@ public interface IUserService
 {
     User? ValidateUser(string username, string password);
     User? GetUserByUsername(string username);
+    User? GetUserById(string userId);
+    List<User> GetAllUsers();
 }
 
 public class UserService : IUserService
@@ -16,7 +18,7 @@ public class UserService : IUserService
 
     public UserService()
     {
-        // Initialize with 2-3 test users
+        // Initialize with test users
         _users = new List<User>
         {
             new User
@@ -24,21 +26,45 @@ public class UserService : IUserService
                 Id = 1,
                 Username = "testuser1",
                 Password = HashPassword("password1"),
-                Email = "testuser1@example.com"
+                Email = "testuser1@example.com",
+                DisplayName = "Alice Johnson",
+                Status = "Available"
             },
             new User
             {
                 Id = 2,
                 Username = "testuser2",
                 Password = HashPassword("password2"),
-                Email = "testuser2@example.com"
+                Email = "testuser2@example.com",
+                DisplayName = "Bob Smith",
+                Status = "In a meeting"
             },
             new User
             {
                 Id = 3,
                 Username = "admin",
                 Password = HashPassword("admin123"),
-                Email = "admin@example.com"
+                Email = "admin@example.com",
+                DisplayName = "Administrator",
+                Status = "Available"
+            },
+            new User
+            {
+                Id = 4,
+                Username = "developer",
+                Password = HashPassword("dev123"),
+                Email = "developer@example.com",
+                DisplayName = "Charlie Developer",
+                Status = "Away"
+            },
+            new User
+            {
+                Id = 5,
+                Username = "designer",
+                Password = HashPassword("design123"),
+                Email = "designer@example.com",
+                DisplayName = "Diana Designer",
+                Status = "Available"
             }
         };
     }
@@ -56,6 +82,20 @@ public class UserService : IUserService
     public User? GetUserByUsername(string username)
     {
         return _users.FirstOrDefault(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
+    }
+
+    public User? GetUserById(string userId)
+    {
+        if (int.TryParse(userId, out var id))
+        {
+            return _users.FirstOrDefault(u => u.Id == id);
+        }
+        return null;
+    }
+
+    public List<User> GetAllUsers()
+    {
+        return _users.ToList();
     }
 
     private static string HashPassword(string password)

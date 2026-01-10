@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Authorization;
 using CFDPenney.Web.Models;
 using CFDPenney.Web.Services;
 
 namespace CFDPenney.Web.Hubs;
 
+[Authorize]
 public class CollaborationHub : Hub
 {
     private readonly ISessionService _sessionService;

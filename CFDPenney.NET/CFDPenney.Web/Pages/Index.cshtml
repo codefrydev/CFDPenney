@@ -41,14 +41,28 @@
                 </p>
                 
                 <div class="btn-group">
-                    <a href="/Chat" class="btn-primary" style="text-decoration: none; border: none; cursor: pointer; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
-                        <i class="fas fa-comments"></i>
-                        <span>Open Teams-Style Chat</span>
-                    </a>
-                    <a href="/Canvas" class="btn-secondary">
-                        <i class="fas fa-globe" style="color:#94a3b8;"></i>
-                        Open Whiteboard
-                    </a>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <a href="/Chat" class="btn-primary" style="text-decoration: none; border: none; cursor: pointer; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                            <i class="fas fa-comments"></i>
+                            <span>Open Teams-Style Chat</span>
+                        </a>
+                        <a href="/Canvas" class="btn-secondary">
+                            <i class="fas fa-globe" style="color:#94a3b8;"></i>
+                            Open Whiteboard
+                        </a>
+                    }
+                    else
+                    {
+                        <a href="/SignIn" class="btn-primary" style="text-decoration: none; border: none; cursor: pointer; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Sign In to Continue</span>
+                        </a>
+                        <a href="/SignIn" class="btn-secondary">
+                            <i class="fas fa-user-plus"></i>
+                            Get Started
+                        </a>
+                    }
                 </div>
             </div>
 

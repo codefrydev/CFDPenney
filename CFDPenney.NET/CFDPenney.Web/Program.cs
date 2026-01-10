@@ -7,8 +7,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddSignalR();
-builder.Services.AddSingleton<ISessionService, SessionService>();
+// Register services in dependency order
 builder.Services.AddSingleton<IUserService, UserService>();
+builder.Services.AddSingleton<IPresenceService, PresenceService>();
+builder.Services.AddSingleton<IChatService, ChatService>();
+builder.Services.AddSingleton<ISessionService, SessionService>();
+builder.Services.AddSingleton<ICallService, CallService>();
 builder.Services.AddHostedService<SessionCleanupService>();
 
 // Configure authentication
@@ -23,7 +27,13 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
     });
 
-builder.Services.AddAuthorization();
+// Configure authorization - require authentication by default for all pages
+builder.Services.AddAuthorization(options =>
+{
+    // Set fallback policy to require authentication
+    // Pages with [AllowAnonymous] will override this
+    options.FallbackPolicy = options.DefaultPolicy;
+});
 
 var app = builder.Build();
 
@@ -55,7 +65,8 @@ app.MapStaticAssets();
 app.MapRazorPages()
    .WithStaticAssets();
 
-// Map SignalR hub
+// Map SignalR hubs
 app.MapHub<CollaborationHub>("/collaborationHub");
+app.MapHub<ChatHub>("/chatHub");
 
 app.Run();
