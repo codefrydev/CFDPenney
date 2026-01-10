@@ -1,0 +1,70 @@
+<div id="chat-messages-panel" class="chat-messages-panel">
+    <div id="chat-messages-header" class="chat-messages-header">
+        <div class="chat-messages-header-info">
+            <div id="chat-session-info" class="chat-session-info">
+                <h3 id="chat-session-title" class="chat-session-title">Select a conversation</h3>
+                <p id="chat-session-subtitle" class="chat-session-subtitle"></p>
+            </div>
+        </div>
+        <button id="btn-toggle-details" class="chat-header-button" title="Show Details">
+            <i data-lucide="info" class="w-5 h-5"></i>
+        </button>
+    </div>
+    
+    <div id="chat-messages-container" class="chat-messages-container">
+        <div id="chat-messages" class="chat-messages">
+            <div class="chat-empty-messages">
+                <i data-lucide="message-circle" class="w-16 h-16 text-gray-500 mb-4"></i>
+                <p class="text-gray-400 text-lg">Select a conversation to start messaging</p>
+            </div>
+        </div>
+        
+        <div id="chat-typing-indicator" class="chat-typing-indicator hidden">
+            <div class="chat-typing-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <span id="chat-typing-text" class="chat-typing-text"></span>
+        </div>
+    </div>
+    
+    <div id="chat-input-area" class="chat-input-area">
+        <div id="chat-file-preview" class="chat-file-preview hidden">
+            <div class="chat-file-preview-content">
+                <div class="chat-file-preview-info">
+                    <i data-lucide="file" class="w-4 h-4 text-gray-400"></i>
+                    <span id="chat-file-name" class="chat-file-name"></span>
+                    <span id="chat-file-size" class="chat-file-size"></span>
+                </div>
+                <button id="chat-file-remove" class="chat-file-remove">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <img id="chat-file-preview-img" class="chat-file-preview-img hidden" alt="Preview">
+        </div>
+        
+        <div class="chat-input-container">
+            <button id="chat-emoji-btn" class="chat-input-button" title="Add emoji">
+                <i data-lucide="smile" class="w-5 h-5"></i>
+            </button>
+            
+            <button id="chat-file-btn" class="chat-input-button" title="Attach file">
+                <i data-lucide="paperclip" class="w-5 h-5"></i>
+            </button>
+            <input type="file" id="chat-file-input" class="hidden" accept="image/*,application/pdf,.doc,.docx,.txt">
+            
+            <div class="chat-input-wrapper">
+                <textarea id="chat-input" rows="1" placeholder="Type a message..." class="chat-input"></textarea>
+            </div>
+            
+            <button id="chat-send-btn" class="chat-send-button" title="Send message">
+                <i data-lucide="send" class="w-5 h-5"></i>
+            </button>
+        </div>
+        
+        <div id="emoji-picker" class="chat-emoji-picker hidden">
+            <div class="chat-emoji-grid"></div>
+        </div>
+    </div>
+</div>

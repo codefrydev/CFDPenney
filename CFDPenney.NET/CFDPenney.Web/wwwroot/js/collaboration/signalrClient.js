@@ -14,7 +14,9 @@ let connectionCallbacks = {
     onStateUpdate: null,
     onParticipantJoined: null,
     onParticipantLeft: null,
-    onSessionJoined: null
+    onSessionJoined: null,
+    onTypingIndicator: null,
+    onTypingStopped: null
 };
 
 export function initializeSignalR() {
@@ -92,6 +94,18 @@ export function initializeSignalR() {
         }
     });
 
+    connection.on("TypingIndicator", (data) => {
+        if (connectionCallbacks.onTypingIndicator) {
+            connectionCallbacks.onTypingIndicator(data);
+        }
+    });
+
+    connection.on("TypingStopped", (data) => {
+        if (connectionCallbacks.onTypingStopped) {
+            connectionCallbacks.onTypingStopped(data);
+        }
+    });
+
     return connection;
 }
 
@@ -100,25 +114,76 @@ export async function startConnection() {
         initializeSignalR();
     }
 
+    // If already connected, return immediately
     if (connection.state === signalR.HubConnectionState.Connected) {
         return connection;
     }
 
-    try {
-        await connection.start();
-        isConnected = true;
-        console.log('[SignalR] Connected');
-        if (connectionCallbacks.onOpen) {
-            connectionCallbacks.onOpen(connection.connectionId);
-        }
-        return connection;
-    } catch (err) {
-        console.error('[SignalR] Connection error:', err);
-        if (connectionCallbacks.onError) {
-            connectionCallbacks.onError(err);
-        }
-        throw err;
+    // If already connecting, wait for it to complete
+    if (connection.state === signalR.HubConnectionState.Connecting) {
+        // Wait for connection to complete or fail
+        return new Promise((resolve, reject) => {
+            const checkConnection = setInterval(() => {
+                if (connection.state === signalR.HubConnectionState.Connected) {
+                    clearInterval(checkConnection);
+                    resolve(connection);
+                } else if (connection.state === signalR.HubConnectionState.Disconnected) {
+                    clearInterval(checkConnection);
+                    // Try starting again
+                    connection.start()
+                        .then(() => {
+                            isConnected = true;
+                            console.log('[SignalR] Connected');
+                            if (connectionCallbacks.onOpen) {
+                                connectionCallbacks.onOpen(connection.connectionId);
+                            }
+                            resolve(connection);
+                        })
+                        .catch(reject);
+                }
+            }, 100);
+            
+            // Timeout after 10 seconds
+            setTimeout(() => {
+                clearInterval(checkConnection);
+                reject(new Error('Connection timeout'));
+            }, 10000);
+        });
     }
+
+    // Only start if disconnected
+    if (connection.state === signalR.HubConnectionState.Disconnected) {
+        try {
+            await connection.start();
+            isConnected = true;
+            console.log('[SignalR] Connected');
+            if (connectionCallbacks.onOpen) {
+                connectionCallbacks.onOpen(connection.connectionId);
+            }
+            return connection;
+        } catch (err) {
+            console.error('[SignalR] Connection error:', err);
+            if (connectionCallbacks.onError) {
+                connectionCallbacks.onError(err);
+            }
+            throw err;
+        }
+    }
+
+    // If in any other state (Disconnecting), wait and retry
+    return new Promise((resolve, reject) => {
+        const waitForDisconnect = setInterval(() => {
+            if (connection.state === signalR.HubConnectionState.Disconnected) {
+                clearInterval(waitForDisconnect);
+                startConnection().then(resolve).catch(reject);
+            }
+        }, 100);
+        
+        setTimeout(() => {
+            clearInterval(waitForDisconnect);
+            reject(new Error('Connection state timeout'));
+        }, 5000);
+    });
 }
 
 export async function stopConnection() {

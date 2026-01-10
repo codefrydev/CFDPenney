@@ -1,0 +1,22 @@
+@page "/Chat"
+@model ChatModel
+@{
+    ViewData["Title"] = "Chat - CFD Penney";
+    Layout = "_ChatLayout";
+}
+
+@section Head {
+    @await Html.PartialAsync("Shared/_ChatHead")
+}
+
+@await Html.PartialAsync("Shared/_ChatHeader")
+
+<div class="chat-container">
+    @await Html.PartialAsync("Shared/_ChatConversationsList")
+    @await Html.PartialAsync("Shared/_ChatMessagesPanel")
+    @await Html.PartialAsync("Shared/_ChatDetailsPanel")
+</div>
+
+@section Scripts {
+    <script type="module" src="~/js/chat/chatPage.js"></script>
+}

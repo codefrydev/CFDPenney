@@ -150,6 +150,69 @@ public class CollaborationHub : Hub
         await Clients.GroupExcept(code, Context.ConnectionId).SendAsync("StateUpdate", state);
     }
 
+    private static readonly Dictionary<string, DateTime> _typingUsers = new();
+    private static readonly object _typingLock = new();
+
+    public async Task SendTypingIndicator(string code)
+    {
+        var participant = _sessionService.GetParticipantByConnectionId(Context.ConnectionId);
+        var session = _sessionService.GetSession(code);
+        
+        if (session == null || participant == null) return;
+
+        var peerId = participant.PeerId;
+        var name = participant.Name;
+
+        // Update typing state
+        lock (_typingLock)
+        {
+            _typingUsers[$"{code}:{peerId}"] = DateTime.UtcNow;
+        }
+
+        // Broadcast typing indicator to other participants
+        await Clients.GroupExcept(code, Context.ConnectionId).SendAsync("TypingIndicator", new
+        {
+            PeerId = peerId,
+            Name = name
+        });
+
+        // Auto-clear typing after 3 seconds
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(3000);
+            lock (_typingLock)
+            {
+                if (_typingUsers.TryGetValue($"{code}:{peerId}", out var timestamp))
+                {
+                    if (DateTime.UtcNow - timestamp >= TimeSpan.FromSeconds(3))
+                    {
+                        _typingUsers.Remove($"{code}:{peerId}");
+                    }
+                }
+            }
+        });
+    }
+
+    public async Task ClearTypingIndicator(string code)
+    {
+        var participant = _sessionService.GetParticipantByConnectionId(Context.ConnectionId);
+        if (participant == null) return;
+
+        var peerId = participant.PeerId;
+
+        // Remove typing state
+        lock (_typingLock)
+        {
+            _typingUsers.Remove($"{code}:{peerId}");
+        }
+
+        // Broadcast typing stopped to other participants
+        await Clients.GroupExcept(code, Context.ConnectionId).SendAsync("TypingStopped", new
+        {
+            PeerId = peerId
+        });
+    }
+
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         var sessionCode = _sessionService.GetSessionCodeByConnectionId(Context.ConnectionId);

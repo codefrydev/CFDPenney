@@ -1,0 +1,45 @@
+<div id="chat-details-panel" class="chat-details-panel hidden">
+    <div class="chat-details-header">
+        <h3 class="chat-details-title">Details</h3>
+        <button id="btn-close-details" class="chat-close-button" title="Close">
+            <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+    </div>
+    
+    <div class="chat-details-content">
+        <div id="chat-session-details" class="chat-details-section">
+            <h4 class="chat-details-section-title">Session Information</h4>
+            <div class="chat-details-item">
+                <span class="chat-details-label">Session Code:</span>
+                <div class="chat-details-value-group">
+                    <span id="chat-details-code" class="chat-details-code">-</span>
+                    <button id="btn-copy-session-code" class="chat-copy-button" title="Copy code">
+                        <i data-lucide="copy" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="chat-details-item">
+                <span class="chat-details-label">Created:</span>
+                <span id="chat-details-created" class="chat-details-value">-</span>
+            </div>
+            <div class="chat-details-item">
+                <span class="chat-details-label">Participants:</span>
+                <span id="chat-details-participant-count" class="chat-details-value">0</span>
+            </div>
+        </div>
+        
+        <div id="chat-participants-details" class="chat-details-section">
+            <h4 class="chat-details-section-title">Participants</h4>
+            <div id="chat-details-participants-list" class="chat-participants-list">
+                <p class="chat-empty-text">No participants</p>
+            </div>
+        </div>
+        
+        <div class="chat-details-actions">
+            <button id="btn-leave-session" class="chat-leave-button">
+                <i data-lucide="log-out" class="w-4 h-4"></i>
+                Leave Session
+            </button>
+        </div>
+    </div>
+</div>
