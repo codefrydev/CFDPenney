@@ -1,0 +1,1571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign in to your account</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- Core Styling & Resets --- */
+        body {
+            font-family: 'Segoe UI', 'Segoe UI Web (West European)', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
+            overflow: hidden; 
+            background-color: #f5f5f5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- Custom Scrollbar --- */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c7c7c7; 
+            border-radius: 4px;
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a0a0a0; 
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+
+        /* --- Branding Colors & Utils --- */
+        .text-brand { color: #464775; }
+        .bg-brand { background-color: #464775; }
+        .hover-bg-brand:hover { background-color: #5b5fc7; }
+        
+        /* --- Rich Text Editor & Content Styles --- */
+        #message-editor, .teams-post-editor {
+            min-height: 2.5rem;
+            max-height: 12rem;
+            overflow-y: auto;
+            line-height: 1.5;
+        }
+        #message-editor:empty:before, .teams-post-editor:empty:before {
+            content: attr(placeholder);
+            color: #707070;
+            pointer-events: none;
+            display: block;
+        }
+        
+        /* Shared styles for Editor AND Message Bubbles */
+        .rich-text-content ul { list-style-type: disc; margin-left: 1.25rem; }
+        .rich-text-content ol { list-style-type: decimal; margin-left: 1.25rem; }
+        .rich-text-content b, .rich-text-content strong { font-weight: 600; }
+        .rich-text-content i, .rich-text-content em { font-style: italic; }
+        .rich-text-content u { text-decoration: underline; }
+        .rich-text-content s, .rich-text-content strike { text-decoration: line-through; opacity: 0.7; }
+        
+        .rich-text-content blockquote {
+            border-left: 3px solid #ccc;
+            padding-left: 10px;
+            color: #555;
+            margin: 4px 0;
+            font-style: italic;
+        }
+        
+        .rich-text-content pre {
+            background-color: rgba(0,0,0,0.06);
+            padding: 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            margin: 4px 0;
+            font-size: 0.9em;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .rich-text-content a {
+            color: #5b5fc7;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .rich-text-content a:hover {
+            color: #444791;
+        }
+        
+        /* --- Message Bubbles --- */
+        .message-bubble-mine { 
+            background-color: #e8ebfa; 
+            color: #242424;
+            border-top-right-radius: 2px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .message-bubble-other {
+            background-color: #ffffff;
+            border: 1px solid #e1dfdd;
+            color: #242424;
+            border-top-left-radius: 2px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        
+        /* --- Sidebar Active State --- */
+        .nav-item {
+            position: relative;
+            transition: background-color 0.1s ease;
+        }
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 24px;
+            width: 3px;
+            background-color: #5b5fc7;
+            border-radius: 0 4px 4px 0;
+        }
+        .nav-item.active .icon-wrapper { color: #5b5fc7; }
+        .nav-item:hover:not(.active) .icon-wrapper { color: #5b5fc7; }
+
+        /* --- Status Indicators --- */
+        .status-dot {
+            height: 10px;
+            width: 10px;
+            border-radius: 50%;
+            border: 2px solid white;
+            position: absolute;
+            bottom: 0px;
+            right: 0px;
+            z-index: 10;
+            box-sizing: content-box;
+        }
+        .status-available { background-color: #92c353; }
+        .status-busy { background-color: #c4314b; }
+        .status-away { background-color: #fcd116; }
+
+        /* --- Video Grid --- */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 16px;
+            height: 100%;
+        }
+        
+        /* --- Animations --- */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.2s cubic-bezier(0.33, 1, 0.68, 1) forwards; }
+        
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(91, 95, 199, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 20px rgba(91, 95, 199, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(91, 95, 199, 0); }
+        }
+        .pulse-avatar {
+            animation: pulse-ring 2s infinite;
+        }
+
+        /* Glassmorphism for Overlay Controls */
+        .glass-panel {
+            background: rgba(41, 41, 41, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* --- CALENDAR POLISHED STYLES --- */
+        .calendar-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background-color: white;
+        }
+        .cal-toolbar {
+            padding: 12px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fff;
+        }
+        .cal-header-row {
+            display: grid;
+            grid-template-columns: 60px repeat(5, 1fr);
+            border-bottom: 1px solid #e0e0e0;
+            background-color: #fff;
+        }
+        .cal-header-cell {
+            padding: 12px 0;
+            text-align: center;
+            border-left: 1px solid transparent;
+            font-size: 14px;
+            color: #242424;
+        }
+        .cal-header-cell.today span.date-num {
+            background-color: #5b5fc7;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 4px;
+        }
+        .cal-body-scroll {
+            overflow-y: auto;
+            flex: 1;
+            position: relative;
+        }
+        .cal-grid-body {
+            display: grid;
+            grid-template-columns: 60px repeat(5, 1fr);
+            position: relative;
+        }
+        .cal-time-col {
+            border-right: 1px solid #f0f0f0;
+            background-color: #fff;
+        }
+        .cal-time-marker {
+            height: 60px; /* 1 hour height */
+            text-align: right;
+            padding-right: 8px;
+            font-size: 11px;
+            color: #616161;
+            transform: translateY(-8px);
+        }
+        .cal-day-col {
+            border-right: 1px solid #f0f0f0;
+            position: relative;
+        }
+        .cal-hour-slot {
+            height: 60px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        .cal-event-card {
+            position: absolute;
+            left: 2px;
+            right: 4px;
+            border-radius: 4px;
+            padding: 4px 8px;
+            border-left-width: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #242424;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.15s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+        .cal-event-card:hover {
+            z-index: 20;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transform: scale(1.01);
+        }
+        .cal-current-time {
+            position: absolute;
+            left: 0;
+            right: 0;
+            border-top: 2px solid #c4314b;
+            z-index: 15;
+            pointer-events: none;
+        }
+        .cal-current-time::before {
+            content: '';
+            position: absolute;
+            left: -5px;
+            top: -5px;
+            width: 8px;
+            height: 8px;
+            background-color: #c4314b;
+            border-radius: 50%;
+        }
+
+        /* --- LOGIN PAGE STYLES --- */
+        .login-bg {
+            background-color: #e9e9e9; /* Fallback */
+            background-image: radial-gradient(circle at 50% 50%, #f3f3f3 0%, #e1e1e1 100%);
+        }
+        .login-card {
+            background: white;
+            padding: 44px;
+            width: 440px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .login-input {
+            width: 100%;
+            border: none;
+            border-bottom: 1px solid #666;
+            padding: 8px 0;
+            font-size: 15px;
+            margin-bottom: 16px;
+            transition: border-color 0.2s;
+        }
+        .login-input:focus {
+            outline: none;
+            border-bottom: 1px solid #0067b8;
+        }
+        .login-btn {
+            background-color: #0067b8;
+            color: white;
+            border: none;
+            padding: 8px 32px;
+            font-size: 15px;
+            cursor: pointer;
+            float: right;
+            transition: background-color 0.2s;
+            min-width: 108px;
+        }
+        .login-btn:hover {
+            background-color: #005da6;
+        }
+        .fade-enter {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+        .fade-enter-active {
+            opacity: 1;
+            transform: translateX(0);
+            transition: opacity 300ms, transform 300ms;
+        }
+        .fade-exit {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .fade-exit-active {
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: opacity 300ms, transform 300ms;
+        }
+
+        /* --- SETTINGS MODAL STYLES --- */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #68D391;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #68D391;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen relative">
+
+    <!-- ========================= -->
+    <!-- LOGIN SCREEN              -->
+    <!-- ========================= -->
+    <div id="login-screen" class="fixed inset-0 z-50 login-bg flex items-center justify-center font-['Segoe_UI']">
+        <div class="login-card">
+            <div class="mb-4">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" alt="Microsoft" class="h-6">
+            </div>
+            
+            <div id="login-step-1">
+                <h1 class="text-2xl font-semibold text-[#1b1b1b] mb-2">Sign in</h1>
+                <div id="login-error" class="hidden text-[#e81123] text-sm mb-4">Please enter a valid email address.</div>
+                
+                <input type="text" id="email-input" class="login-input" placeholder="Email, phone, or Skype">
+                
+                <div class="text-[13px] text-[#1b1b1b] mb-4">
+                    No account? <a href="#" class="text-[#0067b8] hover:underline">Create one!</a>
+                </div>
+                <div class="text-[13px] text-[#0067b8] hover:underline cursor-pointer mb-8">
+                    Sign in with a security key <span class="text-lg inline-block align-middle ml-1">?</span>
+                </div>
+                
+                <div class="flex justify-end">
+                    <button class="login-btn" onclick="handleLoginStep1()">Next</button>
+                </div>
+            </div>
+
+            <div id="login-step-2" class="hidden">
+                <div class="flex items-center mb-4 cursor-pointer" onclick="backToStep1()">
+                    <i class="fa-solid fa-arrow-left text-[#1b1b1b] mr-2 text-sm"></i>
+                    <span id="display-email" class="text-[#1b1b1b] text-sm">user@example.com</span>
+                </div>
+                <h1 class="text-2xl font-semibold text-[#1b1b1b] mb-2">Enter password</h1>
+                <div id="password-error" class="hidden text-[#e81123] text-sm mb-4">Please enter your password.</div>
+                
+                <input type="password" id="password-input" class="login-input" placeholder="Password">
+                
+                <div class="text-[13px] text-[#0067b8] hover:underline cursor-pointer mb-8">
+                    Forgot password?
+                </div>
+                
+                <div class="flex justify-end">
+                    <button class="login-btn" onclick="handleLoginStep2()">Sign in</button>
+                </div>
+            </div>
+
+            <!-- Loading Spinner State -->
+            <div id="login-loading" class="hidden flex flex-col items-center justify-center py-10">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0067b8] mb-4"></div>
+                <p class="text-base text-[#1b1b1b]">Signing in...</p>
+            </div>
+        </div>
+        <div class="absolute bottom-4 right-4 flex space-x-4 text-xs text-[#1b1b1b] cursor-pointer">
+            <span class="hover:underline">Terms of use</span>
+            <span class="hover:underline">Privacy & cookies</span>
+            <span class="hover:underline">...</span>
+        </div>
+    </div>
+
+    <!-- ========================= -->
+    <!-- MAIN APP WRAPPER          -->
+    <!-- ========================= -->
+    <div id="main-app" class="hidden h-full w-full flex flex-col relative bg-[#f5f5f5]">
+        <!-- TOP NAVIGATION BAR -->
+        <div class="h-12 bg-white w-full flex items-center justify-between px-4 border-b border-[#e1dfdd] shrink-0 z-30 shadow-[0_2px_4px_rgba(0,0,0,0.02)]">
+            
+            <!-- Logo / App Switcher -->
+            <div class="flex items-center w-64 space-x-3">
+                <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 transition-colors">
+                    <div class="grid grid-cols-3 gap-0.5 w-4 h-4 opacity-70">
+                        <div class="bg-[#464775] w-1 h-1 rounded-[1px]"></div><div class="bg-[#464775] w-1 h-1 rounded-[1px]"></div><div class="bg-[#464775] w-1 h-1 rounded-[1px]"></div>
+                        <div class="bg-[#464775] w-1 h-1 rounded-[1px]"></div><div class="bg-[#464775] w-1 h-1 rounded-[1px]"></div><div class="bg-[#464775] w-1 h-1 rounded-[1px]"></div>
+                        <div class="bg-[#464775] w-1 h-1 rounded-[1px]"></div><div class="bg-[#464775] w-1 h-1 rounded-[1px]"></div><div class="bg-[#464775] w-1 h-1 rounded-[1px]"></div>
+                    </div>
+                </button>
+                <span class="font-semibold text-gray-700 text-[15px] tracking-tight">Microsoft Teams</span>
+            </div>
+            
+            <!-- Central Search Bar -->
+            <div class="flex-1 max-w-2xl px-4">
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fa-solid fa-magnifying-glass text-gray-400 text-xs group-focus-within:text-[#5b5fc7] transition-colors"></i>
+                    </div>
+                    <input type="text" placeholder="Search" 
+                        class="block w-full pl-9 pr-3 py-1.5 border border-[#e1dfdd] bg-[#f3f2f1] text-gray-700 placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#5b5fc7] focus:border-transparent sm:text-xs rounded-md shadow-sm transition-all h-8">
+                </div>
+            </div>
+
+            <!-- Right Profile & Settings -->
+            <div class="flex items-center justify-end w-64 space-x-1">
+                <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 text-gray-500 transition-colors" title="Settings and more">
+                    <i class="fa-solid fa-ellipsis"></i>
+                </button>
+                <div class="relative cursor-pointer ml-1 pl-1" onclick="toggleProfileModal(event)">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Me" alt="Profile" class="w-8 h-8 rounded-full border border-gray-200">
+                    <div class="status-dot status-available"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT WRAPPER -->
+        <div class="flex flex-1 overflow-hidden">
+            
+            <!-- 1. APP BAR (Far Left) -->
+            <div class="w-[68px] bg-[#f0f0f0] flex flex-col items-center py-2 space-y-1 border-r border-[#e1dfdd] shrink-0 z-20">
+                <div class="nav-item w-full py-1.5 cursor-pointer flex flex-col items-center group hover:bg-white" onclick="switchMainTab('activity')">
+                    <div class="icon-wrapper w-8 h-8 rounded flex items-center justify-center transition-colors mb-0.5 text-[#616161]">
+                        <i class="fa-regular fa-bell text-xl"></i>
+                    </div>
+                    <span class="text-[10px] text-[#616161] font-normal">Activity</span>
+                </div>
+
+                <div class="nav-item w-full py-1.5 cursor-pointer flex flex-col items-center group hover:bg-white active" onclick="switchMainTab('chat')">
+                    <div class="icon-wrapper w-8 h-8 rounded flex items-center justify-center transition-colors mb-0.5 text-[#616161]">
+                        <i class="fa-solid fa-comment-dots text-xl"></i>
+                    </div>
+                    <span class="text-[10px] text-[#616161] font-normal">Chat</span>
+                </div>
+
+                <div class="nav-item w-full py-1.5 cursor-pointer flex flex-col items-center group hover:bg-white" onclick="switchMainTab('teams')">
+                    <div class="icon-wrapper w-8 h-8 rounded flex items-center justify-center transition-colors mb-0.5 text-[#616161]">
+                        <i class="fa-solid fa-people-group text-xl"></i>
+                    </div>
+                    <span class="text-[10px] text-[#616161] font-normal">Teams</span>
+                </div>
+
+                <div class="nav-item w-full py-1.5 cursor-pointer flex flex-col items-center group hover:bg-white" onclick="switchMainTab('calendar')">
+                    <div class="icon-wrapper w-8 h-8 rounded flex items-center justify-center transition-colors mb-0.5 text-[#616161]">
+                        <i class="fa-regular fa-calendar text-xl"></i>
+                    </div>
+                    <span class="text-[10px] text-[#616161] font-normal">Calendar</span>
+                </div>
+
+                <div class="nav-item w-full py-1.5 cursor-pointer flex flex-col items-center group hover:bg-white" onclick="switchMainTab('calls')">
+                    <div class="icon-wrapper w-8 h-8 rounded flex items-center justify-center transition-colors mb-0.5 text-[#616161]">
+                        <i class="fa-solid fa-phone text-xl"></i>
+                    </div>
+                    <span class="text-[10px] text-[#616161] font-normal">Calls</span>
+                </div>
+                
+                <div class="nav-item w-full py-1.5 cursor-pointer flex flex-col items-center group hover:bg-white" onclick="switchMainTab('apps')">
+                    <div class="icon-wrapper w-8 h-8 rounded flex items-center justify-center transition-colors mb-0.5 text-[#616161]">
+                        <i class="fa-solid fa-shapes text-xl"></i>
+                    </div>
+                    <span class="text-[10px] text-[#616161] font-normal">Apps</span>
+                </div>
+            </div>
+
+            <!-- 2. SECONDARY SIDEBAR (List View) -->
+            <div class="w-80 bg-[#f5f5f5] flex flex-col border-r border-[#e1dfdd] shrink-0 z-10 transition-all" id="secondary-sidebar">
+                <!-- List Header -->
+                <div class="h-14 flex items-center justify-between px-4 pt-2 shrink-0">
+                    <h2 class="font-bold text-lg text-[#242424]" id="section-title">Chat</h2>
+                    <div class="flex space-x-1" id="section-actions">
+                        <button class="text-[#616161] hover:bg-[#e1dfdd] w-8 h-8 flex items-center justify-center rounded transition-colors"><i class="fa-solid fa-filter text-xs"></i></button>
+                        <button class="text-[#616161] hover:bg-[#e1dfdd] w-8 h-8 flex items-center justify-center rounded transition-colors"><i class="fa-regular fa-pen-to-square text-xs"></i></button>
+                    </div>
+                </div>
+
+                <!-- List Content -->
+                <div class="flex-1 overflow-y-auto px-2 pb-2" id="list-container">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+
+            <!-- 3. MAIN CONTENT AREA -->
+            <div class="flex-1 flex flex-col bg-white min-w-0 relative shadow-[-2px_0_5px_rgba(0,0,0,0.02)] z-0" id="main-content-area">
+                
+                <!-- Dynamic Header -->
+                <div class="h-14 border-b border-[#e1dfdd] flex items-center justify-between px-5 bg-white shrink-0" id="chat-header">
+                    <!-- Injected via JS -->
+                </div>
+
+                <!-- Scrollable Content -->
+                <div class="flex-1 overflow-y-auto bg-white" id="message-container">
+                    <!-- Injected via JS (Chat messages, Calendar grid, etc) -->
+                </div>
+
+                <!-- Input Area (Only for Chat/Teams) -->
+                <div class="px-6 pb-6 pt-2 bg-white hidden" id="input-area">
+                    <div class="border border-[#d1d1d1] rounded-lg shadow-sm focus-within:ring-2 focus-within:ring-[#5b5fc7] focus-within:ring-opacity-50 focus-within:border-[#5b5fc7] transition-all bg-white flex flex-col">
+                        
+                        <!-- Formatting Toolbar -->
+                        <div class="flex items-center space-x-0.5 p-1.5 border-b border-[#f3f2f1] bg-[#fcfcfc] rounded-t-lg text-[#616161] select-none">
+                            <button onclick="formatDoc('bold')" class="p-1 hover:bg-[#f0f0f0] rounded w-8 h-8 flex items-center justify-center transition-colors" title="Bold (Ctrl+B)"><i class="fa-solid fa-bold text-xs"></i></button>
+                            <button onclick="formatDoc('italic')" class="p-1 hover:bg-[#f0f0f0] rounded w-8 h-8 flex items-center justify-center transition-colors" title="Italic (Ctrl+I)"><i class="fa-solid fa-italic text-xs"></i></button>
+                            <button onclick="formatDoc('underline')" class="p-1 hover:bg-[#f0f0f0] rounded w-8 h-8 flex items-center justify-center transition-colors" title="Underline (Ctrl+U)"><i class="fa-solid fa-underline text-xs"></i></button>
+                            <button onclick="formatDoc('strikeThrough')" class="p-1 hover:bg-[#f0f0f0] rounded w-8 h-8 flex items-center justify-center transition-colors" title="Strikethrough"><i class="fa-solid fa-strikethrough text-xs"></i></button>
+                            <div class="h-4 w-px bg-[#e1dfdd] mx-2"></div>
+                            <button onclick="formatDoc('insertUnorderedList')" class="p-1 hover:bg-[#f0f0f0] rounded w-8 h-8 flex items-center justify-center transition-colors" title="Bullet List"><i class="fa-solid fa-list-ul text-xs"></i></button>
+                            <button onclick="formatDoc('insertOrderedList')" class="p-1 hover:bg-[#f0f0f0] rounded w-8 h-8 flex items-center justify-center transition-colors" title="Numbered List"><i class="fa-solid fa-list-ol text-xs"></i></button>
+                            <div class="h-4 w-px bg-[#e1dfdd] mx-2"></div>
+                            <button onclick="addLink()" class="p-1 hover:bg-[#f0f0f0] rounded w-8 h-8 flex items-center justify-center transition-colors" title="Insert Link"><i class="fa-solid fa-link text-xs"></i></button>
+                            <button onclick="formatDoc('formatBlock', 'blockquote')" class="p-1 hover:bg-[#f0f0f0] rounded w-8 h-8 flex items-center justify-center transition-colors" title="Quote"><i class="fa-solid fa-quote-left text-xs"></i></button>
+                            <button onclick="formatDoc('formatBlock', 'pre')" class="p-1 hover:bg-[#f0f0f0] rounded w-8 h-8 flex items-center justify-center transition-colors" title="Code Block"><i class="fa-solid fa-code text-xs"></i></button>
+                        </div>
+                        
+                        <!-- Editable Content Div -->
+                        <div id="message-editor" contenteditable="true" class="rich-text-content w-full p-3 text-[#242424] text-[14px] bg-white focus:outline-none" placeholder="Type a new message" onkeydown="handleEditorKeydown(event)"></div>
+                        
+                        <!-- Bottom Actions -->
+                        <div class="flex items-center justify-between p-2">
+                            <div class="flex space-x-1 text-[#616161]">
+                                <button class="hover:bg-[#f0f0f0] p-2 rounded-full transition-colors"><i class="fa-solid fa-font text-sm"></i></button>
+                                <button class="hover:bg-[#f0f0f0] p-2 rounded-full transition-colors"><i class="fa-solid fa-paperclip text-sm"></i></button>
+                                <button class="hover:bg-[#f0f0f0] p-2 rounded-full transition-colors"><i class="fa-regular fa-face-smile text-sm"></i></button>
+                                <button class="hover:bg-[#f0f0f0] p-2 rounded-full transition-colors"><i class="fa-solid fa-gif text-sm"></i></button>
+                            </div>
+                            <button onclick="sendMessage()" class="text-[#616161] hover:text-[#5b5fc7] hover:bg-[#f0f0f0] p-2 rounded transition-colors flex items-center justify-center" title="Send (Enter)"><i class="fa-solid fa-paper-plane text-lg transform -rotate-12 translate-x-[-1px] translate-y-[1px]"></i></button>
+                        </div>
+                    </div>
+                    <div class="text-[10px] text-[#707070] text-right mt-1 pr-1">Press Enter to send</div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================= -->
+    <!-- MODALS & OVERLAYS         -->
+    <!-- ========================= -->
+
+    <!-- Profile Modal -->
+    <div id="profile-modal" class="hidden absolute right-4 top-14 w-80 bg-white shadow-2xl border border-gray-200 rounded-lg z-50 overflow-hidden animate-fade-in ring-1 ring-black ring-opacity-5">
+        <div class="p-5 flex items-center space-x-4 border-b border-gray-100 bg-[#f9fafb]">
+            <div class="relative">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Me" class="w-14 h-14 rounded-full border border-gray-200 shadow-sm">
+                <div class="absolute bottom-0 right-0 w-4 h-4 bg-[#92c353] border-2 border-white rounded-full"></div>
+            </div>
+            <div>
+                <h3 class="font-bold text-gray-800 text-lg">User Name</h3>
+                <div class="flex items-center text-xs text-gray-500 mt-0.5">
+                    <span class="w-2 h-2 rounded-full bg-[#92c353] mr-1.5"></span>
+                    Available
+                </div>
+                <div class="text-xs text-[#5b5fc7] hover:underline cursor-pointer mt-1 font-medium">Set status message</div>
+            </div>
+        </div>
+        <div class="py-2">
+            <div class="px-4 py-2.5 hover:bg-[#f5f5f5] cursor-pointer flex items-center text-sm text-gray-700 group transition-colors">
+                <i class="fa-regular fa-bookmark w-8 text-gray-400 group-hover:text-gray-600 text-center"></i> Saved
+            </div>
+            <div class="px-4 py-2.5 hover:bg-[#f5f5f5] cursor-pointer flex items-center text-sm text-gray-700 group transition-colors" onclick="openSettings()">
+                <i class="fa-solid fa-gear w-8 text-gray-400 group-hover:text-gray-600 text-center"></i> Settings
+            </div>
+            <div class="border-t border-gray-100 my-1"></div>
+            <div class="px-4 py-2.5 hover:bg-[#f5f5f5] cursor-pointer flex items-center text-sm text-gray-700 group transition-colors" onclick="signOut()">
+                <i class="fa-solid fa-arrow-right-from-bracket w-8 text-gray-400 group-hover:text-gray-600 text-center"></i> Sign out
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 font-['Segoe_UI']">
+        <div class="bg-white w-[700px] h-[500px] rounded-lg shadow-2xl flex flex-col overflow-hidden animate-fade-in">
+            <!-- Header -->
+            <div class="flex justify-between items-center px-6 py-4 border-b border-[#e0e0e0]">
+                <h2 class="text-xl font-semibold text-[#242424]">Settings</h2>
+                <button onclick="closeSettings()" class="text-[#616161] hover:text-[#242424]"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            
+            <!-- Body -->
+            <div class="flex flex-1 overflow-hidden">
+                <!-- Sidebar -->
+                <div class="w-48 bg-[#f5f5f5] flex flex-col py-2 border-r border-[#e0e0e0]">
+                    <div class="settings-nav-item active px-4 py-2 cursor-pointer text-sm font-semibold bg-[#e1dfdd]" onclick="switchSettingsTab('general')">
+                        <i class="fa-solid fa-gear mr-3 w-4 text-center"></i> General
+                    </div>
+                    <div class="settings-nav-item px-4 py-2 cursor-pointer text-sm hover:bg-[#e1dfdd]" onclick="switchSettingsTab('privacy')">
+                        <i class="fa-solid fa-lock mr-3 w-4 text-center"></i> Privacy
+                    </div>
+                    <div class="settings-nav-item px-4 py-2 cursor-pointer text-sm hover:bg-[#e1dfdd]" onclick="switchSettingsTab('notifications')">
+                        <i class="fa-regular fa-bell mr-3 w-4 text-center"></i> Notifications
+                    </div>
+                     <div class="settings-nav-item px-4 py-2 cursor-pointer text-sm hover:bg-[#e1dfdd]" onclick="switchSettingsTab('appearance')">
+                        <i class="fa-solid fa-palette mr-3 w-4 text-center"></i> Appearance
+                    </div>
+                </div>
+                
+                <!-- Content -->
+                <div class="flex-1 p-6 overflow-y-auto bg-white" id="settings-content">
+                    <!-- General Tab -->
+                    <div id="settings-general">
+                        <h3 class="font-semibold text-sm mb-4 text-[#242424]">Theme</h3>
+                        <div class="flex space-x-4 mb-6">
+                            <div class="cursor-pointer">
+                                <div class="w-24 h-16 bg-[#f5f5f5] border-2 border-[#5b5fc7] rounded mb-2 relative">
+                                    <div class="absolute inset-0 flex items-center justify-center text-[#5b5fc7]"><i class="fa-solid fa-check-circle"></i></div>
+                                </div>
+                                <div class="text-xs text-center font-semibold text-[#242424]">Default</div>
+                            </div>
+                            <div class="cursor-pointer opacity-70 hover:opacity-100">
+                                <div class="w-24 h-16 bg-[#201f1f] border border-gray-300 rounded mb-2"></div>
+                                <div class="text-xs text-center text-[#242424]">Dark</div>
+                            </div>
+                             <div class="cursor-pointer opacity-70 hover:opacity-100">
+                                <div class="w-24 h-16 bg-black border border-yellow-400 rounded mb-2"></div>
+                                <div class="text-xs text-center text-[#242424]">High Contrast</div>
+                            </div>
+                        </div>
+                        
+                        <h3 class="font-semibold text-sm mb-2 text-[#242424]">Application</h3>
+                        <div class="flex items-center mb-2">
+                            <input type="checkbox" checked class="mr-2 h-4 w-4 accent-[#5b5fc7]">
+                            <span class="text-sm text-[#242424]">Auto-start application</span>
+                        </div>
+                         <div class="flex items-center mb-2">
+                            <input type="checkbox" checked class="mr-2 h-4 w-4 accent-[#5b5fc7]">
+                            <span class="text-sm text-[#242424]">Open application in background</span>
+                        </div>
+                    </div>
+
+                    <!-- Privacy Tab -->
+                    <div id="settings-privacy" class="hidden">
+                        <h3 class="font-semibold text-sm mb-4 text-[#242424]">Privacy</h3>
+                        <div class="mb-6">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-sm text-[#242424]">Read receipts</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                  <input type="checkbox" value="" class="sr-only peer" checked>
+                                  <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#5b5fc7]"></div>
+                                </label>
+                            </div>
+                            <p class="text-xs text-[#616161]">Let people know when you’ve seen their messages and know when they’ve seen yours.</p>
+                        </div>
+                         <button class="border border-[#d1d1d1] px-4 py-1.5 rounded text-sm hover:bg-gray-50 text-[#242424]">Manage blocked contacts</button>
+                    </div>
+                    
+                    <!-- Notifications Tab -->
+                    <div id="settings-notifications" class="hidden">
+                         <h3 class="font-semibold text-sm mb-4 text-[#242424]">Email</h3>
+                         <div class="mb-6">
+                            <label class="text-sm block mb-1 text-[#242424]">Missed activity emails</label>
+                            <select class="border border-[#d1d1d1] rounded px-2 py-1 text-sm w-full outline-none focus:border-[#5b5fc7] text-[#242424]">
+                                <option>Once every hour</option>
+                                <option>As soon as possible</option>
+                                <option>Daily</option>
+                            </select>
+                         </div>
+                         <h3 class="font-semibold text-sm mb-4 text-[#242424]">Appearance and Sound</h3>
+                         <div class="flex items-center mb-2">
+                            <input type="checkbox" checked class="mr-2 h-4 w-4 accent-[#5b5fc7]">
+                            <span class="text-sm text-[#242424]">Play sound for incoming calls and notifications</span>
+                        </div>
+                    </div>
+                    
+                     <!-- Appearance Tab -->
+                    <div id="settings-appearance" class="hidden">
+                         <h3 class="font-semibold text-sm mb-4 text-[#242424]">Layout</h3>
+                         <div class="mb-4">
+                            <label class="text-sm block mb-1 text-[#242424]">Chat density</label>
+                            <div class="flex items-center space-x-4 mt-2">
+                                <label class="flex items-center">
+                                    <input type="radio" name="density" checked class="mr-2 text-[#5b5fc7] accent-[#5b5fc7]">
+                                    <span class="text-sm text-[#242424]">Comfy</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="density" class="mr-2 text-[#5b5fc7] accent-[#5b5fc7]">
+                                    <span class="text-sm text-[#242424]">Compact</span>
+                                </label>
+                            </div>
+                         </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Call Overlay -->
+    <div id="video-call-overlay" class="fixed inset-0 bg-[#201f1f] z-50 hidden flex flex-col text-white">
+        <!-- Call Header -->
+        <div class="h-16 flex justify-between items-center px-6 bg-[#201f1f] shrink-0 border-b border-[#333]">
+            <div class="flex flex-col">
+                <h2 class="font-semibold text-lg tracking-wide" id="call-title">Team Meeting</h2>
+                <span class="text-xs text-gray-400 font-mono mt-0.5" id="call-timer">00:00</span>
+            </div>
+            <div class="flex space-x-2">
+                <button class="p-2 w-10 h-10 hover:bg-gray-700 rounded-md bg-gray-800 transition-colors flex items-center justify-center"><i class="fa-solid fa-user-group text-sm"></i></button>
+                <button class="p-2 w-10 h-10 hover:bg-gray-700 rounded-md bg-gray-800 transition-colors flex items-center justify-center"><i class="fa-regular fa-comments text-sm"></i></button>
+            </div>
+        </div>
+
+        <!-- Call Content (Video or Audio) -->
+        <div class="flex-1 p-4 bg-black overflow-hidden relative flex items-center justify-center" id="call-content-area">
+             <!-- Injected via JS -->
+        </div>
+
+        <!-- Floating Control Bar -->
+        <div class="h-24 bg-[#201f1f] flex items-center justify-center shrink-0">
+            <div class="flex items-center space-x-3 px-6 py-3 rounded-2xl shadow-2xl glass-panel">
+                <button class="w-10 h-10 rounded-lg bg-gray-700 hover:bg-gray-600 flex items-center justify-center text-white transition-all transform active:scale-95" onclick="toggleCallState(this, 'video')">
+                    <i class="fa-solid fa-video text-sm"></i>
+                </button>
+                <button class="w-10 h-10 rounded-lg bg-gray-700 hover:bg-gray-600 flex items-center justify-center text-white transition-all transform active:scale-95" onclick="toggleCallState(this, 'audio')">
+                    <i class="fa-solid fa-microphone text-sm"></i>
+                </button>
+                <button class="w-10 h-10 rounded-lg bg-gray-700 hover:bg-gray-600 flex items-center justify-center text-white transition-all transform active:scale-95">
+                    <i class="fa-solid fa-share-from-square text-sm"></i>
+                </button>
+                <button class="w-10 h-10 rounded-lg bg-gray-700 hover:bg-gray-600 flex items-center justify-center text-white transition-all transform active:scale-95">
+                     <i class="fa-regular fa-hand text-sm"></i>
+                </button>
+                <button class="w-10 h-10 rounded-lg bg-gray-700 hover:bg-gray-600 flex items-center justify-center text-white transition-all transform active:scale-95">
+                    <i class="fa-solid fa-ellipsis text-sm"></i>
+                </button>
+                
+                <div class="w-px h-6 bg-gray-500 mx-2"></div>
+
+                <button class="w-14 h-10 rounded-lg bg-[#c4314b] hover:bg-[#a3243b] flex items-center justify-center text-white transition-all shadow-lg transform active:scale-95" onclick="endVideoCall()">
+                    <i class="fa-solid fa-phone-slash text-sm"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // --- Mock Data ---
+
+        const users = {
+            1: { id: 1, name: "Alice Johnson", role: "Product Manager", status: "available", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alice" },
+            2: { id: 2, name: "Bob Smith", role: "Software Engineer", status: "busy", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Bob" },
+            3: { id: 3, name: "Charlie Brown", role: "Designer", status: "away", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Charlie" },
+            4: { id: 4, name: "Marketing Team", role: "Group", status: "available", avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=Marketing" },
+        };
+
+        const chats = [
+            { id: 101, userId: 1, lastMessage: "Can we review the roadmap at 2pm?", timestamp: "10:30 AM", unread: 2, messages: [{ id: 1, senderId: 1, text: "Hey! How is the new feature coming along?", time: "10:15 AM", type: "text" }, { id: 2, senderId: "me", text: "It's going well, almost done with the UI.", time: "10:20 AM", type: "text" }, { id: 3, senderId: 1, text: "Great! Can we review the roadmap at 2pm?", time: "10:30 AM", type: "text" }] },
+            { id: 102, userId: 2, lastMessage: "I pushed the fix to main.", timestamp: "Yesterday", unread: 0, messages: [{ id: 1, senderId: 2, text: "Found a bug in the login flow.", time: "Yesterday", type: "text" }, { id: 2, senderId: "me", text: "Ah, is it critical?", time: "Yesterday", type: "text" }, { id: 3, senderId: 2, text: "Yeah, but I fixed it. I pushed the fix to main.", time: "Yesterday", type: "text" }] },
+            { id: 103, userId: 4, lastMessage: "Charlie: The new banner looks awesome!", timestamp: "Tue", unread: 5, isGroup: true, messages: [{ id: 1, senderId: 3, text: "Here are the new assets for the campaign.", time: "Mon", type: "text" }, { id: 2, senderId: 1, text: "Thanks Charlie!", time: "Mon", type: "text" }, { id: 3, senderId: 3, text: "The new banner looks awesome!", time: "Tue", type: "text" }] }
+        ];
+
+        const teams = [
+            { id: 't1', name: 'Product Engineering', icon: 'fa-solid fa-code', channels: [
+                { id: 'c1', name: 'General', posts: [
+                    { id: 1, user: 1, text: "Welcome to the new product engineering team space! 🚀", time: "2 days ago", replies: [] },
+                    { id: 2, user: 2, text: "I've pushed the initial repo structure. Please clone and verify.", time: "Yesterday", replies: [{user: 1, text: "Looks good to me!", time: "Yesterday"}] }
+                ]},
+                { id: 'c2', name: 'Development', posts: [] },
+                { id: 'c3', name: 'QA', posts: [] }
+            ]},
+            { id: 't2', name: 'Marketing', icon: 'fa-solid fa-bullhorn', channels: [
+                { id: 'c4', name: 'General', posts: [] },
+                { id: 'c5', name: 'Campaigns', posts: [
+                    { id: 3, user: 3, text: "Q4 Campaign assets are ready for review.", time: "Today 9:00 AM", replies: [] }
+                ]}
+            ]}
+        ];
+
+        const activities = [
+            { id: 1, type: 'mention', text: "Alice mentioned you in 'Product Engineering > General'", time: "10:45 AM", read: false, icon: 'fa-solid fa-at text-[#c4314b]' },
+            { id: 2, type: 'reaction', text: "Bob reacted to your message", time: "Yesterday", read: true, icon: 'fa-solid fa-thumbs-up text-yellow-500' },
+            { id: 3, type: 'reply', text: "Charlie replied to your post", time: "Mon", read: true, icon: 'fa-solid fa-reply text-[#5b5fc7]' },
+            { id: 4, type: 'call', text: "Missed call from Alice Johnson", time: "Last Week", read: true, icon: 'fa-solid fa-phone-slash text-[#c4314b]' }
+        ];
+
+        const calendarEvents = [
+            { title: "Daily Standup", start: "10:00", end: "10:30", color: "bg-[#e8ebfa] border-[#5b5fc7]", col: 1 },
+            { title: "Product Review", start: "14:00", end: "15:00", color: "bg-[#fff0f0] border-[#c4314b]", col: 2 },
+            { title: "Team Lunch", start: "12:00", end: "13:00", color: "bg-[#f0f9eb] border-[#92c353]", col: 3 },
+            { title: "Client Sync", start: "11:00", end: "12:00", color: "bg-[#fff9c4] border-[#fcd116]", col: 4 },
+            { title: "Focus Time", start: "15:00", end: "17:00", color: "bg-gray-100 border-gray-400", col: 1 }
+        ];
+
+        const appsData = [
+            { name: "Tasks", icon: "fa-solid fa-list-check", color: "text-green-600" },
+            { name: "Approvals", icon: "fa-solid fa-file-circle-check", color: "text-blue-600" },
+            { name: "Wiki", icon: "fa-solid fa-book-open", color: "text-purple-600" },
+            { name: "OneNote", icon: "fa-solid fa-book", color: "text-purple-800" },
+            { name: "Excel", icon: "fa-solid fa-file-excel", color: "text-green-700" },
+            { name: "Power BI", icon: "fa-solid fa-chart-simple", color: "text-yellow-600" },
+        ];
+
+        const calls = [
+            { id: 201, userId: 1, type: "incoming", status: "missed", time: "10:00 AM", duration: "0:00" },
+            { id: 202, userId: 2, type: "outgoing", status: "completed", time: "Yesterday", duration: "15:23" },
+            { id: 203, userId: 3, type: "incoming", status: "completed", time: "Mon", duration: "32:10" }
+        ];
+
+        // --- State ---
+        let currentTab = 'chat'; 
+        let activeChatId = 101;
+        let activeTeamChannel = { teamId: 't1', channelId: 'c1' };
+        let callTimerInterval;
+
+        // --- LOGIN LOGIC ---
+        function handleLoginStep1() {
+            const email = document.getElementById('email-input').value;
+            const error = document.getElementById('login-error');
+            
+            if (email.trim() === '') {
+                error.classList.remove('hidden');
+            } else {
+                error.classList.add('hidden');
+                document.getElementById('display-email').innerText = email;
+                
+                const step1 = document.getElementById('login-step-1');
+                step1.classList.add('fade-exit-active');
+                setTimeout(() => {
+                    step1.classList.add('hidden');
+                    step1.classList.remove('fade-exit-active');
+                    
+                    const step2 = document.getElementById('login-step-2');
+                    step2.classList.remove('hidden');
+                    step2.classList.add('fade-enter');
+                    setTimeout(() => step2.classList.remove('fade-enter'), 300);
+                }, 200);
+            }
+        }
+
+        function backToStep1() {
+            document.getElementById('login-step-2').classList.add('hidden');
+            document.getElementById('login-step-1').classList.remove('hidden');
+        }
+
+        function handleLoginStep2() {
+            const pass = document.getElementById('password-input').value;
+            const error = document.getElementById('password-error');
+            
+            if (pass.trim() === '') {
+                error.classList.remove('hidden');
+            } else {
+                error.classList.add('hidden');
+                document.getElementById('login-step-2').classList.add('hidden');
+                document.getElementById('login-loading').classList.remove('hidden');
+                
+                setTimeout(() => {
+                    document.getElementById('login-screen').classList.add('hidden');
+                    document.getElementById('main-app').classList.remove('hidden');
+                    // Initialize app state
+                    switchMainTab('chat');
+                }, 1500);
+            }
+        }
+
+        function signOut() {
+            document.getElementById('profile-modal').classList.add('hidden');
+            document.getElementById('main-app').classList.add('hidden');
+            
+            // Reset login screen
+            document.getElementById('login-loading').classList.add('hidden');
+            document.getElementById('login-step-1').classList.remove('hidden');
+            document.getElementById('email-input').value = '';
+            document.getElementById('password-input').value = '';
+            document.getElementById('login-screen').classList.remove('hidden');
+        }
+
+        // Handle Enter key on Login inputs
+        document.getElementById('email-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') handleLoginStep1();
+        });
+        document.getElementById('password-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') handleLoginStep2();
+        });
+
+
+        // --- Rich Text Functions ---
+        function formatDoc(cmd, value = null) {
+            document.execCommand(cmd, false, value);
+            document.getElementById('message-editor').focus();
+        }
+        function addLink() {
+            const url = prompt("Enter the URL:");
+            if (url) formatDoc('createLink', url);
+        }
+        function handleEditorKeydown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // --- Render Functions ---
+
+        function switchMainTab(tabName) {
+            currentTab = tabName;
+            
+            // Sidebar visual update
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if(item.getAttribute('onclick') && item.getAttribute('onclick').includes(tabName)) {
+                    item.classList.add('active');
+                }
+            });
+
+            const secondarySidebar = document.getElementById('secondary-sidebar');
+            const inputArea = document.getElementById('input-area');
+            const header = document.getElementById('chat-header');
+            const mainContent = document.getElementById('message-container');
+            
+            // Reset Layout
+            mainContent.innerHTML = '';
+            header.innerHTML = '';
+            inputArea.classList.add('hidden');
+            secondarySidebar.classList.remove('hidden'); // Default show
+            
+            if (tabName === 'chat') {
+                document.getElementById('section-title').innerText = 'Chat';
+                renderChatSidebar();
+                selectChat(activeChatId); 
+            } 
+            else if (tabName === 'teams') {
+                document.getElementById('section-title').innerText = 'Teams';
+                renderTeamsSidebar();
+                selectTeamChannel(activeTeamChannel.teamId, activeTeamChannel.channelId);
+            }
+            else if (tabName === 'activity') {
+                document.getElementById('section-title').innerText = 'Feed';
+                renderActivitySidebar();
+                renderActivityMain();
+            }
+            else if (tabName === 'calendar') {
+                secondarySidebar.classList.add('hidden'); // Hide sidebar for full width
+                renderCalendarMain();
+            }
+            else if (tabName === 'calls') {
+                document.getElementById('section-title').innerText = 'Calls';
+                renderCallsSidebar();
+                renderCallsMain();
+            }
+            else if (tabName === 'apps') {
+                secondarySidebar.classList.add('hidden');
+                renderAppsMain();
+            }
+        }
+
+        // --- CHAT Logic ---
+        function renderChatSidebar() {
+            const container = document.getElementById('list-container');
+            container.innerHTML = '';
+            
+            const pinnedHeader = document.createElement('div');
+            pinnedHeader.className = "px-3 py-2 text-xs font-semibold text-[#616161] flex items-center cursor-pointer hover:bg-[#edebe9] mt-2 mb-1";
+            pinnedHeader.innerHTML = '<i class="fa-solid fa-chevron-down mr-2 text-[10px]"></i> Pinned';
+            container.appendChild(pinnedHeader);
+
+            chats.forEach(chat => {
+                const user = users[chat.userId];
+                const isActive = chat.id === activeChatId;
+                const el = document.createElement('div');
+                el.className = `flex items-center px-3 py-2.5 rounded cursor-pointer transition-colors relative group mb-0.5 ${isActive ? 'bg-white shadow-sm' : 'hover:bg-[#edebe9]'}`;
+                el.onclick = () => selectChat(chat.id);
+                
+                let previewText = chat.lastMessage;
+                if(previewText.includes('<')) previewText = "Sent a rich text message";
+
+                el.innerHTML = `
+                    <div class="relative mr-3 shrink-0">
+                        <img src="${user.avatar}" class="w-8 h-8 rounded-full border border-gray-200">
+                        <div class="status-dot ${user.status === 'available' ? 'status-available' : 'status-busy'}"></div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-baseline mb-0.5">
+                            <h3 class="${chat.unread > 0 ? 'font-bold' : 'font-normal'} text-sm truncate">${user.name}</h3>
+                            <span class="text-[10px] text-[#616161]">${chat.timestamp}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <p class="text-xs truncate ${chat.unread > 0 ? 'font-semibold text-[#242424]' : 'text-[#616161]'} flex-1">${previewText}</p>
+                            ${chat.unread > 0 ? `<div class="ml-2 bg-[#c4314b] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center shadow-sm leading-none">${chat.unread}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(el);
+            });
+        }
+
+        function selectChat(chatId) {
+            activeChatId = chatId;
+            document.getElementById('input-area').classList.remove('hidden');
+            renderChatSidebar(); // Refresh visual state
+
+            const chat = chats.find(c => c.id === chatId);
+            const user = users[chat.userId];
+            const header = document.getElementById('chat-header');
+            const msgContainer = document.getElementById('message-container');
+
+            header.innerHTML = `
+                <div class="flex items-center space-x-3 cursor-pointer hover:bg-[#f0f0f0] p-1.5 -ml-2 pr-3 rounded transition-colors group">
+                    <img src="${user.avatar}" class="w-9 h-9 rounded-full border border-gray-200">
+                    <div>
+                        <h2 class="font-bold text-[16px] leading-tight text-[#242424] flex items-center group-hover:text-[#5b5fc7] transition-colors">${user.name}</h2>
+                        <div class="flex items-center text-xs text-[#616161] space-x-2 mt-0.5">
+                            <span class="hover:underline cursor-pointer text-[#5b5fc7] font-semibold">Chat</span>
+                            <span class="text-[#e1dfdd]">|</span>
+                            <span class="hover:underline cursor-pointer hover:text-[#5b5fc7]">Files</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-1">
+                    <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-[#edebe9] text-[#5b5fc7]" onclick="startVideoCall('${user.name}', 'video')"><i class="fa-solid fa-video"></i></button>
+                    <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-[#edebe9] text-[#5b5fc7]" onclick="startVideoCall('${user.name}', 'audio')"><i class="fa-solid fa-phone"></i></button>
+                </div>
+            `;
+
+            msgContainer.innerHTML = '';
+            // Date separator
+            const dateSep = document.createElement('div');
+            dateSep.className = "flex items-center justify-center mb-6 mt-6 relative";
+            dateSep.innerHTML = `<div class="absolute inset-0 flex items-center"><div class="w-full border-t border-[#e1dfdd]"></div></div><span class="relative bg-white px-4 text-xs font-semibold text-[#616161]">Today</span>`;
+            msgContainer.appendChild(dateSep);
+
+            let lastSenderId = null;
+            chat.messages.forEach(msg => {
+                const isSequence = lastSenderId === msg.senderId;
+                renderMessageBubble(msg, user, isSequence);
+                lastSenderId = msg.senderId;
+            });
+            scrollToBottom();
+        }
+
+        // --- TEAMS Logic ---
+        function renderTeamsSidebar() {
+            const container = document.getElementById('list-container');
+            container.innerHTML = '';
+            
+            teams.forEach(team => {
+                const teamEl = document.createElement('div');
+                teamEl.className = "mb-2";
+                teamEl.innerHTML = `
+                    <div class="flex items-center px-2 py-1 cursor-pointer hover:bg-[#edebe9] text-[#242424] font-bold text-xs uppercase tracking-wide">
+                        <i class="fa-solid fa-chevron-down mr-2 text-[10px] text-[#616161]"></i>
+                        <i class="${team.icon} mr-2 text-[#5b5fc7]"></i> ${team.name}
+                    </div>
+                `;
+                
+                team.channels.forEach(channel => {
+                    const isActive = activeTeamChannel.teamId === team.id && activeTeamChannel.channelId === channel.id;
+                    const chanEl = document.createElement('div');
+                    chanEl.className = `flex items-center px-8 py-1.5 cursor-pointer text-sm ${isActive ? 'bg-[#e8ebfa] text-[#242424] font-semibold' : 'text-[#424242] hover:bg-[#edebe9]'}`;
+                    chanEl.innerText = channel.name;
+                    chanEl.onclick = () => selectTeamChannel(team.id, channel.id);
+                    teamEl.appendChild(chanEl);
+                });
+                
+                container.appendChild(teamEl);
+            });
+        }
+
+        function selectTeamChannel(teamId, channelId) {
+            activeTeamChannel = { teamId, channelId };
+            renderTeamsSidebar(); // Update visual active state
+            
+            const team = teams.find(t => t.id === teamId);
+            const channel = team.channels.find(c => c.id === channelId);
+            
+            const header = document.getElementById('chat-header');
+            const msgContainer = document.getElementById('message-container');
+            document.getElementById('input-area').classList.add('hidden'); // Hide chat input, we use a different one for posts
+
+            header.innerHTML = `
+                <div class="flex items-center space-x-3 px-2">
+                    <div class="w-8 h-8 bg-[#e8ebfa] rounded flex items-center justify-center text-[#5b5fc7]"><i class="${team.icon}"></i></div>
+                    <div>
+                        <h2 class="font-bold text-[16px] text-[#242424]">${channel.name}</h2>
+                        <div class="text-xs text-[#616161]">Posts | Files | Notes</div>
+                    </div>
+                </div>
+            `;
+
+            msgContainer.innerHTML = '<div class="p-6 space-y-6"></div>';
+            const innerContainer = msgContainer.firstElementChild;
+
+            // Render Posts
+            if(channel.posts.length === 0) {
+                innerContainer.innerHTML = `<div class="text-center text-gray-400 mt-10"><i class="fa-solid fa-comments text-4xl mb-2"></i><br>Start a new conversation</div>`;
+            } else {
+                channel.posts.forEach(post => {
+                    const postUser = users[post.user] || users[1];
+                    const postEl = document.createElement('div');
+                    postEl.className = "bg-white border border-[#e1dfdd] rounded-md p-4 shadow-sm";
+                    
+                    let repliesHtml = '';
+                    if(post.replies.length > 0) {
+                        repliesHtml = `<div class="mt-3 pl-4 border-l-2 border-[#e1dfdd] space-y-2">
+                            ${post.replies.map(r => `
+                                <div class="flex items-start space-x-2">
+                                    <div class="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-600">
+                                        ${users[r.user] ? users[r.user].name[0] : 'U'}
+                                    </div>
+                                    <div class="bg-[#f3f2f1] px-3 py-1.5 rounded-r-md rounded-bl-md text-xs text-[#242424]">
+                                        <span class="font-bold">${users[r.user] ? users[r.user].name : 'User'}</span> ${r.text}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>`;
+                    }
+
+                    postEl.innerHTML = `
+                        <div class="flex items-start space-x-3 mb-2">
+                            <img src="${postUser.avatar}" class="w-9 h-9 rounded-full border border-gray-200">
+                            <div>
+                                <div class="flex items-baseline space-x-2">
+                                    <span class="font-bold text-sm text-[#242424]">${postUser.name}</span>
+                                    <span class="text-xs text-[#616161]">${post.time}</span>
+                                </div>
+                                <div class="text-sm text-[#242424] mt-1">${post.text}</div>
+                            </div>
+                        </div>
+                        ${repliesHtml}
+                        <div class="mt-3 flex items-center space-x-4">
+                            <button class="text-xs font-semibold text-[#5b5fc7] hover:underline">Reply</button>
+                            <button class="text-xs text-[#616161] hover:underline">Collapse</button>
+                        </div>
+                    `;
+                    innerContainer.appendChild(postEl);
+                });
+            }
+
+            // "New Conversation" Button at bottom
+            const newConvBtn = document.createElement('button');
+            newConvBtn.className = "bg-[#5b5fc7] text-white px-4 py-2 rounded-md shadow hover:bg-[#464775] text-sm font-semibold transition-colors flex items-center";
+            newConvBtn.innerHTML = '<i class="fa-solid fa-pen-to-square mr-2"></i> New conversation';
+            innerContainer.appendChild(newConvBtn);
+        }
+
+        // --- ACTIVITY Logic ---
+        function renderActivitySidebar() {
+            const container = document.getElementById('list-container');
+            container.innerHTML = '';
+            activities.forEach(act => {
+                const el = document.createElement('div');
+                el.className = `flex items-start px-3 py-3 cursor-pointer hover:bg-[#edebe9] border-b border-transparent ${!act.read ? 'bg-white border-l-4 border-l-[#5b5fc7] font-semibold' : ''}`;
+                el.innerHTML = `
+                    <div class="relative mr-3 shrink-0 pt-1">
+                        <i class="${act.icon} text-lg"></i>
+                    </div>
+                    <div>
+                        <div class="text-sm line-clamp-2 ${!act.read ? 'text-[#242424]' : 'text-[#424242]'}">${act.text}</div>
+                        <div class="text-xs text-[#616161] mt-1">${act.time}</div>
+                    </div>
+                `;
+                container.appendChild(el);
+            });
+        }
+        function renderActivityMain() {
+            const header = document.getElementById('chat-header');
+            const msgContainer = document.getElementById('message-container');
+            header.innerHTML = `<h2 class="font-bold text-lg px-5 text-[#242424]">Feed</h2>`;
+            msgContainer.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-gray-400">
+                <i class="fa-solid fa-bell text-4xl mb-4 text-[#e1dfdd]"></i>
+                <p>Select an item from the feed to view details.</p>
+            </div>`;
+        }
+
+        // --- CALENDAR Logic (Polished) ---
+        function renderCalendarMain() {
+            const header = document.getElementById('chat-header');
+            const msgContainer = document.getElementById('message-container');
+            
+            // Refined Calendar Toolbar
+            header.innerHTML = `
+                <div class="flex items-center justify-between w-full px-4 h-full">
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center bg-[#f3f2f1] rounded p-0.5">
+                            <button class="px-3 py-1 text-xs font-semibold text-[#242424] bg-white shadow-sm rounded-sm">Work week</button>
+                            <button class="px-3 py-1 text-xs font-medium text-[#616161] hover:text-[#242424]">Day</button>
+                        </div>
+                        <h2 class="font-bold text-lg text-[#242424]">October 2023</h2>
+                        <div class="flex items-center space-x-1">
+                            <button class="p-1.5 hover:bg-[#f0f0f0] rounded text-[#616161]"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+                            <button class="px-2 py-1 hover:bg-[#f0f0f0] rounded text-sm font-medium text-[#242424]">Today</button>
+                            <button class="p-1.5 hover:bg-[#f0f0f0] rounded text-[#616161]"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button class="px-3 py-1.5 border border-[#d1d1d1] text-[#242424] text-sm font-semibold rounded hover:bg-gray-50 flex items-center"><i class="fa-solid fa-video mr-2"></i>Meet now</button>
+                        <button class="px-3 py-1.5 bg-[#5b5fc7] text-white text-sm font-semibold rounded hover:bg-[#464775] shadow-sm flex items-center"><i class="fa-solid fa-plus mr-2"></i>New meeting</button>
+                    </div>
+                </div>
+            `;
+
+            // Mock Data for Dates
+            const days = [
+                { name: "Mon", num: "23", isToday: false },
+                { name: "Tue", num: "24", isToday: false },
+                { name: "Wed", num: "25", isToday: true },
+                { name: "Thu", num: "26", isToday: false },
+                { name: "Fri", num: "27", isToday: false }
+            ];
+
+            // Build Grid Structure
+            let gridHtml = `
+                <div class="calendar-container">
+                    <div class="cal-header-row">
+                        <div class="cal-header-cell text-[10px] text-[#616161] self-end pb-2 pr-2">GMT-7</div>
+                        ${days.map(d => `
+                            <div class="cal-header-cell ${d.isToday ? 'today' : ''}">
+                                ${d.name} <span class="date-num">${d.num}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="cal-body-scroll">
+                         <div class="cal-grid-body">
+            `;
+            
+            // Generate Time Slots (7 AM to 6 PM)
+            const startHour = 7;
+            const endHour = 18;
+            
+            // Time Column
+            gridHtml += `<div class="cal-time-col">`;
+            for(let h=startHour; h<=endHour; h++) {
+                gridHtml += `<div class="cal-time-marker">${h > 12 ? h-12 : h} ${h>=12 ? 'PM' : 'AM'}</div>`;
+            }
+            gridHtml += `</div>`;
+
+            // Day Columns
+            for(let d=0; d<5; d++) {
+                gridHtml += `<div class="cal-day-col" id="cal-day-${d}">`;
+                // Add hour grid lines
+                for(let h=startHour; h<=endHour; h++) {
+                    gridHtml += `<div class="cal-hour-slot"></div>`;
+                }
+                
+                // Add Current Time Indicator (Mock: Wednesday at 10:15 AM)
+                if(days[d].isToday) {
+                    // (10 - 7) * 60px + 15px = 195px
+                    gridHtml += `<div class="cal-current-time" style="top: 195px;"></div>`;
+                }
+                
+                gridHtml += `</div>`;
+            }
+
+            gridHtml += `</div></div></div>`; // Close grid body, scroll, container
+            
+            msgContainer.innerHTML = gridHtml;
+
+            // Inject Events with Precise Positioning
+            calendarEvents.forEach(evt => {
+                const dayCol = document.getElementById(`cal-day-${evt.col - 1}`);
+                if (dayCol) {
+                    const startParts = evt.start.split(':').map(Number);
+                    const endParts = evt.end.split(':').map(Number);
+                    
+                    // Calculate relative position (minutes from startHour)
+                    const startMin = (startParts[0] - startHour) * 60 + startParts[1];
+                    const endMin = (endParts[0] - startHour) * 60 + endParts[1];
+                    
+                    // 1 hour = 60px height -> 1 minute = 1px
+                    const top = startMin;
+                    const height = endMin - startMin;
+
+                    const el = document.createElement('div');
+                    el.className = `cal-event-card ${evt.color}`;
+                    el.style.top = `${top}px`;
+                    el.style.height = `${height}px`;
+                    el.innerHTML = `
+                        <div class="truncate leading-tight">${evt.title}</div>
+                        <div class="text-[10px] opacity-80 mt-0.5">${evt.start} - ${evt.end}</div>
+                    `;
+                    dayCol.appendChild(el);
+                }
+            });
+        }
+
+        // --- APPS Logic ---
+        function renderAppsMain() {
+            const header = document.getElementById('chat-header');
+            const msgContainer = document.getElementById('message-container');
+            header.innerHTML = `<h2 class="font-bold text-lg px-5 text-[#242424]">Apps</h2>`;
+            
+            let html = `<div class="p-8 grid grid-cols-3 gap-6">`;
+            appsData.forEach(app => {
+                html += `
+                    <div class="bg-white border border-[#e1dfdd] rounded-lg p-6 hover:shadow-md cursor-pointer transition-shadow flex items-start space-x-4">
+                        <i class="${app.icon} text-3xl ${app.color}"></i>
+                        <div>
+                            <h3 class="font-bold text-lg text-[#242424]">${app.name}</h3>
+                            <p class="text-sm text-[#616161] mt-1">Boost productivity with the ${app.name} integration.</p>
+                            <button class="mt-4 px-3 py-1 bg-white border border-[#d1d1d1] text-xs font-semibold rounded hover:bg-gray-50">Open</button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+            msgContainer.innerHTML = html;
+        }
+        
+        // --- CALLS Logic ---
+        function renderCallsSidebar() {
+             const container = document.getElementById('list-container');
+             container.innerHTML = '';
+             const header = document.createElement('div');
+             header.className = "px-3 py-2 text-xs font-semibold text-[#616161] mt-2 mb-1";
+             header.innerText = "Speed Dial";
+             container.appendChild(header);
+
+             Object.values(users).forEach(user => {
+                 const el = document.createElement('div');
+                 el.className = "flex items-center px-3 py-3 cursor-pointer hover:bg-[#edebe9] group rounded-md mx-2";
+                 el.innerHTML = `
+                    <img src="${user.avatar}" class="w-10 h-10 rounded-full mr-3 border border-gray-200">
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-sm text-[#242424]">${user.name}</h3>
+                        <p class="text-xs text-[#616161]">${user.role}</p>
+                    </div>
+                    <button class="opacity-0 group-hover:opacity-100 text-[#616161] hover:text-[#5b5fc7] transition-opacity p-2" onclick="startVideoCall('${user.name}', 'video')"><i class="fa-solid fa-video"></i></button>
+                    <button class="opacity-0 group-hover:opacity-100 text-[#616161] hover:text-[#5b5fc7] transition-opacity p-2 ml-1" onclick="startVideoCall('${user.name}', 'audio')"><i class="fa-solid fa-phone"></i></button>
+                 `;
+                 container.appendChild(el);
+             });
+        }
+        function renderCallsMain() {
+            const header = document.getElementById('chat-header');
+            const msgContainer = document.getElementById('message-container');
+            header.innerHTML = `<h2 class="text-lg font-bold px-5 text-[#242424]">History</h2>`;
+            let html = `<div class="p-6"><div class="bg-white rounded border border-[#e1dfdd]"><table class="w-full text-left text-sm">
+                <thead class="bg-[#faf9f8] border-b border-[#e1dfdd] text-xs text-[#616161] font-semibold uppercase"><tr class="h-10"><th class="pl-4">Name</th><th>Type</th><th>Duration</th><th>Date</th></tr></thead>
+                <tbody>`;
+            calls.forEach(c => {
+                 const u = users[c.userId];
+                 html += `<tr class="border-b border-[#f3f2f1] hover:bg-[#faf9f8] h-12">
+                    <td class="pl-4 font-medium flex items-center h-12"><img src="${u.avatar}" class="w-6 h-6 rounded-full mr-3">${u.name}</td>
+                    <td class="text-[#616161]">${c.type === 'incoming' ? (c.status === 'missed' ? '<i class="fa-solid fa-arrow-down text-[#c4314b] mr-2"></i> Missed' : '<i class="fa-solid fa-arrow-down text-[#616161] mr-2"></i> Incoming') : '<i class="fa-solid fa-arrow-up text-[#616161] mr-2"></i> Outgoing'}</td>
+                    <td class="text-[#616161] font-mono">${c.duration}</td>
+                    <td class="text-[#616161]">${c.time}</td>
+                 </tr>`;
+            });
+            html += `</tbody></table></div></div>`;
+            msgContainer.innerHTML = html;
+        }
+
+        // --- Helper: Bubble Rendering ---
+        function renderMessageBubble(msg, chatUser, isSequence) {
+            const msgContainer = document.getElementById('message-container');
+            const isMe = msg.senderId === 'me';
+            let avatarSrc, senderName;
+            if (isMe) {
+                avatarSrc = "https://api.dicebear.com/7.x/avataaars/svg?seed=Me";
+                senderName = "You";
+            } else {
+                const senderObj = users[msg.senderId] || chatUser; 
+                avatarSrc = senderObj.avatar;
+                senderName = senderObj.name;
+            }
+            const div = document.createElement('div');
+            
+            // Align "Me" to the right using flex-row-reverse, others to left
+            div.className = `flex group px-4 animate-fade-in ${isSequence ? 'mt-1' : 'mt-4'} ${isMe ? 'flex-row-reverse' : ''}`; 
+            
+            // Dynamic margin for avatar based on side
+            const avatarMargin = isMe ? 'ml-3' : 'mr-3';
+            
+            // Align internal text content
+            const flexAlign = isMe ? 'items-end' : 'items-start';
+            const headerJustify = isMe ? 'justify-end' : 'justify-start';
+
+            const avatarHtml = isSequence 
+                ? `<div class="w-8 h-8 ${avatarMargin}"></div>` 
+                : `<div class="${avatarMargin} flex-shrink-0 pt-1 cursor-pointer hover:opacity-80"><img src="${avatarSrc}" class="w-8 h-8 rounded-full border border-gray-200"></div>`;
+            
+            const headerHtml = isSequence 
+                ? `` 
+                : `<div class="flex items-baseline space-x-2 mb-1 ${headerJustify}">
+                        <span class="font-semibold text-xs text-[#242424] cursor-pointer hover:underline">${senderName}</span>
+                        <span class="text-[10px] text-[#616161]">${msg.time}</span>
+                   </div>`;
+
+            div.innerHTML = `
+                ${avatarHtml}
+                <div class="flex-1 min-w-0 flex flex-col ${flexAlign}">
+                    ${headerHtml}
+                    <div class="relative inline-block max-w-[85%] text-left">
+                         <div class="rich-text-content px-4 py-2.5 rounded-md text-sm shadow-sm ${isMe ? 'message-bubble-mine' : 'message-bubble-other'}">
+                            ${msg.text}
+                         </div>
+                    </div>
+                </div>
+            `;
+            msgContainer.appendChild(div);
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('message-container');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function sendMessage() {
+            const editor = document.getElementById('message-editor');
+            if(!editor) return; 
+            const text = editor.innerHTML;
+            const plainText = editor.innerText.trim();
+            if (!plainText && !text.includes('<img')) return; 
+            
+            const chat = chats.find(c => c.id === activeChatId);
+            const user = users[chat.userId];
+            const lastMsg = chat.messages[chat.messages.length - 1];
+            const isSequence = lastMsg && lastMsg.senderId === 'me';
+
+            const newMsg = {
+                id: Date.now(),
+                senderId: 'me',
+                text: text, 
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                type: 'text'
+            };
+            chat.messages.push(newMsg);
+            chat.lastMessage = "You: " + plainText;
+            chat.timestamp = "Now";
+
+            renderMessageBubble(newMsg, user, isSequence);
+            editor.innerHTML = '';
+            scrollToBottom();
+            renderChatSidebar();
+        }
+
+        // --- Video/Audio Call Logic ---
+        function startVideoCall(name, type) {
+            const overlay = document.getElementById('video-call-overlay');
+            const title = document.getElementById('call-title');
+            const timer = document.getElementById('call-timer');
+            const content = document.getElementById('call-content-area');
+            
+            title.innerText = `Calling ${name}...`;
+            timer.innerText = "Connecting...";
+            overlay.classList.remove('hidden');
+
+            if (type === 'audio') {
+                content.innerHTML = `
+                    <div class="flex flex-col items-center">
+                        <div class="w-32 h-32 rounded-full bg-gradient-to-br from-[#5b5fc7] to-purple-600 flex items-center justify-center text-4xl font-bold text-white shadow-2xl pulse-avatar mb-6">
+                            ${name[0]}
+                        </div>
+                        <h2 class="text-2xl font-bold">${name}</h2>
+                        <p class="text-gray-400 mt-2">Teams Audio Call</p>
+                    </div>
+                `;
+            } else {
+                content.innerHTML = `
+                <div class="video-grid" id="video-grid-container">
+                    <div class="bg-gray-800 rounded-lg relative overflow-hidden flex items-center justify-center border border-gray-700 shadow-lg">
+                        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80" class="w-full h-full object-cover opacity-80">
+                         <div class="absolute bottom-3 left-3 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm text-xs font-medium text-white">${name}</div>
+                    </div>
+                     <div class="bg-gray-800 rounded-lg relative overflow-hidden flex items-center justify-center border border-gray-700 shadow-lg">
+                        <div class="w-24 h-24 rounded-full bg-gradient-to-br from-[#5b5fc7] to-purple-600 flex items-center justify-center text-3xl font-bold shadow-inner">ME</div>
+                        <div class="absolute bottom-3 left-3 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-sm text-xs font-medium text-white">You</div>
+                    </div>
+                </div>`;
+            }
+
+            let seconds = 0;
+            if(callTimerInterval) clearInterval(callTimerInterval);
+            callTimerInterval = setInterval(() => {
+                seconds++;
+                const min = Math.floor(seconds / 60).toString().padStart(2, '0');
+                const sec = (seconds % 60).toString().padStart(2, '0');
+                timer.innerText = `${min}:${sec}`;
+                if(seconds === 1) title.innerText = type === 'audio' ? `Call with ${name}` : 'Video Call';
+            }, 1000);
+        }
+
+        function endVideoCall() {
+            document.getElementById('video-call-overlay').classList.add('hidden');
+            clearInterval(callTimerInterval);
+        }
+
+        function toggleCallState(btn, type) {
+            btn.classList.toggle('bg-white');
+            btn.classList.toggle('text-gray-900');
+            const icon = btn.querySelector('i');
+            if(type === 'video') {
+                icon.classList.toggle('fa-video');
+                icon.classList.toggle('fa-video-slash');
+            } else {
+                icon.classList.toggle('fa-microphone');
+                icon.classList.toggle('fa-microphone-slash');
+            }
+        }
+        
+        function toggleProfileModal(event) {
+            event.stopPropagation();
+            document.getElementById('profile-modal').classList.toggle('hidden');
+        }
+
+        document.addEventListener('click', (e) => {
+             const modal = document.getElementById('profile-modal');
+             const profileTrigger = document.querySelector('[onclick="toggleProfileModal(event)"]');
+             if (!modal.classList.contains('hidden') && !modal.contains(e.target) && !profileTrigger.contains(e.target)) {
+                 modal.classList.add('hidden');
+             }
+        });
+
+        // --- SETTINGS LOGIC ---
+        function openSettings() {
+            document.getElementById('settings-modal').classList.remove('hidden');
+            document.getElementById('profile-modal').classList.add('hidden'); // Close profile modal
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
+        function switchSettingsTab(tabId) {
+            // Hide all tabs
+            ['general', 'privacy', 'notifications', 'appearance'].forEach(id => {
+                document.getElementById(`settings-${id}`).classList.add('hidden');
+            });
+            // Show selected
+            document.getElementById(`settings-${tabId}`).classList.remove('hidden');
+            
+            // Update active state in sidebar
+            const items = document.querySelectorAll('.settings-nav-item');
+            items.forEach(item => {
+                item.classList.remove('font-semibold', 'bg-[#e1dfdd]', 'active'); 
+                if(item.getAttribute('onclick').includes(tabId)) {
+                    item.classList.add('font-semibold', 'bg-[#e1dfdd]', 'active');
+                }
+            });
+        }
+
+        // NOTE: We do NOT call switchMainTab here anymore.
+        // We wait for the user to login.
+    </script>
+</body>
+</html>

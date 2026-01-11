@@ -1,0 +1,237 @@
+@page
+@model Annonate.Api.Pages.LoginModel
+@{
+    ViewData["Title"] = "Sign in to your account";
+    Layout = null; // Login page doesn't use layout
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign in to your account</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- Core Styling & Resets --- */
+        body {
+            font-family: 'Segoe UI', 'Segoe UI Web (West European)', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
+            overflow: hidden; 
+            background-color: #f5f5f5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- LOGIN PAGE STYLES --- */
+        .login-bg {
+            background-color: #e9e9e9; /* Fallback */
+            background-image: radial-gradient(circle at 50% 50%, #f3f3f3 0%, #e1e1e1 100%);
+        }
+        .login-card {
+            background: white;
+            padding: 44px;
+            width: 440px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .login-input {
+            width: 100%;
+            border: none;
+            border-bottom: 1px solid #666;
+            padding: 8px 0;
+            font-size: 15px;
+            margin-bottom: 16px;
+            transition: border-color 0.2s;
+        }
+        .login-input:focus {
+            outline: none;
+            border-bottom: 1px solid #0067b8;
+        }
+        .login-btn {
+            background-color: #0067b8;
+            color: white;
+            border: none;
+            padding: 8px 32px;
+            font-size: 15px;
+            cursor: pointer;
+            float: right;
+            transition: background-color 0.2s;
+            min-width: 108px;
+        }
+        .login-btn:hover {
+            background-color: #005da6;
+        }
+        .fade-enter {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+        .fade-enter-active {
+            opacity: 1;
+            transform: translateX(0);
+            transition: opacity 300ms, transform 300ms;
+        }
+        .fade-exit {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .fade-exit-active {
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: opacity 300ms, transform 300ms;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen relative">
+    <!-- ========================= -->
+    <!-- LOGIN SCREEN              -->
+    <!-- ========================= -->
+    <div id="login-screen" class="fixed inset-0 z-50 login-bg flex items-center justify-center font-['Segoe_UI']">
+        <div class="login-card">
+            <div class="mb-4">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" alt="Microsoft" class="h-6">
+            </div>
+            
+            <div id="login-step-1">
+                <h1 class="text-2xl font-semibold text-[#1b1b1b] mb-2">Sign in</h1>
+                <div id="login-error" class="hidden text-[#e81123] text-sm mb-4">Please enter a valid email address.</div>
+                
+                <input type="text" id="email-input" class="login-input" placeholder="Email, phone, or Skype">
+                
+                <div class="text-[13px] text-[#1b1b1b] mb-4">
+                    No account? <a href="/Register" class="text-[#0067b8] hover:underline">Create one!</a>
+                </div>
+                <div class="text-[13px] text-[#0067b8] hover:underline cursor-pointer mb-8">
+                    Sign in with a security key <span class="text-lg inline-block align-middle ml-1">?</span>
+                </div>
+                
+                <div class="flex justify-end">
+                    <button class="login-btn" onclick="handleLoginStep1()">Next</button>
+                </div>
+            </div>
+
+            <div id="login-step-2" class="hidden">
+                <div class="flex items-center mb-4 cursor-pointer" onclick="backToStep1()">
+                    <i class="fa-solid fa-arrow-left text-[#1b1b1b] mr-2 text-sm"></i>
+                    <span id="display-email" class="text-[#1b1b1b] text-sm">user@example.com</span>
+                </div>
+                <h1 class="text-2xl font-semibold text-[#1b1b1b] mb-2">Enter password</h1>
+                <div id="password-error" class="hidden text-[#e81123] text-sm mb-4">Please enter your password.</div>
+                
+                <input type="password" id="password-input" class="login-input" placeholder="Password">
+                
+                <div class="text-[13px] text-[#0067b8] hover:underline cursor-pointer mb-8">
+                    Forgot password?
+                </div>
+                
+                <div class="flex justify-end">
+                    <button class="login-btn" onclick="handleLoginStep2()">Sign in</button>
+                </div>
+            </div>
+
+            <!-- Loading Spinner State -->
+            <div id="login-loading" class="hidden flex flex-col items-center justify-center py-10">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0067b8] mb-4"></div>
+                <p class="text-base text-[#1b1b1b]">Signing in...</p>
+            </div>
+        </div>
+        <div class="absolute bottom-4 right-4 flex space-x-4 text-xs text-[#1b1b1b] cursor-pointer">
+            <span class="hover:underline">Terms of use</span>
+            <span class="hover:underline">Privacy & cookies</span>
+            <span class="hover:underline">...</span>
+        </div>
+    </div>
+
+    @Html.AntiForgeryToken()
+    <script>
+        // --- LOGIN LOGIC ---
+        function handleLoginStep1() {
+            const email = document.getElementById('email-input').value;
+            const error = document.getElementById('login-error');
+            
+            if (email.trim() === '') {
+                error.classList.remove('hidden');
+            } else {
+                error.classList.add('hidden');
+                document.getElementById('display-email').innerText = email;
+                
+                const step1 = document.getElementById('login-step-1');
+                step1.classList.add('fade-exit-active');
+                setTimeout(() => {
+                    step1.classList.add('hidden');
+                    step1.classList.remove('fade-exit-active');
+                    
+                    const step2 = document.getElementById('login-step-2');
+                    step2.classList.remove('hidden');
+                    step2.classList.add('fade-enter');
+                    setTimeout(() => step2.classList.remove('fade-enter'), 300);
+                }, 200);
+            }
+        }
+
+        function backToStep1() {
+            document.getElementById('login-step-2').classList.add('hidden');
+            document.getElementById('login-step-1').classList.remove('hidden');
+        }
+
+        async function handleLoginStep2() {
+            const email = document.getElementById('email-input').value;
+            const password = document.getElementById('password-input').value;
+            const error = document.getElementById('password-error');
+            
+            if (password.trim() === '') {
+                error.classList.remove('hidden');
+            } else {
+                error.classList.add('hidden');
+                document.getElementById('login-step-2').classList.add('hidden');
+                document.getElementById('login-loading').classList.remove('hidden');
+                
+                try {
+                    const response = await fetch('@Url.Page("/Login", "Login")', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            email: email,
+                            password: password
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    console.log('Login response:', result);
+                    
+                    if (result.success) {
+                        // Redirect to main app
+                        window.location.href = '/Index';
+                    } else {
+                        error.innerText = result.message || 'Invalid email or password';
+                        error.classList.remove('hidden');
+                        document.getElementById('login-loading').classList.add('hidden');
+                        document.getElementById('login-step-2').classList.remove('hidden');
+                    }
+                } catch (err) {
+                    console.error('Login error:', err);
+                    error.innerText = 'An error occurred. Please try again.';
+                    error.classList.remove('hidden');
+                    document.getElementById('login-loading').classList.add('hidden');
+                    document.getElementById('login-step-2').classList.remove('hidden');
+                }
+            }
+        }
+
+        // Handle Enter key on Login inputs
+        document.getElementById('email-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') handleLoginStep1();
+        });
+        document.getElementById('password-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') handleLoginStep2();
+        });
+    </script>
+</body>
+</html>

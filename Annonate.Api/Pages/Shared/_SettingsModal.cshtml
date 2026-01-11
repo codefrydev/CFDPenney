@@ -1,0 +1,115 @@
+<!-- Settings Modal -->
+<div id="settings-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 font-['Segoe_UI']">
+    <div class="bg-white w-[700px] h-[500px] rounded-lg shadow-2xl flex flex-col overflow-hidden animate-fade-in">
+        <!-- Header -->
+        <div class="flex justify-between items-center px-6 py-4 border-b border-[#e0e0e0]">
+            <h2 class="text-xl font-semibold text-[#242424]">Settings</h2>
+            <button onclick="closeSettings()" class="text-[#616161] hover:text-[#242424]"><i class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+        
+        <!-- Body -->
+        <div class="flex flex-1 overflow-hidden">
+            <!-- Sidebar -->
+            <div class="w-48 bg-[#f5f5f5] flex flex-col py-2 border-r border-[#e0e0e0]">
+                <div class="settings-nav-item active px-4 py-2 cursor-pointer text-sm font-semibold bg-[#e1dfdd]" onclick="switchSettingsTab('general')">
+                    <i class="fa-solid fa-gear mr-3 w-4 text-center"></i> General
+                </div>
+                <div class="settings-nav-item px-4 py-2 cursor-pointer text-sm hover:bg-[#e1dfdd]" onclick="switchSettingsTab('privacy')">
+                    <i class="fa-solid fa-lock mr-3 w-4 text-center"></i> Privacy
+                </div>
+                <div class="settings-nav-item px-4 py-2 cursor-pointer text-sm hover:bg-[#e1dfdd]" onclick="switchSettingsTab('notifications')">
+                    <i class="fa-regular fa-bell mr-3 w-4 text-center"></i> Notifications
+                </div>
+                 <div class="settings-nav-item px-4 py-2 cursor-pointer text-sm hover:bg-[#e1dfdd]" onclick="switchSettingsTab('appearance')">
+                    <i class="fa-solid fa-palette mr-3 w-4 text-center"></i> Appearance
+                </div>
+            </div>
+            
+            <!-- Content -->
+            <div class="flex-1 p-6 overflow-y-auto bg-white" id="settings-content">
+                <!-- General Tab -->
+                <div id="settings-general">
+                    <h3 class="font-semibold text-sm mb-4 text-[#242424]">Theme</h3>
+                    <div class="flex space-x-4 mb-6">
+                        <div class="cursor-pointer">
+                            <div class="w-24 h-16 bg-[#f5f5f5] border-2 border-[#5b5fc7] rounded mb-2 relative">
+                                <div class="absolute inset-0 flex items-center justify-center text-[#5b5fc7]"><i class="fa-solid fa-check-circle"></i></div>
+                            </div>
+                            <div class="text-xs text-center font-semibold text-[#242424]">Default</div>
+                        </div>
+                        <div class="cursor-pointer opacity-70 hover:opacity-100">
+                            <div class="w-24 h-16 bg-[#201f1f] border border-gray-300 rounded mb-2"></div>
+                            <div class="text-xs text-center text-[#242424]">Dark</div>
+                        </div>
+                         <div class="cursor-pointer opacity-70 hover:opacity-100">
+                            <div class="w-24 h-16 bg-black border border-yellow-400 rounded mb-2"></div>
+                            <div class="text-xs text-center text-[#242424]">High Contrast</div>
+                        </div>
+                    </div>
+                    
+                    <h3 class="font-semibold text-sm mb-2 text-[#242424]">Application</h3>
+                    <div class="flex items-center mb-2">
+                        <input type="checkbox" checked class="mr-2 h-4 w-4 accent-[#5b5fc7]">
+                        <span class="text-sm text-[#242424]">Auto-start application</span>
+                    </div>
+                     <div class="flex items-center mb-2">
+                        <input type="checkbox" checked class="mr-2 h-4 w-4 accent-[#5b5fc7]">
+                        <span class="text-sm text-[#242424]">Open application in background</span>
+                    </div>
+                </div>
+
+                <!-- Privacy Tab -->
+                <div id="settings-privacy" class="hidden">
+                    <h3 class="font-semibold text-sm mb-4 text-[#242424]">Privacy</h3>
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-sm text-[#242424]">Read receipts</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                              <input type="checkbox" value="" class="sr-only peer" checked>
+                              <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#5b5fc7]"></div>
+                            </label>
+                        </div>
+                        <p class="text-xs text-[#616161]">Let people know when you've seen their messages and know when they've seen yours.</p>
+                    </div>
+                     <button class="border border-[#d1d1d1] px-4 py-1.5 rounded text-sm hover:bg-gray-50 text-[#242424]">Manage blocked contacts</button>
+                </div>
+                
+                <!-- Notifications Tab -->
+                <div id="settings-notifications" class="hidden">
+                     <h3 class="font-semibold text-sm mb-4 text-[#242424]">Email</h3>
+                     <div class="mb-6">
+                        <label class="text-sm block mb-1 text-[#242424]">Missed activity emails</label>
+                        <select class="border border-[#d1d1d1] rounded px-2 py-1 text-sm w-full outline-none focus:border-[#5b5fc7] text-[#242424]">
+                            <option>Once every hour</option>
+                            <option>As soon as possible</option>
+                            <option>Daily</option>
+                        </select>
+                     </div>
+                     <h3 class="font-semibold text-sm mb-4 text-[#242424]">Appearance and Sound</h3>
+                     <div class="flex items-center mb-2">
+                        <input type="checkbox" checked class="mr-2 h-4 w-4 accent-[#5b5fc7]">
+                        <span class="text-sm text-[#242424]">Play sound for incoming calls and notifications</span>
+                    </div>
+                </div>
+                
+                 <!-- Appearance Tab -->
+                <div id="settings-appearance" class="hidden">
+                     <h3 class="font-semibold text-sm mb-4 text-[#242424]">Layout</h3>
+                     <div class="mb-4">
+                        <label class="text-sm block mb-1 text-[#242424]">Chat density</label>
+                        <div class="flex items-center space-x-4 mt-2">
+                            <label class="flex items-center">
+                                <input type="radio" name="density" checked class="mr-2 text-[#5b5fc7] accent-[#5b5fc7]">
+                                <span class="text-sm text-[#242424]">Comfy</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="density" class="mr-2 text-[#5b5fc7] accent-[#5b5fc7]">
+                                <span class="text-sm text-[#242424]">Compact</span>
+                            </label>
+                        </div>
+                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

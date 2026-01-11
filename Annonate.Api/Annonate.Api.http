@@ -1,0 +1,6 @@
+@Annonate.Api_HostAddress = http://localhost:5030
+
+GET {{Annonate.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
