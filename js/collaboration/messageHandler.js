@@ -5,6 +5,7 @@ import { denormalizeElement } from '../../shared/collaboration/coordinateUtils.j
 import { sendToPeer as sharedSendToPeer } from '../../shared/collaboration/messageSender.js';
 import { handleChatMessage, handleChatReaction } from './chat.js';
 import { webAdapter } from '../../shared/adapters/webAdapter.js';
+import { startTrailAnimation } from '../trails.js';
 
 // Wrapper for sendToPeer that includes state
 function sendToPeer(message, peerId = null) {
@@ -96,6 +97,13 @@ export function handlePeerMessage(message, peerId) {
                 isActive: true, // Mark as active drawing
                 peerId: senderPeerId // Track which peer created this
             };
+            // Add timestamp and type for trail elements
+            if (message.tool === 'trail' && message.timestamp) {
+                newPeerElement.timestamp = message.timestamp;
+                newPeerElement.trailType = message.trailType || 'fade';
+                // Start the animation loop for trails
+                startTrailAnimation();
+            }
             // Add shape-specific properties
             if (message.sides) newPeerElement.sides = message.sides;
             if (message.radius !== undefined) newPeerElement.radius = message.radius;
@@ -130,7 +138,7 @@ export function handlePeerMessage(message, peerId) {
             }
             
             if (activePeerEl) {
-                if (message.tool === 'pencil' || message.tool === 'eraser') {
+                if (message.tool === 'pencil' || message.tool === 'eraser' || message.tool === 'trail') {
                     activePeerEl.points.push({ x: denormMove.x, y: denormMove.y });
                 } else {
                     activePeerEl.end = { x: denormMove.x, y: denormMove.y };

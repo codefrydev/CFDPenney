@@ -56,6 +56,11 @@ export const state = {
     isTyping: false, // Typing indicator state
     // Panel state
     participantsPanelWidth: 320, // Default width in pixels
-    participantsPanelVisible: false // Whether panel is visible (user preference)
+    participantsPanelVisible: false, // Whether panel is visible (user preference)
+    // Trail tool state
+    trailFadeDuration: 3000, // Duration in ms before trails completely fade
+    trailType: 'fade', // Trail effect type: 'fade', 'sequential', 'laser'
+    animationFrameId: null, // RAF ID for trail animation loop
+    trailsActive: false // Whether trail animation loop is running
 };
 

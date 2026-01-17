@@ -67,5 +67,10 @@ export const state = {
     participantsPanelWidth: 320, // Participants panel width (not used)
     participantsPanelVisible: false, // Participants panel visible (not used)
     spaceKeyPressed: false, // Space key pressed state for pan
+    // Trail tool state
+    trailFadeDuration: 3000, // Duration in ms before trails completely fade
+    trailType: 'fade', // Trail effect type: 'fade', 'sequential', 'laser'
+    animationFrameId: null, // RAF ID for trail animation loop
+    trailsActive: false // Whether trail animation loop is running
 };
 

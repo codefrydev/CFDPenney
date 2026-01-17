@@ -450,6 +450,37 @@ function setupEventListeners() {
         });
     }
 
+    // Trail Duration Slider
+    const trailSlider = document.getElementById('trail-slider');
+    const trailDurationValue = document.getElementById('trail-duration-value');
+    if (trailSlider && trailDurationValue) {
+        trailSlider.addEventListener('input', (e) => {
+            state.trailFadeDuration = parseInt(e.target.value);
+            trailDurationValue.textContent = `${(state.trailFadeDuration / 1000).toFixed(1)}s`;
+        });
+    }
+    
+    // Trail Type Buttons
+    const trailTypeButtons = document.querySelectorAll('.trail-type-btn');
+    function updateTrailTypeButtons() {
+        trailTypeButtons.forEach(btn => {
+            if (btn.dataset.type === state.trailType) {
+                btn.classList.add('bg-indigo-600', 'text-white');
+                btn.classList.remove('bg-tertiary', 'text-secondary');
+            } else {
+                btn.classList.remove('bg-indigo-600', 'text-white');
+                btn.classList.add('bg-tertiary', 'text-secondary');
+            }
+        });
+    }
+    trailTypeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            state.trailType = btn.dataset.type;
+            updateTrailTypeButtons();
+        });
+    });
+    updateTrailTypeButtons();
+
     // Mobile stroke width slider
     if (mobileStrokeSlider) {
         mobileStrokeSlider.addEventListener('input', (e) => {

@@ -70,7 +70,7 @@ export function handlePeerMessage(message, peerId) {
             const denormStart = denormalizeCoordinates(message.nx, message.ny, canvasWidth, canvasHeight);
             const strokeId = message.id || `stroke-${senderPeerId}-${Date.now()}`;
             
-            state.strokes.set(strokeId, {
+            const newStroke = {
                 id: strokeId,
                 peerId: senderPeerId,
                 tool: message.tool || 'pencil',
@@ -78,13 +78,20 @@ export function handlePeerMessage(message, peerId) {
                 width: message.width || 4,
                 points: [{ x: denormStart.x, y: denormStart.y }],
                 isActive: true
-            });
+            };
             
+            // Add timestamp and type for trail strokes
+            if (message.tool === 'trail' && message.timestamp) {
+                newStroke.timestamp = message.timestamp;
+                newStroke.trailType = message.trailType || 'fade';
+            }
+            
+            state.strokes.set(strokeId, newStroke);
             state.activeStrokes.set(senderPeerId, strokeId);
             
             // Forward to overlay via IPC if available
             if (window.electronAPI) {
-                window.electronAPI.sendStrokeStart({
+                const overlayMessage = {
                     id: strokeId,
                     peerId: senderPeerId,
                     tool: message.tool,
@@ -92,7 +99,15 @@ export function handlePeerMessage(message, peerId) {
                     width: message.width,
                     x: denormStart.x,
                     y: denormStart.y
-                });
+                };
+                
+                // Include timestamp and type for trail strokes
+                if (message.tool === 'trail' && message.timestamp) {
+                    overlayMessage.timestamp = message.timestamp;
+                    overlayMessage.trailType = message.trailType || 'fade';
+                }
+                
+                window.electronAPI.sendStrokeStart(overlayMessage);
             }
             break;
             

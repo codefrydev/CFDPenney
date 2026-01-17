@@ -4,6 +4,7 @@ import { getMousePos, getCanvas, redrawCanvas, normalizeCoordinates } from './ca
 import { setTool, confirmText, startText } from './tools.js';
 import { sendToAllPeers } from './collaboration.js';
 import { handleShapeStart, handleShapeMove, handleShapeEnd, isShapeTool } from './shapes/shapeHandlers.js';
+import { startTrailAnimation } from './trails.js';
 
 // Throttle ANNOTATION_MOVE messages to reduce network overhead
 let lastMoveMessageTime = 0;
@@ -147,6 +148,14 @@ export function handleStart(e) {
         end: { x, y },
         isActive: true
     };
+    
+    // Add timestamp and type for trail elements
+    if (state.tool === 'trail') {
+        newElement.timestamp = Date.now();
+        newElement.trailType = state.trailType || 'fade';
+        // Start the animation loop for trails
+        startTrailAnimation();
+    }
 
     // Slice history for redo path
     state.elements = state.elements.slice(0, state.historyStep + 1);
@@ -156,7 +165,7 @@ export function handleStart(e) {
     // Send to all peers (normalize coordinates for cross-resolution compatibility)
     if (state.isCollaborating) {
         const normalized = normalizeCoordinates(x, y);
-        sendToAllPeers({
+        const message = {
             type: 'ANNOTATION_START',
             id: elementId,
             tool: state.tool,
@@ -166,7 +175,15 @@ export function handleStart(e) {
             width: newElement.width,
             x: normalized.x,
             y: normalized.y
-        });
+        };
+        
+        // Include timestamp and type for trail elements
+        if (state.tool === 'trail') {
+            message.timestamp = newElement.timestamp;
+            message.trailType = newElement.trailType;
+        }
+        
+        sendToAllPeers(message);
     }
 
     redrawCanvas(); // Draw the initial point
@@ -194,7 +211,7 @@ export function handleMove(e) {
     
     const currentElement = state.elements[state.historyStep];
 
-    if (state.tool === 'pencil' || state.tool === 'eraser') {
+    if (state.tool === 'pencil' || state.tool === 'eraser' || state.tool === 'trail') {
         currentElement.points.push({ x, y });
     } else {
         currentElement.end = { x, y };

@@ -45,7 +45,13 @@ export const state = {
     selectedSpeakerId: null,
     
     // Audio mute state
-    isAudioMuted: true // Audio muted by default
+    isAudioMuted: true, // Audio muted by default
+    
+    // Trail tool state
+    trailFadeDuration: 3000, // Duration in ms before trails completely fade
+    trailType: 'fade', // Trail effect type: 'fade', 'sequential', 'laser'
+    animationFrameId: null, // RAF ID for trail animation loop
+    trailsActive: false // Whether trail animation loop is running
 };
 
 // Generate color from peer ID

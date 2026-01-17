@@ -3,6 +3,7 @@ import { state } from './state.js';
 import { renderShape } from './shapes/shapeRenderer.js';
 import { renderSticker } from './stickers/stickerRenderer.js';
 import { renderSelection } from './selection/selectionUI.js';
+import { getTrailOpacity } from './trails.js';
 
 let canvas = null;
 let ctx = null;
@@ -64,9 +65,93 @@ export function drawArrow(ctx, fromx, fromy, tox, toy) {
     ctx.fill();
 }
 
+// Render trail element with special effects
+function renderTrailElement(el, isPeer = false) {
+    if (!el.points || el.points.length < 2) return;
+    
+    const trailType = el.trailType || 'fade';
+    const totalPoints = el.points.length;
+    
+    ctx.strokeStyle = el.color;
+    ctx.lineWidth = el.width;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.globalCompositeOperation = 'source-over';
+    
+    if (trailType === 'sequential') {
+        // Snake trail: render each segment with different opacity
+        for (let i = 0; i < totalPoints - 1; i++) {
+            ctx.beginPath();
+            ctx.moveTo(el.points[i].x, el.points[i].y);
+            ctx.lineTo(el.points[i + 1].x, el.points[i + 1].y);
+            
+            // Calculate opacity for this segment
+            let opacity = getTrailOpacity(el, i, totalPoints);
+            if (isPeer) opacity *= 0.8;
+            ctx.globalAlpha = opacity;
+            
+            ctx.stroke();
+        }
+    } else if (trailType === 'laser') {
+        // Laser effect: bright with glow
+        const baseOpacity = getTrailOpacity(el);
+        if (isPeer) {
+            ctx.globalAlpha = baseOpacity * 0.8;
+        } else {
+            ctx.globalAlpha = baseOpacity;
+        }
+        
+        // Draw glow (outer layer)
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = el.color;
+        ctx.lineWidth = el.width + 4;
+        
+        ctx.beginPath();
+        ctx.moveTo(el.points[0].x, el.points[0].y);
+        for (let i = 1; i < totalPoints; i++) {
+            ctx.lineTo(el.points[i].x, el.points[i].y);
+        }
+        ctx.stroke();
+        
+        // Draw core (inner bright line)
+        ctx.shadowBlur = 8;
+        ctx.lineWidth = el.width;
+        
+        ctx.beginPath();
+        ctx.moveTo(el.points[0].x, el.points[0].y);
+        for (let i = 1; i < totalPoints; i++) {
+            ctx.lineTo(el.points[i].x, el.points[i].y);
+        }
+        ctx.stroke();
+        
+        // Reset shadow
+        ctx.shadowBlur = 0;
+    } else {
+        // Regular fade: entire stroke fades together
+        let opacity = getTrailOpacity(el);
+        if (isPeer) opacity *= 0.8;
+        ctx.globalAlpha = opacity;
+        
+        ctx.beginPath();
+        ctx.moveTo(el.points[0].x, el.points[0].y);
+        for (let i = 1; i < totalPoints; i++) {
+            ctx.lineTo(el.points[i].x, el.points[i].y);
+        }
+        ctx.stroke();
+    }
+    
+    ctx.globalAlpha = 1.0;
+}
+
 export function drawElements(elements, isPeer = false) {
     if (!ctx || !canvas) return;
     elements.forEach(el => {
+        // Special rendering for trail elements
+        if (el.type === 'trail') {
+            renderTrailElement(el, isPeer);
+            return;
+        }
+        
         ctx.beginPath();
         ctx.strokeStyle = el.color;
         ctx.lineWidth = el.width;
@@ -143,9 +228,8 @@ export function drawElements(elements, isPeer = false) {
             }
         }
 
-        if (isPeer) {
-            ctx.globalAlpha = 1.0;
-        }
+        // Always reset alpha after rendering an element
+        ctx.globalAlpha = 1.0;
     });
 }
 

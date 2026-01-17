@@ -2,6 +2,7 @@
 import { state, getPeerColor } from './state.js';
 import { sendToAllPeers as sharedSendToAllPeers } from '../shared/collaboration/messageSender.js';
 import { desktopAdapter } from '../shared/adapters/desktopAdapter.js';
+import { getTrailOpacity, cleanupExpiredTrails, hasActiveTrails, initTrails } from './trails.js';
 
 // Wrapper for sendToAllPeers with state
 function sendToAllPeers(message) {
@@ -89,6 +90,11 @@ function startRenderLoop() {
         // Clear canvas
         ctx.clearRect(0, 0, canvasWidth, canvasHeight);
         
+        // Clean up expired trails periodically (every 60 frames = ~1 second at 60fps)
+        if (frameCount % 60 === 0 && hasActiveTrails(remoteStrokes)) {
+            cleanupExpiredTrails(remoteStrokes);
+        }
+        
         // Render remote strokes
         remoteStrokes.forEach((stroke) => {
             renderStroke(stroke);
@@ -115,25 +121,98 @@ function startRenderLoop() {
 function renderStroke(stroke, isActive = false) {
     if (!stroke || !stroke.points || stroke.points.length < 2) return;
     
+    // Special rendering for trail strokes
+    if (stroke.tool === 'trail') {
+        renderTrailStroke(stroke, isActive);
+        return;
+    }
+    
     ctx.beginPath();
     ctx.strokeStyle = stroke.color || '#FF3B30';
     ctx.lineWidth = stroke.width || 4;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     
-    // Make active strokes slightly transparent
     if (isActive) {
         ctx.globalAlpha = 0.8;
     } else {
         ctx.globalAlpha = 1.0;
     }
     
-    // Draw the stroke
     ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
     for (let i = 1; i < stroke.points.length; i++) {
         ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
     }
     ctx.stroke();
+    
+    ctx.globalAlpha = 1.0;
+}
+
+// Render trail stroke with special effects
+function renderTrailStroke(stroke, isActive = false) {
+    const trailType = stroke.trailType || 'fade';
+    const totalPoints = stroke.points.length;
+    
+    ctx.strokeStyle = stroke.color || '#FF3B30';
+    ctx.lineWidth = stroke.width || 4;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    
+    if (trailType === 'sequential') {
+        // Snake trail
+        for (let i = 0; i < totalPoints - 1; i++) {
+            ctx.beginPath();
+            ctx.moveTo(stroke.points[i].x, stroke.points[i].y);
+            ctx.lineTo(stroke.points[i + 1].x, stroke.points[i + 1].y);
+            
+            let opacity = getTrailOpacity(stroke, i, totalPoints);
+            if (isActive) opacity *= 0.8;
+            ctx.globalAlpha = opacity;
+            
+            ctx.stroke();
+        }
+    } else if (trailType === 'laser') {
+        // Laser effect
+        const baseOpacity = getTrailOpacity(stroke);
+        ctx.globalAlpha = isActive ? baseOpacity * 0.8 : baseOpacity;
+        
+        // Glow
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = stroke.color;
+        ctx.lineWidth = (stroke.width || 4) + 4;
+        
+        ctx.beginPath();
+        ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+        for (let i = 1; i < totalPoints; i++) {
+            ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+        }
+        ctx.stroke();
+        
+        // Core
+        ctx.shadowBlur = 8;
+        ctx.lineWidth = stroke.width || 4;
+        
+        ctx.beginPath();
+        ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+        for (let i = 1; i < totalPoints; i++) {
+            ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+        }
+        ctx.stroke();
+        
+        ctx.shadowBlur = 0;
+    } else {
+        // Regular fade
+        let opacity = getTrailOpacity(stroke);
+        if (isActive) opacity *= 0.8;
+        ctx.globalAlpha = opacity;
+        
+        ctx.beginPath();
+        ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+        for (let i = 1; i < totalPoints; i++) {
+            ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+        }
+        ctx.stroke();
+    }
     
     ctx.globalAlpha = 1.0;
 }
@@ -182,6 +261,12 @@ function handleMouseDown(e) {
         isActive: true
     };
     
+    // Add timestamp and type for trail strokes
+    if (state.tool === 'trail') {
+        stroke.timestamp = Date.now();
+        stroke.trailType = state.trailType || 'fade';
+    }
+    
     remoteStrokes.set(currentStrokeId, stroke);
     
     // Send to peers
@@ -195,6 +280,12 @@ function handleMouseDown(e) {
         nx: normalized.x,
         ny: normalized.y
     };
+    
+    // Include timestamp and type for trail strokes
+    if (state.tool === 'trail') {
+        message.timestamp = stroke.timestamp;
+        message.trailType = stroke.trailType;
+    }
     
     // Send via IPC to main window for broadcasting
     if (window.electronAPI) {
@@ -348,13 +439,13 @@ if (window.electronAPI) {
     
     // Remote stroke start
     window.electronAPI.onRemoteStrokeStart((data) => {
-        const { id, peerId, tool, color, width, nx, ny } = data;
+        const { id, peerId, tool, color, width, nx, ny, timestamp, trailType } = data;
         
         // Denormalize using OUR canvas dimensions
         const x = nx * canvasWidth;
         const y = ny * canvasHeight;
         
-        remoteStrokes.set(id, {
+        const newStroke = {
             id,
             peerId,
             tool,
@@ -362,7 +453,15 @@ if (window.electronAPI) {
             width,
             points: [{ x, y }],
             isActive: true
-        });
+        };
+        
+        // Add timestamp and type for trail strokes
+        if (tool === 'trail' && timestamp) {
+            newStroke.timestamp = timestamp;
+            newStroke.trailType = trailType || 'fade';
+        }
+        
+        remoteStrokes.set(id, newStroke);
     });
     
     // Remote stroke move
@@ -462,6 +561,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
         resizeCanvas();
     }
+    
+    // Initialize trails system
+    initTrails();
     
     // Add event listeners
     canvas.addEventListener('mousedown', handleMouseDown);

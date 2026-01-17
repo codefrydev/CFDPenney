@@ -6,6 +6,7 @@ export const COLORS = [
 export const TOOLS = [
     // Drawing tools
     { id: 'pencil', icon: 'pencil', label: 'Pen', category: 'drawing' },
+    { id: 'trail', icon: 'zap', label: 'Trail Pen', category: 'drawing' },
     { id: 'eraser', icon: 'eraser', label: 'Eraser', category: 'drawing' },
     { id: 'text', icon: 'type', label: 'Text', category: 'drawing' },
     
@@ -48,3 +49,16 @@ export const ANNONATE_PLATFORM_ID = 'ANNONATE_V1';
 // Session timeout (5 minutes)
 export const SESSION_TIMEOUT = 5 * 60 * 1000;
 
+// Trail tool configuration
+export const TRAIL_FADE_DURATION = 3000; // Default: 3 seconds
+export const TRAIL_FADE_MIN = 1000; // Min: 1 second
+export const TRAIL_FADE_MAX = 10000; // Max: 10 seconds
+
+// Trail effect types
+export const TRAIL_TYPES = [
+    { id: "fade", label: "Fade Out", icon: "circle-dot", description: "Entire stroke fades together" },
+    { id: "sequential", label: "Snake Trail", icon: "move", description: "Beginning disappears first" },
+    { id: "laser", label: "Laser", icon: "zap", description: "Bright glowing effect" }
+];
+
+export const DEFAULT_TRAIL_TYPE = "fade";
