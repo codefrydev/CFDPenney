@@ -1,0 +1,136 @@
+/* ============================================
+   BADGE COMPONENT SYSTEM
+   Status badges and pills
+   ============================================ */
+
+/* Base Badge */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+
+/* Badge Sizes */
+.badge-sm {
+    padding: 2px var(--spacing-xs);
+    font-size: 0.6875rem;
+}
+
+.badge-lg {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.8125rem;
+}
+
+/* Badge Variants */
+.badge-primary {
+    background: var(--accent-primary-light);
+    color: var(--accent-primary);
+}
+
+.badge-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+}
+
+.badge-success {
+    background: var(--status-online-bg);
+    color: var(--status-online);
+}
+
+.badge-error {
+    background: var(--status-error-bg);
+    color: var(--status-error);
+}
+
+.badge-warning {
+    background: var(--status-warning-bg);
+    color: var(--status-warning);
+}
+
+.badge-info {
+    background: var(--status-info-bg);
+    color: var(--status-info);
+}
+
+/* Solid Badges */
+.badge-solid-primary {
+    background: var(--accent-primary);
+    color: white;
+}
+
+.badge-solid-success {
+    background: var(--status-online);
+    color: white;
+}
+
+.badge-solid-error {
+    background: var(--status-error);
+    color: white;
+}
+
+.badge-solid-warning {
+    background: var(--status-warning);
+    color: var(--slate-900);
+}
+
+/* Outline Badges */
+.badge-outline {
+    background: transparent;
+    border: 1px solid currentColor;
+}
+
+/* Pill Badge */
+.badge-pill {
+    border-radius: 9999px;
+}
+
+/* Badge with Dot */
+.badge-dot {
+    padding-left: var(--spacing-md);
+    position: relative;
+}
+
+.badge-dot::before {
+    content: '';
+    position: absolute;
+    left: var(--spacing-xs);
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* Animated Dot */
+.badge-dot-pulse::before {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Dark Theme */
+[data-theme="dark"] .badge-secondary {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .badge-dot-pulse::before {
+        animation: none;
+    }
+}

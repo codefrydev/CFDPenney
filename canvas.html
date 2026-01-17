@@ -269,7 +269,7 @@
 <body class="h-screen flex flex-col overflow-hidden font-sans select-none body-theme">
 
     <!-- Unified Header -->
-    <header class="header-main border-b p-2.5 sm:p-3 md:p-4 flex items-center justify-between shadow-md header-responsive shrink-0 z-20 backdrop-blur-sm annotate-header">
+    <header role="banner" class="header-main border-b p-2.5 sm:p-3 md:p-4 flex items-center justify-between shadow-md header-responsive shrink-0 z-20 backdrop-blur-sm annotate-header" aria-label="Main navigation">
         <!-- Left: Logo -->
         <h1 class="flex items-center select-none cursor-pointer group m-0" onclick="window.location.href='index.html'">
             <span class="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight header-logo-text group-hover:text-blue-600 transition-colors">CFD</span>
@@ -281,60 +281,60 @@
             
             
             <!-- Mode Switchers -->
-            <div class="flex bg-gray-700 rounded-lg p-1 space-x-1 mode-switcher-container">
-                <button id="btn-mode-board" class="annotate-mode-btn px-3 py-1.5 rounded-md text-sm font-medium flex items-center space-x-1 transition-colors annotate-mode-btn-active">
-                    <i data-lucide="square" class="w-3.5 h-3.5"></i>
+            <div class="flex bg-gray-700 rounded-lg p-1 space-x-1 mode-switcher-container" role="tablist" aria-label="Canvas modes">
+                <button id="btn-mode-board" role="tab" aria-selected="true" aria-controls="workspace-container" class="annotate-mode-btn px-3 py-1.5 rounded-md text-sm font-medium flex items-center space-x-1 transition-colors annotate-mode-btn-active" data-tooltip="Clean whiteboard for drawing" aria-label="Board mode">
+                    <i data-lucide="square" class="w-3.5 h-3.5" aria-hidden="true"></i>
                     <span>Board</span>
                 </button>
-                <button id="btn-mode-screen" class="annotate-mode-btn px-3 py-1.5 rounded-md text-sm font-medium flex items-center space-x-1 transition-colors">
-                    <i data-lucide="monitor" class="w-3.5 h-3.5"></i>
+                <button id="btn-mode-screen" role="tab" aria-selected="false" aria-controls="workspace-container" class="annotate-mode-btn px-3 py-1.5 rounded-md text-sm font-medium flex items-center space-x-1 transition-colors" data-tooltip="Share your screen and annotate" aria-label="Screen sharing mode">
+                    <i data-lucide="monitor" class="w-3.5 h-3.5" aria-hidden="true"></i>
                     <span>Screen</span>
                 </button>
-                <input type="file" id="file-input" class="hidden" accept="image/*">
+                <input type="file" id="file-input" class="hidden" accept="image/*" aria-label="Upload image file">
             </div>
 
             <div class="h-6 w-px mx-2 divider-vertical"></div>
 
-            <div class="flex items-center space-x-2">
-                <button id="btn-undo" class="p-2 rounded disabled:opacity-30 disabled:cursor-not-allowed btn-action" disabled>
-                    <i data-lucide="undo" class="w-4 h-4"></i>
+            <div class="flex items-center space-x-2" role="toolbar" aria-label="Canvas actions">
+                <button id="btn-undo" class="p-2 rounded disabled:opacity-30 disabled:cursor-not-allowed btn-action" disabled data-tooltip="Undo last action (Ctrl+Z)" aria-label="Undo last action" aria-keyshortcuts="Control+Z">
+                    <i data-lucide="undo" class="w-4 h-4" aria-hidden="true"></i>
                 </button>
-                <button id="btn-redo" class="p-2 rounded disabled:opacity-30 disabled:cursor-not-allowed btn-action" disabled>
-                    <i data-lucide="redo" class="w-4 h-4"></i>
+                <button id="btn-redo" class="p-2 rounded disabled:opacity-30 disabled:cursor-not-allowed btn-action" disabled data-tooltip="Redo last undone action (Ctrl+Y)" aria-label="Redo last undone action" aria-keyshortcuts="Control+Y">
+                    <i data-lucide="redo" class="w-4 h-4" aria-hidden="true"></i>
                 </button>
-                <button id="btn-snapshot" class="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors">
-                    <i data-lucide="camera" class="w-4 h-4"></i>
+                <button id="btn-snapshot" class="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors" data-tooltip="Capture and download canvas" aria-label="Capture and download canvas">
+                    <i data-lucide="camera" class="w-4 h-4" aria-hidden="true"></i>
                     <span class="hidden sm:inline">Snapshot</span>
                 </button>
             </div>
         </div>
 
         <!-- Right: Collaboration & Theme -->
-        <div class="flex items-center gap-1 sm:gap-2 md:gap-3">
+        <div class="flex items-center gap-1 sm:gap-2 md:gap-3" role="toolbar" aria-label="Collaboration and settings">
             <!-- Connection Status -->
-            <div id="connection-status" class="hidden flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm status-badge">
-                <div id="connection-dot" class="h-2 w-2 rounded-full status-dot"></div>
+            <div id="connection-status" class="hidden flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm status-badge" role="status" aria-live="polite">
+                <div id="connection-dot" class="h-2 w-2 rounded-full status-dot" aria-hidden="true"></div>
                 <span id="connection-text" class="text-secondary">Disconnected</span>
-                <span id="share-code-display" class="hidden font-mono font-bold ml-2 text-accent"></span>
-                <button id="btn-copy-code" class="hidden copy-code-btn ml-1 p-1 rounded transition-colors" title="Copy code">
-                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                <span id="share-code-display" class="hidden font-mono font-bold ml-2 text-accent" aria-label="Session code"></span>
+                <button id="btn-copy-code" class="hidden copy-code-btn ml-1 p-1 rounded transition-colors" aria-label="Copy session code to clipboard">
+                    <i data-lucide="copy" class="w-3.5 h-3.5" aria-hidden="true"></i>
                 </button>
             </div>
-            <button id="btn-camera-restore-header" class="hidden px-3 py-1.5 rounded-lg text-sm font-medium transition-all btn-secondary" title="Restore Camera">
-                <i data-lucide="chevron-up" class="w-4 h-4 inline mr-1"></i>
+            <button id="btn-camera-restore-header" class="hidden px-3 py-1.5 rounded-lg text-sm font-medium transition-all btn-secondary" data-tooltip="Restore minimized camera" aria-label="Restore minimized camera">
+                <i data-lucide="chevron-up" class="w-4 h-4 inline mr-1" aria-hidden="true"></i>
                 <span class="hidden sm:inline">Restore</span>
             </button>
-            <button id="btn-camera" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all btn-secondary" title="Start/Stop Camera">
-                <i id="camera-btn-icon-off" data-lucide="video" class="w-4 h-4 inline mr-1"></i>
-                <i id="camera-btn-icon-on" data-lucide="x-circle" class="w-4 h-4 inline mr-1 hidden"></i>
+            <button id="btn-camera" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all btn-secondary" data-tooltip="Enable camera and video sharing" aria-label="Enable camera and video sharing" aria-pressed="false">
+                <i id="camera-btn-icon-off" data-lucide="video" class="w-4 h-4 inline mr-1" aria-hidden="true"></i>
+                <i id="camera-btn-icon-on" data-lucide="x-circle" class="w-4 h-4 inline mr-1 hidden" aria-hidden="true"></i>
                 <span class="hidden sm:inline">Camera</span>
             </button>
-            <button id="btn-collaborate" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all btn-secondary" title="Start/Stop Collaboration">
-                <i data-lucide="users" class="w-4 h-4 inline mr-1"></i>
+            <button id="btn-collaborate" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all btn-secondary" data-tooltip="Start collaboration session" aria-label="Start collaboration session">
+                <i data-lucide="users" class="w-4 h-4 inline mr-1" aria-hidden="true"></i>
                 <span class="hidden sm:inline">Collaborate</span>
             </button>
-            <button id="btn-participants" class="hidden px-3 py-1.5 rounded-lg text-sm font-medium transition-all btn-secondary" title="Show Participants">
-                <i data-lucide="users-2" class="w-4 h-4 inline mr-1"></i>
+            <button id="btn-participants" class="hidden px-3 py-1.5 rounded-lg text-sm font-medium transition-all btn-secondary" data-tooltip="View participants and chat" aria-label="View participants and chat panel">
+                <i data-lucide="users-2" class="w-4 h-4 inline mr-1" aria-hidden="true"></i>
                 <span class="hidden sm:inline">Participants</span>
             </button>
             <button id="theme-toggle" onclick="app.toggleTheme()" class="theme-toggle-btn flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg transition-all active:scale-95" title="Toggle theme">

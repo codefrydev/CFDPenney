@@ -1,0 +1,108 @@
+/* ============================================
+   CONFIRMATION DIALOG
+   Modal dialogs for destructive actions
+   ============================================ */
+
+.confirm-dialog-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10002;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease-out;
+}
+
+.confirm-dialog-overlay.hidden {
+    display: none;
+}
+
+.confirm-dialog {
+    background: var(--modal-bg);
+    border-radius: 16px;
+    box-shadow: var(--shadow-2xl);
+    max-width: 480px;
+    width: calc(100% - 2rem);
+    margin: 1rem;
+    animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.confirm-dialog-header {
+    padding: var(--spacing-xl) var(--spacing-xl) var(--spacing-md);
+}
+
+.confirm-dialog-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.confirm-dialog-body {
+    padding: 0 var(--spacing-xl) var(--spacing-xl);
+}
+
+.confirm-dialog-message {
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.confirm-dialog-checkbox {
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--border-primary);
+}
+
+.confirm-dialog-checkbox label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.confirm-dialog-footer {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: flex-end;
+    padding: var(--spacing-lg) var(--spacing-xl) var(--spacing-xl);
+    border-top: 1px solid var(--border-primary);
+}
+
+.confirm-dialog-footer .btn {
+    min-width: 100px;
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+    .confirm-dialog {
+        max-width: none;
+        width: calc(100% - 1rem);
+        margin: 0.5rem;
+    }
+    
+    .confirm-dialog-footer {
+        flex-direction: column-reverse;
+    }
+    
+    .confirm-dialog-footer .btn {
+        width: 100%;
+        min-width: auto;
+    }
+}
+
+/* Dark Theme */
+[data-theme="dark"] .confirm-dialog {
+    background: var(--modal-bg);
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .confirm-dialog-overlay,
+    .confirm-dialog {
+        animation: none;
+    }
+}

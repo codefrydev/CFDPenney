@@ -4,6 +4,9 @@ import { initUI, updateUI } from './ui.js';
 import { closeCollaborationModal, handleHostSession, handleJoinSession } from './modal.js';
 import { getCodeFromURL, joinCollaborationWithCode } from './collaboration.js';
 import { state } from './state.js';
+import { initTooltips } from './tooltips.js'; // Initialize tooltip system
+import { initToast } from './toast.js'; // Initialize toast notification system
+import { initConfirmDialog } from './confirmDialog.js'; // Initialize confirmation dialog system
 import './popupModal.js'; // Initialize popup modal system
 import './mobile.js'; // Initialize mobile-specific features
 import './collaboration/participantsPanel.js'; // Initialize participants panel
@@ -12,6 +15,9 @@ import './collaboration/chat.js'; // Initialize chat module
 // Initialize app
 function init() {
     initUI();
+    initTooltips(); // Initialize tooltip system
+    initToast(); // Initialize toast notification system
+    initConfirmDialog(); // Initialize confirmation dialog system
     if (window.lucide) {
         lucide.createIcons();
     }

@@ -1,5 +1,6 @@
 /* ============================================
    MOBILE & RESPONSIVE STYLES
+   Touch-optimized for mobile devices
    ============================================ */
 
 /* Floating Action Button (FAB) - Mobile */
@@ -42,8 +43,43 @@
     pointer-events: none;
 }
 
+/* Touch Optimization - All Interactive Elements */
+button,
+a,
+input[type="checkbox"],
+input[type="radio"],
+.tool-btn,
+.color-btn {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
 /* Mobile Bottom Toolbar (< 768px) */
 @media (max-width: 767px) {
+    /* Touch-friendly minimum sizes (44x44px Apple/48x48px Android) */
+    button:not(.annotate-tool-btn),
+    a:not(.color-btn),
+    input[type="checkbox"],
+    input[type="radio"] {
+        min-width: 44px;
+        min-height: 44px;
+    }
+    
+    /* Tool buttons already sized appropriately */
+    .annotate-tool-btn {
+        width: 48px;
+        height: 48px;
+        padding: 12px;
+    }
+    
+    /* Color swatches - larger on mobile */
+    .color-btn {
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+        min-height: 48px;
+    }
+    
     /* HIDE toolbar by default on mobile - Compact & Optimized */
     .annotate-toolbar {
         position: fixed;

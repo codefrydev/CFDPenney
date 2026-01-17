@@ -1,0 +1,127 @@
+/* ============================================
+   CARD COMPONENT SYSTEM
+   Standardized card container styles
+   ============================================ */
+
+/* Base Card */
+.card {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-base);
+    overflow: hidden;
+}
+
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--border-secondary);
+}
+
+/* Card Variants */
+.card-flat {
+    box-shadow: none;
+    border: 1px solid var(--border-primary);
+}
+
+.card-elevated {
+    box-shadow: var(--shadow-lg);
+    border: none;
+}
+
+.card-glass {
+    background: var(--glass-bg);
+    backdrop-filter: var(--backdrop-blur);
+    -webkit-backdrop-filter: var(--backdrop-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+}
+
+/* Card Sections */
+.card-header {
+    padding: var(--spacing-lg);
+    border-bottom: 1px solid var(--border-primary);
+}
+
+.card-body {
+    padding: var(--spacing-lg);
+    flex: 1;
+}
+
+.card-footer {
+    padding: var(--spacing-lg);
+    border-top: 1px solid var(--border-primary);
+    background: var(--bg-secondary);
+}
+
+/* Compact Cards */
+.card-compact .card-header,
+.card-compact .card-body,
+.card-compact .card-footer {
+    padding: var(--spacing-md);
+}
+
+/* Card Title */
+.card-title {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.card-subtitle {
+    margin-top: var(--spacing-xs);
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+/* Interactive Card */
+.card-interactive {
+    cursor: pointer;
+    user-select: none;
+}
+
+.card-interactive:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+}
+
+.card-interactive:active {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Card with Image */
+.card-image {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.card-image-top {
+    border-radius: 12px 12px 0 0;
+}
+
+/* Dark Theme */
+[data-theme="dark"] .card {
+    background: var(--bg-secondary);
+    border-color: var(--border-secondary);
+}
+
+[data-theme="dark"] .card-footer {
+    background: var(--bg-tertiary);
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .card,
+    .card-hover:hover,
+    .card-interactive:hover,
+    .card-interactive:active {
+        transform: none;
+        transition: none;
+    }
+}
