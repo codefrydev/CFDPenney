@@ -6,6 +6,7 @@ const fs = require('fs');
 let mainWindow = null;
 let overlayWindow = null;
 let isOverlayInteractive = false;
+let selectedDisplayBounds = null; // Store the bounds of the selected display
 
 // Get the correct app path (works in both dev and packaged)
 function getAppPath() {
@@ -89,10 +90,16 @@ function createMainWindow() {
 function createOverlayWindow() {
     if (!mainWindow || mainWindow.isDestroyed()) return;
     
-    // Use primary display bounds for fullscreen overlay
-    // This ensures annotations align 1:1 with the actual screen
-    const primaryDisplay = screen.getPrimaryDisplay();
-    const bounds = primaryDisplay.bounds;
+    // Use selected display bounds if available, otherwise fall back to primary display
+    // This ensures annotations align 1:1 with the actual shared screen
+    const targetDisplay = selectedDisplayBounds ? 
+        screen.getAllDisplays().find(d => 
+            d.bounds.x === selectedDisplayBounds.x && 
+            d.bounds.y === selectedDisplayBounds.y
+        ) || screen.getPrimaryDisplay() 
+        : screen.getPrimaryDisplay();
+    
+    const bounds = targetDisplay.bounds;
     
     const preloadPath = getFilePath('preload.js');
     const overlayHtmlPath = getFilePath('overlay.html');
@@ -125,11 +132,10 @@ function createOverlayWindow() {
     // Send screen dimensions to overlay when ready
     // This ensures the overlay uses correct dimensions for coordinate mapping
     overlayWindow.webContents.on('did-finish-load', () => {
-        const primaryDisplay = screen.getPrimaryDisplay();
         overlayWindow.webContents.send('screen-dimensions', {
-            width: primaryDisplay.bounds.width,
-            height: primaryDisplay.bounds.height,
-            scaleFactor: primaryDisplay.scaleFactor
+            width: bounds.width,
+            height: bounds.height,
+            scaleFactor: targetDisplay.scaleFactor
         });
     });
     
@@ -228,11 +234,36 @@ ipcMain.handle('get-sources', async () => {
             types: ['screen', 'window'],
             thumbnailSize: { width: 150, height: 150 }
         });
-        return sources.map(source => ({
-            id: source.id,
-            name: source.name,
-            thumbnail: source.thumbnail.toDataURL()
-        }));
+        
+        // Get all displays to match screens with their physical displays
+        const displays = screen.getAllDisplays();
+        
+        return sources.map((source, sourceIndex) => {
+            // Try to match screen sources with their display
+            let displayInfo = null;
+            if (source.id.startsWith('screen:')) {
+                // Screen sources are returned in order by desktopCapturer
+                // Match them sequentially with displays array
+                // Count only screen sources up to this point to get the correct index
+                const screenSourcesBeforeThis = sources.slice(0, sourceIndex).filter(s => s.id.startsWith('screen:')).length;
+                
+                // Use the count of screen sources as the display index
+                if (screenSourcesBeforeThis < displays.length) {
+                    const display = displays[screenSourcesBeforeThis];
+                    displayInfo = {
+                        bounds: display.bounds,
+                        scaleFactor: display.scaleFactor
+                    };
+                }
+            }
+            
+            return {
+                id: source.id,
+                name: source.name,
+                thumbnail: source.thumbnail.toDataURL(),
+                display: displayInfo
+            };
+        });
     } catch (error) {
         console.error('Error getting sources:', error);
         return [];
@@ -254,6 +285,17 @@ ipcMain.on('overlay-event', (event, data) => {
     if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send('overlay-event', data);
     }
+});
+
+// Update selected display for overlay positioning
+ipcMain.on('update-selected-display', (event, displayBounds) => {
+    selectedDisplayBounds = displayBounds;
+    
+    // Recreate overlay on the new display
+    if (overlayWindow && !overlayWindow.isDestroyed()) {
+        overlayWindow.close();
+    }
+    createOverlayWindow();
 });
 
 // Forward video dimensions from main window to overlay

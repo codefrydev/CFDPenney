@@ -1,9 +1,15 @@
 // Message Processing and Canvas State Updates
 import { state } from '../state.js';
 import { redrawCanvas as regularRedrawCanvas, denormalizeCoordinates as regularDenormalizeCoordinates } from '../canvas.js';
-import { denormalizeElement } from './coordinateUtils.js';
-import { sendToPeer } from './messageSender.js';
+import { denormalizeElement } from '../../shared/collaboration/coordinateUtils.js';
+import { sendToPeer as sharedSendToPeer } from '../../shared/collaboration/messageSender.js';
 import { handleChatMessage, handleChatReaction } from './chat.js';
+import { webAdapter } from '../../shared/adapters/webAdapter.js';
+
+// Wrapper for sendToPeer that includes state
+function sendToPeer(message, peerId = null) {
+    return sharedSendToPeer(state, message, peerId);
+}
 
 // Feature detection: Check if penney canvas functions are available
 // This allows us to use penney-specific functions when on penney page, with fallback to regular functions
@@ -168,7 +174,7 @@ export function handlePeerMessage(message, peerId) {
             break;
         case 'ANNOTATION_ELEMENT':
             // Peer added a complete element (e.g., text, sticker) - denormalize coordinates
-            const denormalizedElement = denormalizeElement(message.element);
+            const denormalizedElement = denormalizeElement(message.element, webAdapter);
             state.peerElements.push({
                 ...denormalizedElement,
                 isPeer: true,
@@ -215,7 +221,7 @@ export function handlePeerMessage(message, peerId) {
             // Full state sync - denormalize all element coordinates
             // Mark all synced elements as not active (they're complete)
             const syncedElements = (message.elements || []).map(el => {
-                const denormEl = denormalizeElement(el);
+                const denormEl = denormalizeElement(el, webAdapter);
                 return {
                     ...denormEl,
                     isPeer: true,

@@ -5,6 +5,10 @@ import { setTool, confirmText, startText } from './tools.js';
 import { sendToAllPeers } from './collaboration.js';
 import { handleShapeStart, handleShapeMove, handleShapeEnd, isShapeTool } from './shapes/shapeHandlers.js';
 
+// Throttle ANNOTATION_MOVE messages to reduce network overhead
+let lastMoveMessageTime = 0;
+const MOVE_MESSAGE_THROTTLE = 16; // ~60fps max (16ms between messages)
+
 let canvas = null;
 
 export function initDrawing(canvasEl) {
@@ -197,16 +201,21 @@ export function handleMove(e) {
     }
 
     // Send to all peers (normalize coordinates for cross-resolution compatibility)
+    // Throttle to reduce network overhead and improve performance
     if (state.isCollaborating) {
-        const currentElement = state.elements[state.historyStep];
-        const normalized = normalizeCoordinates(x, y);
-        sendToAllPeers({
-            type: 'ANNOTATION_MOVE',
-            id: currentElement ? currentElement.id : null,
-            tool: state.tool,
-            x: normalized.x,
-            y: normalized.y
-        });
+        const now = Date.now();
+        if (now - lastMoveMessageTime >= MOVE_MESSAGE_THROTTLE) {
+            lastMoveMessageTime = now;
+            const currentElement = state.elements[state.historyStep];
+            const normalized = normalizeCoordinates(x, y);
+            sendToAllPeers({
+                type: 'ANNOTATION_MOVE',
+                id: currentElement ? currentElement.id : null,
+                tool: state.tool,
+                x: normalized.x,
+                y: normalized.y
+            });
+        }
     }
 
     redrawCanvas();

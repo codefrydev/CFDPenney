@@ -1,6 +1,15 @@
 // Chat Module for Collaboration
 import { state } from '../state.js';
-import { sendChatMessage, sendChatReaction } from './messageSender.js';
+import { sendChatMessage as sharedSendChatMessage, sendChatReaction as sharedSendChatReaction } from '../../shared/collaboration/messageSender.js';
+
+// Wrappers that include state
+function sendChatMessage(message) {
+    return sharedSendChatMessage(state, message);
+}
+
+function sendChatReaction(messageId, emoji) {
+    return sharedSendChatReaction(state, messageId, emoji);
+}
 import { getDisplayName } from './participantsPanel.js';
 
 // Maximum message history to keep in memory

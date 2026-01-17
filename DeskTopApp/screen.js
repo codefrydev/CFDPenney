@@ -1,12 +1,13 @@
 // Screen Capture and WebRTC Connection (Main Window)
 import { state, getPeerColor } from './state.js';
-import { startCollaboration, stopCollaboration, initPeerJS } from './collaboration/collaborationCore.js';
-import { sendToAllPeers } from './collaboration/messageSender.js';
+import { startCollaboration, stopCollaboration, shareCameraWithPeers, sendToAllPeers as sendToAllPeersShared, initPeerJS } from './collaboration/collaborationWrapper.js';
 import { setCanvasDimensions } from './collaboration/messageHandler.js';
-import { shareCameraWithPeers } from './collaboration/videoCall.js';
-import { initDeviceSelection, populateDeviceSelects, getSelectedDeviceIds, saveDevicePreferences } from './deviceSelection.js';
+import { populateDeviceSelects, getSelectedDeviceIds, saveDevicePreferences, initDeviceSelection } from './deviceSelection.js';
 import './collaboration/chat.js';
 import './collaboration/participantsPanel.js';
+
+// Wrap sendToAllPeers with state for use in this file
+const sendToAllPeers = (message) => sendToAllPeersShared(state, message);
 
 // Initialize PeerJS when available
 window.addEventListener('load', () => {
@@ -36,6 +37,7 @@ const btnCopyShareCode = document.getElementById('btn-copy-share-code');
 const copyFeedback = document.getElementById('copy-feedback');
 
 let selectedSource = null;
+let selectedSourceDisplay = null; // Store display info for the selected source
 let sources = [];
 
 // Update connection status
@@ -139,6 +141,7 @@ btnSelectSource.addEventListener('click', async () => {
                 );
                 item.classList.add('selected');
                 selectedSource = source;
+                selectedSourceDisplay = source.display; // Store display info
             });
             
             sourceList.appendChild(item);
@@ -161,12 +164,18 @@ btnConfirmSource.addEventListener('click', () => {
     state.selectedSourceId = selectedSource.id;
     btnStartShare.disabled = false;
     sourcePicker.classList.remove('active');
+    
+    // If this is a screen source with display info, update the overlay position
+    if (selectedSourceDisplay && selectedSourceDisplay.bounds) {
+        window.electronAPI.updateSelectedDisplay(selectedSourceDisplay.bounds);
+    }
 });
 
 // Cancel source selection
 btnCancelSource.addEventListener('click', () => {
     sourcePicker.classList.remove('active');
     selectedSource = null;
+    selectedSourceDisplay = null;
 });
 
 // Start screen sharing

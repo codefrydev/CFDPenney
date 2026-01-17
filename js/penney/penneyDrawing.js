@@ -7,6 +7,10 @@ import { handleShapeStart, handleShapeMove, handleShapeEnd, isShapeTool } from '
 import { syncRegularStateToPenney, syncPenneyStateToRegular } from './penneyMain.js';
 import { state as regularState } from '../state.js';
 
+// Throttle ANNOTATION_MOVE messages to reduce network overhead
+let lastMoveMessageTime = 0;
+const MOVE_MESSAGE_THROTTLE = 16; // ~60fps max (16ms between messages)
+
 let canvas = null;
 
 export function initDrawing(canvasEl) {
@@ -141,17 +145,22 @@ export function handleMove(e) {
 
     // Send to all peers (normalize coordinates for cross-resolution compatibility)
     // Check both states - regularState is set by collaboration modules, penneyState is synced
+    // Throttle to reduce network overhead and improve performance
     const isCollaborating = state.isCollaborating || regularState.isCollaborating;
     if (isCollaborating) {
-        const currentElement = state.elements[state.historyStep];
-        const normalized = normalizeCoordinates(x, y);
-        sendToAllPeers({
-            type: 'ANNOTATION_MOVE',
-            id: currentElement ? currentElement.id : null,
-            tool: state.tool,
-            x: normalized.x,
-            y: normalized.y
-        });
+        const now = Date.now();
+        if (now - lastMoveMessageTime >= MOVE_MESSAGE_THROTTLE) {
+            lastMoveMessageTime = now;
+            const currentElement = state.elements[state.historyStep];
+            const normalized = normalizeCoordinates(x, y);
+            sendToAllPeers({
+                type: 'ANNOTATION_MOVE',
+                id: currentElement ? currentElement.id : null,
+                tool: state.tool,
+                x: normalized.x,
+                y: normalized.y
+            });
+        }
     }
 
     redrawCanvas();

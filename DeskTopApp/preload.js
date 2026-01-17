@@ -39,6 +39,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     sendVideoDimensions: (width, height) => ipcRenderer.send('video-dimensions', { width, height }),
     onVideoDimensions: (callback) => ipcRenderer.on('video-dimensions', (event, data) => callback(data)),
     
+    // Update selected display for overlay positioning
+    updateSelectedDisplay: (displayBounds) => ipcRenderer.send('update-selected-display', displayBounds),
+    
     // Cleanup
     removeAllListeners: (channel) => ipcRenderer.removeAllListeners(channel)
 });

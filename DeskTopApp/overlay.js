@@ -1,7 +1,17 @@
 // Overlay Window - Pointer and Annotation Engine
 import { state, getPeerColor } from './state.js';
-import { sendToAllPeers } from './collaboration/messageSender.js';
-import { normalizeCoordinates } from './collaboration/coordinateUtils.js';
+import { sendToAllPeers as sharedSendToAllPeers } from '../shared/collaboration/messageSender.js';
+import { desktopAdapter } from '../shared/adapters/desktopAdapter.js';
+
+// Wrapper for sendToAllPeers with state
+function sendToAllPeers(message) {
+    return sharedSendToAllPeers(state, message);
+}
+
+// Use adapter for coordinate normalization
+function normalizeCoordinates(x, y) {
+    return desktopAdapter.normalizeCoordinates(x, y);
+}
 
 // Canvas elements
 let canvas = null;
@@ -201,17 +211,22 @@ function handleMouseMove(e) {
             const stroke = remoteStrokes.get(currentStrokeId);
             stroke.points.push({ x, y });
             
-            // Send to peers (throttled)
-            const normalized = normalizeCoordinates(x, y, canvasWidth, canvasHeight);
-            const message = {
-                type: 'STROKE_MOVE',
-                id: currentStrokeId,
-                nx: normalized.x,
-                ny: normalized.y
-            };
-            
-            if (window.electronAPI) {
-                window.electronAPI.sendOverlayEvent(message);
+            // Send to peers (throttled to reduce network overhead)
+            const now = Date.now();
+            if (now - lastPointerSendTime > POINTER_THROTTLE_MS) {
+                lastPointerSendTime = now;
+                
+                const normalized = normalizeCoordinates(x, y, canvasWidth, canvasHeight);
+                const message = {
+                    type: 'STROKE_MOVE',
+                    id: currentStrokeId,
+                    nx: normalized.x,
+                    ny: normalized.y
+                };
+                
+                if (window.electronAPI) {
+                    window.electronAPI.sendOverlayEvent(message);
+                }
             }
         }
     } else {

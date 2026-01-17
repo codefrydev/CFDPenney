@@ -1,6 +1,11 @@
 // Message Processing and Overlay State Updates (Adapted for Electron)
 import { state, getPeerColor } from '../state.js';
-import { denormalizeCoordinates } from './coordinateUtils.js';
+import { desktopAdapter } from '../../shared/adapters/desktopAdapter.js';
+
+// Use adapter for coordinate denormalization
+function denormalizeCoordinates(normX, normY) {
+    return desktopAdapter.denormalizeCoordinates(normX, normY);
+}
 
 // Canvas dimensions (will be set from overlay)
 let canvasWidth = 1920;
@@ -23,7 +28,7 @@ export function handlePeerMessage(message, peerId) {
     // If we're the host, rebroadcast this message to all other peers (except the sender)
     if (state.isHosting && senderPeerId !== state.myPeerId) {
         // Import sendToAllPeers dynamically to avoid circular dependency
-        import('./messageSender.js').then(({ sendToAllPeers }) => {
+        import('../../shared/collaboration/messageSender.js').then(({ sendToAllPeers }) => {
             state.dataConnections.forEach((conn, targetPeerId) => {
                 // Don't send back to the original sender
                 if (targetPeerId !== senderPeerId && conn && conn.open) {

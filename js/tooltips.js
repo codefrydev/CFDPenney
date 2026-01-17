@@ -48,6 +48,9 @@ class TooltipManager {
     }
     
     handleMouseEnter(e) {
+        // Ensure e.target is an Element (not a text node or other type)
+        if (!e.target || typeof e.target.closest !== 'function') return;
+        
         const target = e.target.closest('[data-tooltip]');
         if (!target) return;
         
@@ -59,6 +62,9 @@ class TooltipManager {
     }
     
     handleMouseLeave(e) {
+        // Ensure e.target is an Element (not a text node or other type)
+        if (!e.target || typeof e.target.closest !== 'function') return;
+        
         const target = e.target.closest('[data-tooltip]');
         if (!target) return;
         
